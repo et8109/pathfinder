@@ -1,24 +1,6 @@
 <?php
 
-require_once("shared.php");
-
-final class constants {
-    const zoneWidth = 50;
-    const numZonesSrt = 2;//should be a square
-    const secBetweenevents = 6;
-    const maxHealth = 4;
-    const zoneBuffer = 5;
-}
-/**
- *the distances at which certain audio starts
- */
-final class distances {
-    const ambientNotice = 15;
-    const enemyNotice = 10;
-    const enemyAttack = 4;
-    const personTalk = 5;
-    const personNotice = 10;
-}
+require_once("constants.php");
 
 function addNpcEvent($px,$py,$x,$y,$npcID,$time,$busy,&$arrayJSON,$ans){
     //distance from player
@@ -168,8 +150,12 @@ function findDist($px,$py,$x,$y){
 }
 
 try{
+    //setup
     $posx = $_POST['posx'];
     $posy = $_POST['posy'];
+    //prepare array to send
+    $arrayJSON = array();
+    //check if player sent a reply
     $ans = null;
     if(isset($_POST['ans'])){
         $ans = $_POST['ans'];
@@ -178,120 +164,21 @@ try{
     $zone = floor($posx/constants::zoneWidth);
     $zone += constants::numZonesSrt * floor($posy/constants::zoneWidth);
     $zone += 1; //zero is null zone
-    //check if zone change
-    $playerQuery = query("select zone, health from playerinfo where id=".prepVar($_SESSION['playerID']));
+    //check if zone change, load if new
+    $playerInfo = MainInterface::getPlayerInfo($_SESSION['playerID']);
     $newZone = false;
-    if($playerQuery['zone'] != $zone){
-        $newZone = true;
-    }
-    //prepare array to send
-    $arrayJSON = array();
-    //check if out of map range
-    $bump = 10;
-    if ($posx < 0){
-        //throw new Exception("oob posx: ".$posx);
-        $posx = $posx + $bump;
-        $arrayJSON[] = (array(
-            "playerInfo" => true,
-            "posX" => $posx,
-            "posY" => $posy
-        ));
-        $newZone = false;
-    }
-    if ($posy < 0){
-        $posy = $posy + $bump;
-        $arrayJSON[] = (array(
-            "playerInfo" => true,
-            "posX" => $posx,
-            "posY" => $posy
-        ));
-        $newZone = false;
-    }
-    if ($posx > constants::numZonesSrt*constants::zoneWidth){
-        $posx = $posx - $bump;
-        $arrayJSON[] = (array(
-            "playerInfo" => true,
-            "posX" => $posx,
-            "posY" => $posy
-        ));
-        $newZone = false;
-    }
-    if ($posy > constants::numZonesSrt*constants::zoneWidth){
-        $posy = $posy - $bump;
-        $arrayJSON[] = (array(
-            "playerInfo" => true,
-            "posX" => $posx,
-            "posY" => $posy
-        ));
-        $newZone = false;
-    }
-    //update playerinfo
-    query("UPDATE playerinfo SET posx=".prepVar($posx).",posy=".prepVar($posy).",zone=".prepVar($zone)." WHERE id=".prepVar($_SESSION['playerID']));
-    //if in a new zone
-    if($newZone){
-        $arrayJSON[0] = array("newZone" => true);
-        //send ambient sounds
-        $ambientResult = queryMulti("select posx,posy,audioURL from ambient where zone=".prepVar($zone));
-        while($row = mysqli_fetch_array($ambientResult)){
-            $arrayJSON[] = (array(
-                "ambient" => true,
-                "posx" => $row['posx'],
-                "posy" => $row['posy'],
-                "audioURL" => $row['audioURL']
-            ));
-        }
-        mysqli_free_result($ambientResult);
-        //send movement sound
-        $moveRow = query("select audioURL from movement where zone=".prepVar($zone));
-        $arrayJSON[] = (array(
-            "movement" => true,
-            "audioURL" => $moveRow['audioURL']
-        ));
-        //send enemies
-        $enemyResult = queryMulti("select id,posx,posy from enemies where zone=".prepVar($zone));
-        while($row = mysqli_fetch_array($enemyResult)){
-            $audioRow = query("select audioURL from enemyinfo where id=".prepVar($row['id']));
-            $arrayJSON[] = (array(
-                "enemy" => true,
-                "id" => $row['id'],
-                "posx" => $row['posx'],
-                "posy" => $row['posy'],
-                "audioURL" => $audioRow['audioURL']
-            ));
-        }
-        mysqli_free_result($enemyResult);
-        //send npcs
-        $npcResult = queryMulti("select id,posx,posy,audioURL from npcs where zone=".prepVar($zone));
-        while($row = mysqli_fetch_array($npcResult)){
-            $arrayJSON[] = (array(
-                "npc" => true,
-                "id" => $row['id'],
-                "posx" => $row['posx'],
-                "posy" => $row['posy'],
-                "audioURL" => $row['audioURL']
-            ));
-        }
-        mysqli_free_result($npcResult);
-        //send players nearby
-        $playersResult = queryMulti("select peerid from playerinfo where id!=".prepVar($_SESSION['playerID'])." and zone in (".($zone-1-constants::numZonesSrt).",".($zone-1).",".($zone-1+constants::numZonesSrt).",".($zone-constants::numZonesSrt).",".$zone.",".($zone+constants::numZonesSrt).",".($zone+1+constants::numZonesSrt).",".($zone+1).",".($zone+1-constants::numZonesSrt).") and zone != 0");
-        while($row = mysqli_fetch_array($playersResult)){
-            $arrayJSON[] = (array(
-                "player" => true,
-                "peerid" => $row['peerid']
-            ));
-        }
-        mysqli_free_result($playersResult);
-        sendJSON($arrayJSON);
-        return;
+    if($playerInfo['zone'] != $zone){
+        require_once("zoneLoading.php");
+        echo json_encode($array);
     }
     //set current time
     $time = time();
     //remove old player events
-    query("delete from playerevents where finish<".prepVar($time));
+    MainInterface::removeOldPlayerEvents($time);
     //get npcs in zone
-    $npcResult = queryMulti("select id,posx,posy,finish,start,lastAudio from npcs where zone=".prepVar($zone));
+    $npcResult = MainInterface::getNpcsInZone($zone);
     //loop though npcs
-    while($npcRow = mysqli_fetch_array($npcResult)){
+    foreach($npcResult as $npcRow){
         addNpcEvent($posx, $posy, $npcRow['posx'], $npcRow['posy'], $npcRow['id'],$time, $time < $npcRow['finish'],$arrayJSON,$ans);
         if($_SESSION['lastupdateTime'] < $npcRow['start']){
             //if new for this player
@@ -303,12 +190,11 @@ try{
             ));
         }
     }
-    mysqli_free_result($npcResult);
     
     //get enemies in zone
-    $enemyResult = queryMulti("select id,posx,posy,finish,start,lastAudio,health from enemies where zone=".prepVar($zone));
+    MainInterface::getEnemiesInZone($zone);
     //loop though enemies
-    while($enemyRow = mysqli_fetch_array($enemyResult)){
+    foreach($enemyResult as $enemyRow){
         //if dead
         if($enemyRow['health'] <= 0){
             //revive elsewhere in zone
@@ -318,10 +204,10 @@ try{
             $x = constants::zoneWidth*$x + rand(constants::zoneBuffer,constants::zoneWidth-constants::zoneBuffer);
             //check if overlapping with anything
             //set new pos and max health
-            query("update enemies set posx=".prepVar($x).",posy=".prepVar($y).",health=".prepVar(constants::maxHealth)." where id=".prepVar($enemyRow['id']));
+            MainInterface::resetEnemy($x,$y,constants::maxHealth,$enemyRow['id']);
         } else{
             //if alive
-            addEnemyEvent($posx, $posy, $enemyRow['posx'], $enemyRow['posy'], $enemyRow['id'],$time,$zone,$playerQuery['health'],$time < $enemyRow['finish'],$arrayJSON);
+            addEnemyEvent($posx, $posy, $enemyRow['posx'], $enemyRow['posy'], $enemyRow['id'],$time,$zone,$playerInfo['health'],$time < $enemyRow['finish'],$arrayJSON);
             if($_SESSION['lastupdateTime'] < $enemyRow['start']){
                 //if new for this player
                 $arrayJSON[] = (array(
@@ -333,11 +219,11 @@ try{
             }
         }
     }
-    mysqli_free_result($enemyResult);
+    
     //check nearby players
     //check player events
-    $eventsResult = queryMulti("select id,audiotype from playerevents where zone=".prepVar($zone)." and start>=".prepVar($_SESSION['lastupdateTime']));
-    while($row = mysqli_fetch_array($eventsResult)){
+    MainInterface::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
+    foreach($eventsResult as $row){
         $arrayJSON[] =(array(
             "event" => true,
             "player" => true,
@@ -345,13 +231,14 @@ try{
             "audioType" => $row['audiotype']
         ));
     }
-    mysqli_free_result($eventsResult);
-    sendJSON($arrayJSON);
+
+    //send all info
+    echo json_encode($array);
     //update last event time
     $_SESSION['lastupdateTime'] = $time;
     
 } catch(Exception $e){
-    sendJson(array(
+    echo json_encode(array(
         "error" => ($e->getMessage())
     ));
 }

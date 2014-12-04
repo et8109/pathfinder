@@ -2,6 +2,7 @@ window.onerror = function(msg, url, line) {
     log("Error: "+msg+" url: "+url+" line: "+line);
 };
 
+//page setup
 var loading = true;
 
 var peer;
@@ -129,7 +130,10 @@ function node(){
     }
 }
 
-//[id,url]
+/**
+ *sends the array created by node's request buffer to the server
+ *[id,url]
+ */
 function loadRequestArray(requestArray){
     if (!requestArray.length >0) {
         return;

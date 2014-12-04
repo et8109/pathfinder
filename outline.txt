@@ -1,0 +1,16 @@
+client
+------
+onload: get setup data from server
+track player movements
+continually send player position to server
+
+server
+------
+check if new zone
+    new: load all entities in the zone
+check all current events in zone
+send response
+
+todo:
+multiquery return array
+Database disconnect from db on death
