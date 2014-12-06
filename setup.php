@@ -1,8 +1,8 @@
 <?php
-require_once("shared.php");
-
+require_once("setupInterface.php");
+session_start();
 $arrayJSON = array();
-$infoRow = query("select posx, posy, peerid, audioURL from playerinfo where id=".prepVar($_SESSION['playerID']));
+$infoRow = SetupInterface::getPlayerInfo($_SESSION['playerID']);
 $arrayJSON[] = (array(
                     "spriteaudioURL" => "Lowlife.mp3,Dead.mp3",
                     "playerID" => $_SESSION['playerID'],
@@ -12,5 +12,5 @@ $arrayJSON[] = (array(
                     "posY" => $infoRow['posy'],
                     "version" => 2
                 ));
-sendJSON($arrayJSON);
+echo json_encode($arrayJSON);
 ?>
