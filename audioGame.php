@@ -1,6 +1,8 @@
 <?php
 
 require_once("constants.php");
+require_once("Json.php");
+require_once("mainInterface.php");
 
 function addNpcEvent($px,$py,$x,$y,$npcID,$time,$busy,&$arrayJSON,$ans){
     //distance from player
@@ -30,19 +32,19 @@ function addEnemyEvent($px,$py,$x,$y,$enemyID,$time,/*player:*/$zone,$health,$bu
     if($dist < distances::enemyAttack){
         if(_addPlayerEvent(0,$time, $zone,false)){//if player attacks
             //lower monster health
-            query("update enemies set health=health-1 where id=".prepVar($enemyID)." and posx=".prepVar($x)." and posy=".prepVar($y));
+            MainInterface::loverEnemyHealth($enemyID, $x, $y);
             if(lastQueryNumRows() != 1){
                 //enemy is killed
                 _addEnemyEvent(2, $enemyID, $time,$x,$y,$arrayJSON);//death audio
                 //query("update enemies set health=3 where id=".prepVar($enemyID)." and posx=".prepVar($x)." and posy=".prepVar($y));
                 //add to kill count
-                query("update playerinfo set kills = kills+1 where playerID=".prepVar($_SESSION['playerID'])." and kills<99");
+                MainInterface::increasePlayerKills($_SESSION['playerID']);
             }
         }
         if(!$busy){//if enemy attacks
             _addEnemyEvent(1, $enemyID, $time,$x,$y,$arrayJSON);//attacking
             //lower player health
-            query("update playerinfo set health=health-1 where id=".prepVar($_SESSION['playerID']));
+            MainInterface::lowerPlayerHealth($_SESSION['playerID']);
             //if dead
             if($health < 2){
                 //new coords
@@ -52,7 +54,7 @@ function addEnemyEvent($px,$py,$x,$y,$enemyID,$time,/*player:*/$zone,$health,$bu
                     "posY" => 0
                 ));
                 //update player
-                query("update playerinfo set health=".prepVar(constants::maxHealth).",posx=0, posy=0 where id=".prepVar($_SESSION['playerID']));
+                MainInterface::resetPlayer($_SESSION['playerID'],constants::maxHealth,0,0);
                 //_addPlayerEvent(1, $time, $zone,true);//death sound as event
                 _addSpriteEvent(1, $arrayJSON);//you're dead msg
                 return;

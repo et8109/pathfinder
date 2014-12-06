@@ -42,8 +42,28 @@ public class MainInterface extends Interface{
         $r = Database::queryMulti("select id,audiotype from playerevents where zone=$zone and start>=$time");
         return $r;
     }
+        
+    public static function lowerEnemyHealth($eid, $posx, $posy) throws dbException{
+        $eid = $this->prepVar($eid);
+        $posx = $this->prepVar($posx);
+        $posy = $this->prepVar($posy);
+        Database::querySingle("update enemies set health=health-1 where id=$eid and posx=$posx and posy=$posy");
+    }
     
+    public static function increasePlayerKills($pid) throws dbException{
+        $pid = $this->prepVar($pid);
+        Database::querySingle("update playerinfo set kills = kills+1 where playerID=$pid and kills<99");
+    }
     
+    public static function lowerPlayerHealth($pid) throws dbException{
+        $pid = $this->prepVar($pid);
+        Database::querySingle("update playerinfo set health=health-1 where id=$pid");
+    }
+    
+    public static function resetPlayer($pid, $health, $posx, $posy) throws dbException{
+        $pid = $this->prepVar($pid);
+        Database::querySingle("update playerinfo set health=$health, posx=$posx, posy=$posy where id=$pid);
+    }  
 }
 
 ?>
