@@ -47,7 +47,8 @@ public class MainInterface extends Interface{
         $eid = $this->prepVar($eid);
         $posx = $this->prepVar($posx);
         $posy = $this->prepVar($posy);
-        Database::querySingle("update enemies set health=health-1 where id=$eid and posx=$posx and posy=$posy");
+        Database::querySingle("update enemies set health=health-1 where health>1 and id=$eid and posx=$posx and posy=$posy");
+        return Database::lastQueryNumRows() != 1; //returns true if dead
     }
     
     public static function increasePlayerKills($pid) throws dbException{
@@ -62,8 +63,38 @@ public class MainInterface extends Interface{
     
     public static function resetPlayer($pid, $health, $posx, $posy) throws dbException{
         $pid = $this->prepVar($pid);
-        Database::querySingle("update playerinfo set health=$health, posx=$posx, posy=$posy where id=$pid);
-    }  
+        Database::querySingle("update playerinfo set health=$health, posx=$posx, posy=$posy where id=$pid");
+    }
+    
+    public static function addNPCEvent($startTime, $endTime, $audioInt, $npcid) throws dbException{
+        $startTime = $this->prepVar($startTime);
+        $endTime = $this->prepVar($endTime);
+        $audioInt = $this->prepVar($audioInt);
+        $npcid = $this->prepVar($npcid);
+        Database::querySingle("update npcs set start=$startTime, finish=$endTime, lastAudio=$audioInt where id=$npcid");
+    }
+    
+    public static function addEnemyEvent($startTime, $endTime, $audioInt, $enemyId) throws dbException{
+        $startTime = $this->prepVar($startTime);
+        $endTime = $this->prepVar($endTime);
+        $audioInt = $this->prepVar($audioInt);
+        $enemyId = $this->prepVar($enemyId);
+        Database::querySingle("update enemies set start=$startTime, finish=$endTime, lastAudio=$autioInt where id=$enemyId");
+    }
+    
+    public static function addPlayerEvent($startTime, $endTime, $audioInt, $playerid, $zone, $override) throws dbException{
+        $startTime = $this->prepVar($startTime);
+        $endTime = $this->prepVar($endTime);
+        $audioInt = $this->prepVar($audioInt);
+        $playerid = $this->prepVar($playerid);
+        $zone = $this->prepVar($zone);
+        $checkRow = Database::querySingle("select 1 from playerevents where id=$pid limit 1");
+        if (Database::lastQueryNumRows() == 1 && !$override) {
+            Database::querySingle("insert into playerevents (id,zone,audiotype,start,finish) values ($pid,$zone,$audioInt,$time,$endTime)");
+            return true;
+        }
+        return false;//return if the action is being done
+    }
 }
 
 ?>

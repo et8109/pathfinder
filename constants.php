@@ -5,6 +5,9 @@ final class constants {
     const secBetweenevents = 6;
     const maxHealth = 4;
     const zoneBuffer = 5;
+    const npcDuration = 10;
+    const enemyDuration = 10;
+    const playerDuration = 6;
 }
 
 /**

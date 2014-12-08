@@ -32,8 +32,8 @@ function addEnemyEvent($px,$py,$x,$y,$enemyID,$time,/*player:*/$zone,$health,$bu
     if($dist < distances::enemyAttack){
         if(_addPlayerEvent(0,$time, $zone,false)){//if player attacks
             //lower monster health
-            MainInterface::loverEnemyHealth($enemyID, $x, $y);
-            if(lastQueryNumRows() != 1){
+            $dead = MainInterface::loverEnemyHealth($enemyID, $x, $y);
+            if($dead){
                 //enemy is killed
                 _addEnemyEvent(2, $enemyID, $time,$x,$y,$arrayJSON);//death audio
                 //query("update enemies set health=3 where id=".prepVar($enemyID)." and posx=".prepVar($x)." and posy=".prepVar($y));
@@ -75,7 +75,7 @@ function addEnemyEvent($px,$py,$x,$y,$enemyID,$time,/*player:*/$zone,$health,$bu
  *overrides current event
  */
 function _addNpcEvent($audio,$id,$time,$px,$py,&$arrayJSON){
-    query("update npcs set start=".prepVar($time).", finish=".prepVar($time+10).", lastAudio=".prepVar($audio)." where id=".prepVar($id));
+    MainInterface::addNPCEvent($time, $time+constants::npcDuration,$audio,$id)
     $arrayJSON[] = (array(
         "event" => true,
         "npc" => true,
@@ -89,7 +89,7 @@ function _addNpcEvent($audio,$id,$time,$px,$py,&$arrayJSON){
  *overrides current event
  */
 function _addEnemyEvent($audio,$id,$time,$px,$py,&$arrayJSON){
-    query("update enemies set start=".prepVar($time).", finish=".prepVar($time+10).", lastAudio=".prepVar($audio)." where id=".prepVar($id));
+    MainInterface::addEnemyEvent($time, $time + constants::enemyDuration,$audio, $id);
     $arrayJSON[] = (array(
         "event" => true,
         "enemy" => true,
@@ -105,12 +105,7 @@ function _addEnemyEvent($audio,$id,$time,$px,$py,&$arrayJSON){
  *true if event added
  */
 function _addPlayerEvent($audio,$time,$zone, $override){
-    $checkRow = query("select 1 from playerevents where id=".prepVar($_SESSION['playerID'])." limit 1");
-    if(lastQueryNumRows() == 1 && !$override){
-        return false;
-    }
-    query("insert into playerevents (id,zone,audiotype,start,finish) values (".prepVar($_SESSION['playerID']).",".prepVar($zone).",".prepVar($audio).",".prepVar($time).",".prepVar($time+6).")");
-    return true;
+    return MainInterface::addPlayerEvent($time, $time + constants::playerDuration, $audio, $_SESSION['playerID'], $zone, $override);
 }
 
 /**
