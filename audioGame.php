@@ -4,45 +4,45 @@ require_once("constants.php");
 require_once("Json.php");
 require_once("mainInterface.php");
 
-function addNpcEvent($px,$py,$x,$y,$npcID,$time,$busy,&$arrayJSON,$ans){
+function addNpcEvent($npc, $px,$py,$time,$busy,&$arrayJSON,$ans){
     //distance from player
-    $dist = findDist($px,$py,$x,$y);
+    $dist = findDist($px,$py,$npc->$posx,$npc->$posy);
     if($dist < distances::personTalk && !$busy){
         //if answered
         if(isset($ans)){
             if($ans == 1){
-                _addNpcEvent(2,$npcID,$time,$px,$py,$arrayJSON);//yes
+                _addNpcEvent(2,$npc,$time,$px,$py,$arrayJSON);//yes
             } else if($ans == 0){
-                _addNpcEvent(3,$npcID,$time,$px,$py,$arrayJSON);//no
+                _addNpcEvent(3,$npc,$time,$px,$py,$arrayJSON);//no
             }
             doneQuestion($arrayJSON);
         } else{
             //not answered
-            _addNpcEvent(1,$npcID,$time,$px,$py,$arrayJSON);//ask q
+            _addNpcEvent(1,$npc,$time,$px,$py,$arrayJSON);//ask q
             askQuestion($arrayJSON);
         }
     }
     else if($dist < distances::personNotice && !$busy){
-        _addNpcEvent(0,$npcID,$time,$px,$py,$arrayJSON);//welcome
+        _addNpcEvent(0,$npc,$time,$px,$py,$arrayJSON);//welcome
     }
 }
 
-function addEnemyEvent($px,$py,$x,$y,$enemyID,$time,/*player:*/$zone,$health,$busy,&$arrayJSON){
-    $dist = findDist($px,$py,$x,$y);
+function addEnemyEvent($enemy, $px,$py, $time,/*player:*/$zone,$health,$busy,&$arrayJSON){
+    $dist = findDist($px,$py,$enemt->posx,$enemy->posy);
     if($dist < distances::enemyAttack){
         if(_addPlayerEvent(0,$time, $zone,false)){//if player attacks
             //lower monster health
-            $dead = MainInterface::loverEnemyHealth($enemyID, $x, $y);
+            $dead = MainInterface::lowerEnemyHealth($enemy->id, $x, $y);
             if($dead){
                 //enemy is killed
-                _addEnemyEvent(2, $enemyID, $time,$x,$y,$arrayJSON);//death audio
+                _addEnemyEvent(2, $enemy, $time, $arrayJSON);//death audio
                 //query("update enemies set health=3 where id=".prepVar($enemyID)." and posx=".prepVar($x)." and posy=".prepVar($y));
                 //add to kill count
                 MainInterface::increasePlayerKills($_SESSION['playerID']);
             }
         }
         if(!$busy){//if enemy attacks
-            _addEnemyEvent(1, $enemyID, $time,$x,$y,$arrayJSON);//attacking
+            _addEnemyEvent(1, $enemy, $time, $arrayJSON);//attacking
             //lower player health
             MainInterface::lowerPlayerHealth($_SESSION['playerID']);
             //if dead
@@ -67,19 +67,19 @@ function addEnemyEvent($px,$py,$x,$y,$enemyID,$time,/*player:*/$zone,$health,$bu
         } 
     }
     else if($dist < distances::enemyNotice && !$busy){
-        _addEnemyEvent(0, $enemyID, $time,$x,$y,$arrayJSON);//notice audio
+        _addEnemyEvent(0, $enemy, $time, $arrayJSON);//notice audio
     }
 }
 
 /**
  *overrides current event
  */
-function _addNpcEvent($audio,$id,$time,$px,$py,&$arrayJSON){
-    MainInterface::addNPCEvent($time, $time+constants::npcDuration,$audio,$id)
+function _addNpcEvent($audio,$npc,$time,$px,$py,&$arrayJSON){
+    MainInterface::addNPCEvent($time, $time+constants::npcDuration,$audio,$npc->id)
     $arrayJSON[] = (array(
         "event" => true,
         "npc" => true,
-        "id" => $id,
+        "id" => $npc->id,
         "posx" => $px,
         "posy" => $py,
         "audioType" => $audio
@@ -88,14 +88,14 @@ function _addNpcEvent($audio,$id,$time,$px,$py,&$arrayJSON){
 /**
  *overrides current event
  */
-function _addEnemyEvent($audio,$id,$time,$px,$py,&$arrayJSON){
+function _addEnemyEvent($audio,$enemy,$time,&$arrayJSON){
     MainInterface::addEnemyEvent($time, $time + constants::enemyDuration,$audio, $id);
     $arrayJSON[] = (array(
         "event" => true,
         "enemy" => true,
-        "id" => $id,
-        "posx" => $px,
-        "posy" => $py,
+        "id" => $enemy->id,
+        "posx" => $enemy->posx,
+        "posy" => $enemy->posy,
         "audioType" => $audio
     ));
 }
@@ -176,7 +176,8 @@ try{
     $npcResult = MainInterface::getNpcsInZone($zone);
     //loop though npcs
     foreach($npcResult as $npcRow){
-        addNpcEvent($posx, $posy, $npcRow['posx'], $npcRow['posy'], $npcRow['id'],$time, $time < $npcRow['finish'],$arrayJSON,$ans);
+        addNpcEvent(new Npc($npcRow['posx'],$npcRow['posy'],$npcRow['id']),
+                    $posx, $posy, $time, $time < $npcRow['finish'],$arrayJSON,$ans);
         if($_SESSION['lastupdateTime'] < $npcRow['start']){
             //if new for this player
             $arrayJSON[] = (array(
@@ -204,7 +205,9 @@ try{
             MainInterface::resetEnemy($x,$y,constants::maxHealth,$enemyRow['id']);
         } else{
             //if alive
-            addEnemyEvent($posx, $posy, $enemyRow['posx'], $enemyRow['posy'], $enemyRow['id'],$time,$zone,$playerInfo['health'],$time < $enemyRow['finish'],$arrayJSON);
+            addEnemyEvent(new Enemy($enemyRow['posx'],$enemyRow['posy'],$enemyRow['id'],$enemyRow['health']),
+                          $posx, $posy, $time, $zone, $playerInfo['health'], $time < $enemyRow['finish'], $arrayJSON);
+            new Enemy();
             if($_SESSION['lastupdateTime'] < $enemyRow['start']){
                 //if new for this player
                 $arrayJSON[] = (array(
@@ -239,5 +242,31 @@ try{
         "error" => ($e->getMessage())
     ));
 }
+
+public class Npc {
+    public final $posx;
+    public final $posy;
+    public final $id;
+    public function __construct($posx, $posy, $id){
+        $this->posx = $posx;
+        $this->posy = $posy;
+        $this->id = $id;
+    }
+}
+
+public class Enemy {
+    public final $posx;
+    public final $posy;
+    public final $id;
+    public final $health;
+    
+    public function __construct($posx, $posy, $id, $health){
+        $this->posx = $posx;
+        $this->posy = $posy;
+        $this->id = $id;
+        $this->health = $health;
+    }
+}
+
 
 ?>

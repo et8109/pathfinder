@@ -88,6 +88,7 @@ public class MainInterface extends Interface{
         $audioInt = $this->prepVar($audioInt);
         $playerid = $this->prepVar($playerid);
         $zone = $this->prepVar($zone);
+        $override = $this->prepVar($override);
         $checkRow = Database::querySingle("select 1 from playerevents where id=$pid limit 1");
         if (Database::lastQueryNumRows() == 1 && !$override) {
             Database::querySingle("insert into playerevents (id,zone,audiotype,start,finish) values ($pid,$zone,$audioInt,$time,$endTime)");

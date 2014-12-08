@@ -28,7 +28,9 @@ public class Database {
     
     public static function queryMulti($sql){
         $result = mysqli_query($this->con, $sql);
-        return $result->fetch_all(MYSQLI_ASSOC);
+        $arr =  $result->fetch_all(MYSQLI_ASSOC);
+        mysqli_free_result($result);
+        return $arr;
     }
     
     public static function lastQueryNumRows(){

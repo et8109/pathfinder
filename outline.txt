@@ -12,5 +12,7 @@ check all current events in zone
 send response
 
 todo:
-multiquery return array
 Database disconnect from db on death
+convert player/npc/enemy/sprite info to object
+    give objects json array methods
+improve error handling with exceptions and levels
