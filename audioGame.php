@@ -148,28 +148,25 @@ function findDist($px,$py,$x,$y){
 
 try{
     //setup
-    $posx = $_POST['posx'];
+    /*$posx = $_POST['posx'];
     $posy = $_POST['posy'];
-    //prepare array to send
-    $arrayJSON = array();
-    //check if player sent a reply
-    $ans = null;
-    if(isset($_POST['ans'])){
-        $ans = $_POST['ans'];
-    }
-    //find current zone
-    $zone = floor($posx/constants::zoneWidth);
-    $zone += constants::numZonesSrt * floor($posy/constants::zoneWidth);
-    $zone += 1; //zero is null zone
-    //check if zone change, load if new
-    $playerInfo = MainInterface::getPlayerInfo($_SESSION['playerID']);
-    $newZone = false;
-    if($playerInfo['zone'] != $zone){
-        require_once("zoneLoading.php");
-        echo json_encode($array);
-    }
     //set current time
     $time = time();
+    //prepare array to send
+    $arrayJSON = array();*/
+    AudioObj->initState();//sets up globals: time and json array
+    //create player object
+    $playerInfo = MainInterface::getPlayerInfo($_SESSION['playerID']);
+    $player = new Player($_SESSION['playerID'],//name
+                         $_POST['posx'], $_POST['posy'],//coords
+                         isset($_POST['ans']) ? $_POST['ans'] : null,//answer
+                         $playerInfo);//db info
+    //send new zone info if needed
+    if($player->zonePrev != $player->zone){
+        require_once("zoneLoading.php");
+        echo json_encode($array);
+        exit(0);
+    }
     //remove old player events
     MainInterface::removeOldPlayerEvents($time);
     //get npcs in zone
@@ -243,10 +240,8 @@ try{
     ));
 }
 
-public class Npc {
-    public final $posx;
-    public final $posy;
-    public final $id;
+public class Npc extends audioObj{
+
     public function __construct($posx, $posy, $id){
         $this->posx = $posx;
         $this->posy = $posy;
@@ -254,10 +249,7 @@ public class Npc {
     }
 }
 
-public class Enemy {
-    public final $posx;
-    public final $posy;
-    public final $id;
+public class Enemy extends audioObj{
     public final $health;
     
     public function __construct($posx, $posy, $id, $health){
@@ -267,6 +259,71 @@ public class Enemy {
         $this->health = $health;
     }
 }
+
+/**
+ *A parent class for all audio objects
+ */
+public class AudioObj {
+    public final $posx;
+    public final $posy;
+    public final $id;
+    public final $state;
+    
+    protected static sendEvent(){
+        $arrayJSON[] =(array(
+            "event" => true,
+            "player" => true,
+            "id" => $row['id'],
+            "audioType" => $row['audiotype']
+        ));
+    }
+    
+    public function initState(){
+     $this->state = new State();  
+    }
+    
+    /**
+     *global info relevant to all audio objects
+     */
+    private class State {
+        public final $arrayJSON;
+        public final $time;
+        
+        public function __construct(){
+            $this->arrayJSON = new array();
+            $this->time = time();
+        }
+    }
+    
+}
+
+public class Player {
+    public final $playerX;
+    public final $playerY;
+    public final $ans;
+    public final $zone;
+    public final $zonePrev;
+    public final $health;
+    public final $name;
+    
+    public function __construct($name, $posx, $posy, $ans, $dbInfo){
+        $this->name = $name
+        //from client
+        $this->playerX = $posx;
+        $this->playerY = $posy;
+        $this->ans = $ans;
+        //find current zone
+        $zone = floor($posx/constants::zoneWidth);
+        $zone += constants::numZonesSrt * floor($posy/constants::zoneWidth);
+        $zone += 1; //zero is null zone
+        $this->$zone = $zone;
+        //from db
+        $this->zonePrev = $dbInfo['zone'];
+        $this->health = $dbInfo['health'];
+    }
+}
+
+
 
 
 ?>
