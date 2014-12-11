@@ -9,10 +9,10 @@ function addNpcEvent($npc,$player){
     $dist = findDist($player->posx,$player->posy,$npc->posx,$npc->posy);
     if($dist < distances::personTalk && !$busy){
         //if answered
-        if(isset($ans)){
-            if($ans == 1){
+        if($player->ans != null){
+            if($player->ans == 1){
                 $npc->addEvent(Npc::audio_onYes);
-            } else if($ans == 0){
+            } else if($player->ans == 0){
                 $npc->addEvent(Npc::audio_onNo);
             }
             doneQuestion($arrayJSON);
@@ -27,26 +27,26 @@ function addNpcEvent($npc,$player){
     }
 }
 
-function addEnemyEvent($enemy, $px,$py, $time,/*player:*/$zone,$health,$busy,&$arrayJSON){
-    $dist = findDist($px,$py,$enemt->posx,$enemy->posy);
+function addEnemyEvent($enemy, $player){
+    $dist = findDist($player->posx,$player->posy,$enemy->posx,$enemy->posy);
     if($dist < distances::enemyAttack){
-        if(_addPlayerEvent(0,$time, $zone,false)){//if player attacks
+        if($player->addEvent(Player::audio_attack,false)){//if player attacks
             //lower monster health
-            $dead = MainInterface::lowerEnemyHealth($enemy->id, $x, $y);
+            $dead = MainInterface::lowerEnemyHealth($enemy->id,$enemy->posx, $enemy->posy);
             if($dead){
                 //enemy is killed
-                _addEnemyEvent(2, $enemy, $time, $arrayJSON);//death audio
+                $enemy->addEvent(Enemy::audio_death);
                 //query("update enemies set health=3 where id=".prepVar($enemyID)." and posx=".prepVar($x)." and posy=".prepVar($y));
                 //add to kill count
                 MainInterface::increasePlayerKills($_SESSION['playerID']);
             }
         }
-        if(!$busy){//if enemy attacks
-            _addEnemyEvent(1, $enemy, $time, $arrayJSON);//attacking
+        if(!$player->busy){//if enemy attacks
+            $enemy->addEvent(Enemy::audio_attack);
             //lower player health
             MainInterface::lowerPlayerHealth($_SESSION['playerID']);
             //if dead
-            if($health < 2){
+            if($enemy->health < 2){
                 //new coords
                 $arrayJSON[] = (array(
                     "playerInfo" => true,
@@ -56,58 +56,19 @@ function addEnemyEvent($enemy, $px,$py, $time,/*player:*/$zone,$health,$busy,&$a
                 //update player
                 MainInterface::resetPlayer($_SESSION['playerID'],constants::maxHealth,0,0);
                 //_addPlayerEvent(1, $time, $zone,true);//death sound as event
-                _addSpriteEvent(1, $arrayJSON);//you're dead msg
+                $player->sprite->addEvent(Sprite::audio_dead);
                 return;
             }
             //if low health
-            else if($health < 3){
-                _addSpriteEvent(0, $arrayJSON);//low health msg
+            else if($player->health < 3){
+                $player->sprite->addEvent(Sprite::audio_lowHealth);
                 return;
             }
         } 
     }
-    else if($dist < distances::enemyNotice && !$busy){
-        _addEnemyEvent(0, $enemy, $time, $arrayJSON);//notice audio
+    else if($dist < distances::enemyNotice && !$player->busy){
+        $enemy->addEvent(Enemy::audio_notice);
     }
-}
-
-/**
- *overrides current event
- */
-function _addNpcEvent($npc, $audio){
-    
-}
-/**
- *overrides current event
- */
-function _addEnemyEvent($audio,$enemy,$time,&$arrayJSON){
-    MainInterface::addEnemyEvent($time, $time + constants::enemyDuration,$audio, $id);
-    $arrayJSON[] = (array(
-        "event" => true,
-        "enemy" => true,
-        "id" => $enemy->id,
-        "posx" => $enemy->posx,
-        "posy" => $enemy->posy,
-        "audioType" => $audio
-    ));
-}
-
-/**
- *returns false is player is busy
- *true if event added
- */
-function _addPlayerEvent($audio,$time,$zone, $override){
-    return MainInterface::addPlayerEvent($time, $time + constants::playerDuration, $audio, $_SESSION['playerID'], $zone, $override);
-}
-
-/**
- *sprite events can only be heard by the player
- */
-function _addSpriteEvent($audioType,&$arrayJSON){
-    $arrayJSON[] = (array(
-        "spriteEvent" => true,
-        "audioType" => $audioType
-    ));
 }
 
 /**
@@ -256,6 +217,9 @@ public class Npc extends audioObj{
 }
 
 public class Enemy extends audioObj{
+    const audio_notice = 0;
+    const audio_attack = 1;
+    const audio_death = 2;
     public final $health;
     
     public function __construct($posx, $posy, $id, $health, $finishTime){
@@ -264,6 +228,13 @@ public class Enemy extends audioObj{
         $this->posy = $posy;
         $this->id = $id;
         $this->health = $health;
+    }
+    
+    public function addEvent($audio){
+        MainInterface::addEnemyEvent($time, $time + constants::enemyDuration,$audio, $id);
+        $toSend = array();
+        $toSend['enemy'] = true;
+        parent::sendEvent(this, $audio, $toSend);
     }
 }
 
@@ -310,10 +281,12 @@ public class AudioObj {
 }
 
 public class Player extends AudioObj{
+    const audio_attack = 0;
     public final $ans;
     public final $zone;
     public final $zonePrev;
     public final $health;
+    public final $sprite;
     
     public function __construct($id, $posx, $posy, $ans, $dbInfo){
         parent::__construct($posx, $posy, $id, 0);
@@ -329,7 +302,29 @@ public class Player extends AudioObj{
         //from db
         $this->zonePrev = $dbInfo['zone'];
         $this->health = $dbInfo['health'];
+        //sprite
+        $this->sprite = new Sprite();
     }
+    
+    public function addEvent($audio, $override){
+        return MainInterface::addPlayerEvent(AudioObj::$state->time, AudioObj::$state->time + constants::playerDuration, $audio, $_SESSION['playerID'], $this->zone, $override);
+    }
+    
+    private class Sprite {
+        public function __construct(){}
+        const audio_dead = 0;
+        const audio_lowHealth = 1;
+        
+        public function addEvent($audio){
+            //TODO integrate with audioObj
+            $toSend = array(
+            "spriteEvent" => true,
+            "audioType" => $audioType
+            );
+            AudioObj::$state->arrayJSON[] = $toSend();
+        }
+    }
+    
 }
 
 
