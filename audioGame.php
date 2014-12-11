@@ -4,26 +4,26 @@ require_once("constants.php");
 require_once("Json.php");
 require_once("mainInterface.php");
 
-function addNpcEvent($npc, $px,$py,$time,$busy,&$arrayJSON,$ans){
+function addNpcEvent($npc,$player){
     //distance from player
-    $dist = findDist($px,$py,$npc->$posx,$npc->$posy);
+    $dist = findDist($player->posx,$player->posy,$npc->posx,$npc->posy);
     if($dist < distances::personTalk && !$busy){
         //if answered
         if(isset($ans)){
             if($ans == 1){
-                _addNpcEvent(2,$npc,$time,$px,$py,$arrayJSON);//yes
+                $npc->addEvent(Npc::audio_onYes);
             } else if($ans == 0){
-                _addNpcEvent(3,$npc,$time,$px,$py,$arrayJSON);//no
+                $npc->addEvent(Npc::audio_onNo);
             }
             doneQuestion($arrayJSON);
         } else{
             //not answered
-            _addNpcEvent(1,$npc,$time,$px,$py,$arrayJSON);//ask q
+            $npc->addEvent(Npc::audio_ask);
             askQuestion($arrayJSON);
         }
     }
     else if($dist < distances::personNotice && !$busy){
-        _addNpcEvent(0,$npc,$time,$px,$py,$arrayJSON);//welcome
+        $npc->(Npc::audio_greet);
     }
 }
 
@@ -74,16 +74,8 @@ function addEnemyEvent($enemy, $px,$py, $time,/*player:*/$zone,$health,$busy,&$a
 /**
  *overrides current event
  */
-function _addNpcEvent($audio,$npc,$time,$px,$py,&$arrayJSON){
-    MainInterface::addNPCEvent($time, $time+constants::npcDuration,$audio,$npc->id)
-    $arrayJSON[] = (array(
-        "event" => true,
-        "npc" => true,
-        "id" => $npc->id,
-        "posx" => $px,
-        "posy" => $py,
-        "audioType" => $audio
-    ));
+function _addNpcEvent($npc, $audio){
+    
 }
 /**
  *overrides current event
@@ -154,10 +146,10 @@ try{
     $time = time();
     //prepare array to send
     $arrayJSON = array();*/
-    AudioObj->initState();//sets up globals: time and json array
+    AudioObj::initState();//sets up globals: time and json array
     //create player object
     $playerInfo = MainInterface::getPlayerInfo($_SESSION['playerID']);
-    $player = new Player($_SESSION['playerID'],//name
+    $player = new Player($_SESSION['playerID'],//id
                          $_POST['posx'], $_POST['posy'],//coords
                          isset($_POST['ans']) ? $_POST['ans'] : null,//answer
                          $playerInfo);//db info
@@ -168,13 +160,13 @@ try{
         exit(0);
     }
     //remove old player events
-    MainInterface::removeOldPlayerEvents($time);
+    MainInterface::removeOldPlayerEvents(AudioObj::$state->time);
     //get npcs in zone
-    $npcResult = MainInterface::getNpcsInZone($zone);
+    $npcResult = MainInterface::getNpcsInZone($player->zone);
     //loop though npcs
     foreach($npcResult as $npcRow){
-        addNpcEvent(new Npc($npcRow['posx'],$npcRow['posy'],$npcRow['id']),
-                    $posx, $posy, $time, $time < $npcRow['finish'],$arrayJSON,$ans);
+        addNpcEvent(new Npc($npcRow['posx'],$npcRow['posy'],$npcRow['id'],$npcRow['finish']),
+                    $player);
         if($_SESSION['lastupdateTime'] < $npcRow['start']){
             //if new for this player
             $arrayJSON[] = (array(
@@ -241,18 +233,33 @@ try{
 }
 
 public class Npc extends audioObj{
+    //aucio ints
+    const audio_greet = 0;
+    const audio_ask = 1;
+    const audio_onYes = 2;
+    const audio_onNo = 3;
 
-    public function __construct($posx, $posy, $id){
+    public function __construct($posx, $posy, $id, $finishTime){
+        parent::__construct($posx, $posy, $id, $finishTime);
         $this->posx = $posx;
         $this->posy = $posy;
         $this->id = $id;
     }
+    
+    public function addEvent($audio){
+        MainInterface::addNPCEvent(AudioObj::$state->time, AudioObj::$state->time+constants::npcDuration,$audio,$npc->id);
+        $toSend = array();
+        $toSend['npc'] = true;
+        parent::sendEvent(this, $audio, $toSend);
+    }
+    
 }
 
 public class Enemy extends audioObj{
     public final $health;
     
-    public function __construct($posx, $posy, $id, $health){
+    public function __construct($posx, $posy, $id, $health, $finishTime){
+        parent::__construct($posx, $posy, $id, $finishTime);
         $this->posx = $posx;
         $this->posy = $posy;
         $this->id = $id;
@@ -267,25 +274,30 @@ public class AudioObj {
     public final $posx;
     public final $posy;
     public final $id;
-    public final $state;
+    public static final $state;//global state
+    public final $busy;
     
-    protected static sendEvent(){
-        $arrayJSON[] =(array(
-            "event" => true,
-            "player" => true,
-            "id" => $row['id'],
-            "audioType" => $row['audiotype']
-        ));
+    public function __construct($posx, $posy, $id, $finishTime){
+        $this->busy = $finishTime > $this->state->time ? True : False;
     }
     
-    public function initState(){
+    protected static sendEvent($audioObj, $audio, $toSend){
+        $toSend['audioType'] = $audio;
+        $toSend['event'] = true;
+        $toSend['id'] = $audioObj->id;
+        $toSend['posx'] = $audioObj->posx;
+        $toSend['posy'] = $audioObj->posy;
+        AudioObj::$state->arrayJSON[] = $toSend();
+    }
+    
+    public static function initState(){
      $this->state = new State();  
     }
     
     /**
      *global info relevant to all audio objects
      */
-    private class State {
+    private static class State {
         public final $arrayJSON;
         public final $time;
         
@@ -297,17 +309,14 @@ public class AudioObj {
     
 }
 
-public class Player {
-    public final $playerX;
-    public final $playerY;
+public class Player extends AudioObj{
     public final $ans;
     public final $zone;
     public final $zonePrev;
     public final $health;
-    public final $name;
     
-    public function __construct($name, $posx, $posy, $ans, $dbInfo){
-        $this->name = $name
+    public function __construct($id, $posx, $posy, $ans, $dbInfo){
+        parent::__construct($posx, $posy, $id, 0);
         //from client
         $this->playerX = $posx;
         $this->playerY = $posy;
