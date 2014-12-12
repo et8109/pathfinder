@@ -15,11 +15,11 @@ function addNpcEvent($npc,$player){
             } else if($player->ans == 0){
                 $npc->addEvent(Npc::audio_onNo);
             }
-            doneQuestion($arrayJSON);
+            $npc->doneQuestion();
         } else{
             //not answered
             $npc->addEvent(Npc::audio_ask);
-            askQuestion($arrayJSON);
+            $npc->askQuestion();
         }
     }
     else if($dist < distances::personNotice && !$busy){
@@ -69,25 +69,6 @@ function addEnemyEvent($enemy, $player){
     else if($dist < distances::enemyNotice && !$player->busy){
         $enemy->addEvent(Enemy::audio_notice);
     }
-}
-
-/**
- *requests a yes or no from the player
- */
-function askQuestion(&$arrayJSON){
-    $arrayJSON[] = (array(
-        "question" => true,
-        "start" => true
-    ));
-}
-/**
- *tells js to remove the current answer
- */
-function doneQuestion(&$arrayJSON){
-    $arrayJSON[] = (array(
-        "question" => true,
-        "done" => true
-    ));
 }
 
 function findDist($px,$py,$x,$y){
@@ -214,6 +195,14 @@ public class Npc extends audioObj{
         parent::sendEvent(this, $audio, $toSend);
     }
     
+    public function askQuestion(){
+        parent::askQuestion();
+    }
+    
+    public function doneQuestion(){
+        parent::doneQuestion();
+    }
+    
 }
 
 public class Enemy extends audioObj{
@@ -259,6 +248,20 @@ public class AudioObj {
         $toSend['posx'] = $audioObj->posx;
         $toSend['posy'] = $audioObj->posy;
         AudioObj::$state->arrayJSON[] = $toSend();
+    }
+    
+    protected static askQuestion(){
+        AudioObj::$state->arrayJSON[] = (array(
+            "question" => true,
+            "start" => true
+        ));
+    }
+    
+    protected static doneQuestion(){
+        AudioObj::$state->arrayJSON[] = (array(
+            "question" => true,
+            "done" => true
+        ));
     }
     
     public static function initState(){
