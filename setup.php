@@ -1,5 +1,5 @@
 <?php
-require_once("setupInterface.php");
+require("setupInterface.php");
 session_start();
 $arrayJSON = array();
 $infoRow = SetupInterface::getPlayerInfo($_SESSION['playerID']);
