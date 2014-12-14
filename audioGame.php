@@ -31,32 +31,16 @@ try{
     $npcResult = MainInterface::getNpcsInZone($player->zone);
     //loop though npcs
     foreach($npcResult as $npcRow){
-        new Npc($npcRow['posx'],$npcRow['posy'],$npcRow['id'],$npcRow['finish'])->interactPlayer($player);
-        if($_SESSION['lastupdateTime'] < $npcRow['start']){
-            //if new for this player
-            $arrayJSON[] = (array(
-                "event" => true,
-                "npc" => true,
-                "id" => $npcRow['id'],
-                "audioType" => $npcRow['lastAudio']
-            ));
-        }
+        new Npc($npcRow['posx'],$npcRow['posy'],$npcRow['id'],$npcRow['finish'], $npcRow['start'], $npcRow['lastAudio'])
+        ->interactPlayer($player);
     }
     
     //get enemies in zone
     MainInterface::getEnemiesInZone($zone);
     //loop though enemies
     foreach($enemyResult as $enemyRow){
-        new Enemy($enemyRow['posx'],$enemyRow['posy'],$enemyRow['id'],$enemyRow['health'])->interactPlayer($player);,
-        if($_SESSION['lastupdateTime'] < $enemyRow['start']){
-            //if new for this player
-            $arrayJSON[] = (array(
-                "event" => true,
-                "enemy" => true,
-                "id" => $enemyRow['id'],
-                "audioType" => $enemyRow['lastAudio']
-            ));
-        }
+        new Enemy($enemyRow['posx'],$enemyRow['posy'],$enemyRow['id'],$enemyRow['health'], $enemyRow['start'], $enemyRow['lastAudio')
+        ->interactPlayer($player);,
     }
     
     //check nearby players
@@ -92,18 +76,13 @@ public class Npc extends audioObj{
     const dist_talk = 5;
     const dist_notice = 10;
 
-    public function __construct($posx, $posy, $id, $finishTime){
-        parent::__construct($posx, $posy, $id, $finishTime);
-        $this->posx = $posx;
-        $this->posy = $posy;
-        $this->id = $id;
+    public function __construct($posx, $posy, $id, $finishTime, $prevStart, $prevAudio){
+        parent::__construct("npc", $posx, $posy, $id, $finishTime, $prevStart, $prevAudio);
     }
     
     private function addEvent($audio){
         MainInterface::addNPCEvent(AudioObj::$state->time, AudioObj::$state->time+constants::npcDuration,$audio,$npc->id);
-        $toSend = array();
-        $toSend['npc'] = true;
-        parent::sendEvent(this, $audio, $toSend);
+        parent::addEvent($audio);
     }
     
     private function askQuestion(){
@@ -115,6 +94,8 @@ public class Npc extends audioObj{
     }
     
     public function interactPlayer($player){
+        //if an event was set after last update
+        parent::checkEvent();
         $dist = this->findDist($player);
         if($dist < Npc::dist_talk && !$this->busy){
             //if answered
@@ -147,22 +128,19 @@ public class Enemy extends audioObj{
     const max_health = 4;
     private final $health;
     
-    public function __construct($posx, $posy, $id, $health, $finishTime){
-        parent::__construct($posx, $posy, $id, $finishTime);
-        $this->posx = $posx;
-        $this->posy = $posy;
-        $this->id = $id;
+    public function __construct($posx, $posy, $id, $health, $finishTime, $prevStart, $prevAudio){
+        parent::__construct("enemy", $posx, $posy, $id, $finishTime, $prevStart, $prevAudio);
         $this->health = $health;
     }
     
     private function addEvent($audio){
         MainInterface::addEnemyEvent($time, $time + constants::enemyDuration,$audio, $id);
-        $toSend = array();
-        $toSend['enemy'] = true;
-        parent::sendEvent(this, $audio, $toSend);
+        parent::addEvent($audio);
     }
     
     public function interactPlayer($player){
+        //if an event was set after last update
+        parent::checkEvent();
         //if dead
         if($health < 1){
             $this->dead($player->zone);
@@ -230,30 +208,42 @@ public class AudioObj {
     public final $posx;
     public final $posy;
     public final $id;
-    public final $busy;
+    public final $busy;//if the obj is currently playing audio
+    public final $prevAudio;//the numner of the last audio this obj played
+    public final $prevStart;//when the last audio from this obj started
+    public final $prevDone;//when the last audio from this obj will be done
+    public final $objType;//a string which identifies which audioObj type this is
     public static final $state;//global state
     
-    public function __construct($posx, $posy, $id, $finishTime){
+    public function __construct($objType, $posx, $posy, $id, $prevDone, $prevStart, $prevAudio){
         $this->busy = $finishTime > $this->state->time ? True : False;
+        $this->objType = $objType;
+        $this->posx = $posx;
+        $this->posy = $posy;
+        $this->id = $id;
+        $this->prevDone = $prevDone;
+        $this->prevStart = $prevStart;
+        $this->prevAudio = $prevAudio;
     }
     
-    protected static sendEvent($audioObj, $audio, $toSend){
+    protected addEvent($audio){
         $toSend['audioType'] = $audio;
         $toSend['event'] = true;
         $toSend['id'] = $audioObj->id;
         $toSend['posx'] = $audioObj->posx;
         $toSend['posy'] = $audioObj->posy;
-        AudioObj::$state->arrayJSON[] = $toSend();
+        $toSend[$objType] = $audioObj->objType;
+        AudioObj::$state->sendJson($toSend);
     }
     
-    protected static askQuestion(){
+    protected askQuestion(){
         AudioObj::$state->arrayJSON[] = (array(
             "question" => true,
             "start" => true
         ));
     }
     
-    protected static doneQuestion(){
+    protected doneQuestion(){
         AudioObj::$state->arrayJSON[] = (array(
             "question" => true,
             "done" => true
@@ -269,6 +259,14 @@ public class AudioObj {
         return $dist2;
     }
     
+    /**
+     *Sends the prev event of this object to the player if needed
+     */
+    protected function checkEvent(){
+        if($_SESSION['lastupdateTime'] < $this->prevStart){
+            $this->sendEvent($this->prevAudio);
+        }
+    }
     public static function initState(){
      $this->state = new State();  
     }
@@ -277,12 +275,15 @@ public class AudioObj {
      *global info relevant to all audio objects
      */
     private static class State {
-        public final $arrayJSON;
+        private final $arrayJSON;
         public final $time;
         
         public function __construct(){
             $this->arrayJSON = new array();
             $this->time = time();
+        }
+        public function sendJson($toSend){
+            $this->arrayJSON[] = $toSend();
         }
     }
     
@@ -298,10 +299,7 @@ public class Player extends AudioObj{
     public final $sprite;
     
     public function __construct($id, $posx, $posy, $ans, $dbInfo){
-        parent::__construct($posx, $posy, $id, 0);
-        //from client
-        this->playerX = $posx;
-        this->playerY = $posy;
+        parent::__construct("player", $posx, $posy, $id, null, null, null);
         this->ans = $ans;
         //find current zone
         $zone = floor($posx/constants::zoneWidth);
