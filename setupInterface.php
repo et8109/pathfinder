@@ -1,12 +1,12 @@
 <?php
 require_once("interface.php");
 
-public class SetupInterface extends Interface{
+class SetupInterface extends Interface_class{
     private function __construct() {}//static only
     
-    public static function getPlayerInfo($pid) throws dbException{
-        $pid = $this->prepVar($pid);
-        $r = Database::querySingle("select posx, posy, peerid, audioURL from playerinfo where id=$pid");
+    public static function getPlayerInfo($pid){
+        $pid = self::prepVar($pid);
+        $r = self::$db->querySingle("select posx, posy, peerid, audioURL from playerinfo where id=$pid");
         return $r;
     }
 }
