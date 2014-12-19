@@ -4,6 +4,15 @@ require_once("interface.php");
 public class MainInterface extends Interface{
     private function __construct() {}//static only
     
+    public static function updatePlayerInfo($posx,$posy, $zone, $playerID) throws dbException{
+        $posx = $this->prepVar($posx);
+        $posy = $this->prepVar($posy);
+        $zone = $this->prepVar($zone);
+        $playerID = $this->prepVar($playerID);
+        Database::querySingle("UPDATE playerinfo SET posx=$posx,posy=$posy,zone=$zone WHERE id=$playerID");
+        return;
+    }
+    
     public static function getPlayerInfo($name) throws dbException{
         $name = $this->prepVar($name);
         $r = Database::querySingle("select zone, health from playerinfo where id=$name");

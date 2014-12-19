@@ -4,15 +4,6 @@ require_once("interface.php");
 public class ZoneLoadInterface extends Interface{
     private function __construct() {}//static only
     
-    public static function updatePlayerInfo($posx,$posy, $zone, $playerID) throws dbException{
-        $posx = $this->prepVar($posx);
-        $posy = $this->prepVar($posy);
-        $zone = $this->prepVar($zone);
-        $playerID = $this->prepVar($playerID);
-        Database::querySingle("UPDATE playerinfo SET posx=$posx,posy=$posy,zone=$zone WHERE id=$playerID");
-        return;
-    }
-    
     public static function getAmbientSounds($zone) throws dbException{
         $zone = $this->prepVar($zone);
         $r = Database::queryMulti("select posx,posy,audioURL from ambient where zone=$zone");

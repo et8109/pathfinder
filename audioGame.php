@@ -1,28 +1,47 @@
 <?php
 
 require("constants.php");
-require("Json.php");
 require("mainInterface.php");
 
 try{
     //setup
-    /*$posx = $_POST['posx'];
-    $posy = $_POST['posy'];
-    //set current time
-    $time = time();
-    //prepare array to send
-    $arrayJSON = array();*/
     AudioObj::initState();//sets up globals: time and json array
-    //create player object
+    //get player db info
     $playerInfo = MainInterface::getPlayerInfo($_SESSION['playerID']);
+    //check if out of map range
+    $posx = $_POST['posx'];
+    $posy = $_POST['posy'];
+    $zone = AudioObj::findZone($posx, $posy);
+    if($playerInfo['zone'] != $zone){
+        $newZone = true;
+        if ($posx < 0){
+            $posx = $posx + distances::edgeBump;
+            $newZone = false;
+        } else if ($posx > constants::numZonesSrt*constants::zoneWidth){
+            $posx = $posx - distances::edgeBump;
+            $newZone = false;
+        }
+        if ($posy < 0){
+            $posy = $posy + distances::edgeBump;
+            $newZone = false;
+        } else if ($posy > constants::numZonesSrt*constants::zoneWidth){
+            $posy = $posy - distances::edgeBump;
+            $newZone = false;
+        }
+    }
+    $zone = $newZone ? $zone : $playerInfo['zone']; //set to new or old zone
+    //create player obj
     $player = new Player($_SESSION['playerID'],//id
-                         $_POST['posx'], $_POST['posy'],//coords
+                         $posx, $posy,//coords
                          isset($_POST['ans']) ? $_POST['ans'] : null,//answer
+                         $zone, //zone from calculation above
                          $playerInfo);//db info
+    //update db info for player
+    MainInterface::updatePlayerInfo($player->posx,$player->posy,$player->zone,$player->id);
     //send new zone info if needed
-    if($player->zonePrev != $player->zone){
+    if($newZone){
         require_once("zoneLoading.php");
-        echo json_encode($array);
+        AudioObj::$state->sendJson();
         exit(0);
     }
     //remove old player events
@@ -47,24 +66,30 @@ try{
     //check player events
     MainInterface::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
     foreach($eventsResult as $row){
-        $arrayJSON[] =(array(
+        AudioObj::$state->addJson(array(
             "event" => true,
             "player" => true,
             "id" => $row['id'],
             "audioType" => $row['audiotype']
         ));
     }
-
-    //send all info
-    echo json_encode($array);
+    
     //update last event time
     $_SESSION['lastupdateTime'] = $time;
     
 } catch(Exception $e){
-    echo json_encode(array(
+    //add exception to json to send
+    AudioObj::$state->addJson(array(
         "error" => ($e->getMessage())
     ));
+} finally {
+    //send all info
+    AudioObj::$state->sendJson();
 }
+
+////////////////////////////////////////////////////////////////
+///////////////////////////--classes--//////////////////////////
+////////////////////////////////////////////////////////////////
 
 public class Npc extends audioObj{
     //aucio ints
@@ -155,7 +180,6 @@ public class Enemy extends audioObj{
                 if($dead){
                     //enemy is killed
                     $this->addEvent(Enemy::audio_death);
-                    //query("update enemies set health=3 where id=".prepVar($enemyID)." and posx=".prepVar($x)." and posy=".prepVar($y));
                     //add to kill count
                     MainInterface::increasePlayerKills($_SESSION['playerID']);
                 }
@@ -166,16 +190,7 @@ public class Enemy extends audioObj{
                 MainInterface::lowerPlayerHealth($_SESSION['playerID']);
                 //if dead
                 if($player->health < 2){
-                    //new coords
-                    $arrayJSON[] = (array(
-                        "playerInfo" => true,
-                        "posX" => 0,
-                        "posY" => 0
-                    ));
-                    //update player
-                    MainInterface::resetPlayer($_SESSION['playerID'],Player::max_health,0,0);
-                    //_addPlayerEvent(1, $time, $zone,true);//death sound as event
-                    $player->sprite->addEvent(Sprite::audio_dead);
+                    $player->dead();
                     return;
                 }
                 //if low health
@@ -189,6 +204,9 @@ public class Enemy extends audioObj{
             $this->addEvent(Enemy::audio_notice);
         }
     }
+    /**
+     *resets the position in the database
+     */
     private function dead($zone){
         //revive elsewhere in zone
         $y = floor(($zone-1)/constants::numZonesSrt);//zone num
@@ -233,7 +251,7 @@ public class AudioObj {
         $toSend['posx'] = $audioObj->posx;
         $toSend['posy'] = $audioObj->posy;
         $toSend[$objType] = $audioObj->objType;
-        AudioObj::$state->sendJson($toSend);
+        AudioObj::$state->addJson($toSend);
     }
     
     protected askQuestion(){
@@ -260,6 +278,16 @@ public class AudioObj {
     }
     
     /**
+     *finds the zone based off the coords
+     */
+    public static function findZone($x, $y){
+        $zone = floor($x/constants::zoneWidth);
+        $zone += constants::numZonesSrt * floor($y/constants::zoneWidth);
+        $zone += 1; //zero is null zone
+        return $zone;
+    }
+    
+    /**
      *Sends the prev event of this object to the player if needed
      */
     protected function checkEvent(){
@@ -282,11 +310,19 @@ public class AudioObj {
             $this->arrayJSON = new array();
             $this->time = time();
         }
-        public function sendJson($toSend){
-            $this->arrayJSON[] = $toSend();
+        /**
+         *Add a json array to the list of json objects to send
+         */
+        public function addJson($toAdd){
+            $this->arrayJSON[] = $toAdd();
+        }
+        /**
+         *Send the json object to the client
+         */
+        public function sendJson(){
+            echo json_encode($this->arrayJSON);
         }
     }
-    
 }
 
 public class Player extends AudioObj{
@@ -298,23 +334,39 @@ public class Player extends AudioObj{
     public final $health;
     public final $sprite;
     
-    public function __construct($id, $posx, $posy, $ans, $dbInfo){
+    public function __construct($id, $posx, $posy, $ans, $zone,  $dbInfo){
         parent::__construct("player", $posx, $posy, $id, null, null, null);
-        this->ans = $ans;
-        //find current zone
-        $zone = floor($posx/constants::zoneWidth);
-        $zone += constants::numZonesSrt * floor($posy/constants::zoneWidth);
-        $zone += 1; //zero is null zone
-        this->$zone = $zone;
+        $this->ans = $ans;
+        $this->zone = $zone;
         //from db
-        this->zonePrev = $dbInfo['zone'];
-        this->health = $dbInfo['health'];
+        $this->zonePrev = $dbInfo['zone'];
+        $this->health = $dbInfo['health'];
         //sprite
-        this->sprite = new Sprite();
+        $this->sprite = new Sprite();
     }
     
     public function addEvent($audio, $override){
         return MainInterface::addPlayerEvent(AudioObj::$state->time, AudioObj::$state->time + constants::playerDuration, $audio, $_SESSION['playerID'], $this->zone, $override);
+    }
+    
+    /**
+     *updates player in db and sends json for reposition
+     */
+    public function dead(){
+        $this->reposition(0,0);
+        MainInterface::resetPlayer($_SESSION['playerID'],Player::max_health,0,0);
+        //_addPlayerEvent(1, $time, $zone,true);//death sound as event
+        $this->sprite->addEvent(Sprite::audio_dead);
+    }
+    /**
+     *repositions the player in the db and sends a json notice
+     */
+    public function reposition($x, $y){
+        AudioObj::$state->addJson(array(
+            "playerInfo" => true,
+            "posX" => $x,
+            "posY" => $y
+        ));
     }
     
     private class Sprite {
