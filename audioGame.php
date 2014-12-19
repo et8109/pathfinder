@@ -1,7 +1,7 @@
 <?php
 
-require("constants.php");
-require("mainInterface.php");
+require_once("constants.php");
+require_once("mainInterface.php");
 
 try{
     //setup

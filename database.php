@@ -1,18 +1,24 @@
 <?php
-public class Database {
-    private static hostName = "localhost";
-    private static username = "ignatymc_admin";
-    private static password = "1Gn4tym";
-    private static name = "ignatymc_audioGame";
-    private $con = getConnection();
-    private function __construct() {}//static only
+class Database {
+    private static $hostName = "localhost";
+    private static $username = "ignatymc_admin";
+    private static $password = "1Gn4tym";
+    private static $name = "ignatymc_audioGame";
+    private $con;
+    public function __construct() {
+        $this->con = $this->getConnection();
+    }
     
-    public static function _query($sql){
+    public function escapeString($str){
+        return mysqli_real_escape_string($this->con,$str);
+    }
+    
+    public function _query($sql){
         $result = mysqli_query($this->con, $sql);
         return $result;
     }
     
-    public static function querySingle($sql){
+    public function querySingle($sql){
         $result = mysqli_query($this->con, $sql);
         if(is_bool($result)){
             return false;
@@ -26,19 +32,19 @@ public class Database {
         return $row;
     }
     
-    public static function queryMulti($sql){
+    public function queryMulti($sql){
         $result = mysqli_query($this->con, $sql);
         $arr =  $result->fetch_all(MYSQLI_ASSOC);
         mysqli_free_result($result);
         return $arr;
     }
     
-    public static function lastQueryNumRows(){
+    public function lastQueryNumRows(){
         return mysqli_affected_rows($this->con);
     }
     
-    private static function getConnection(){
-        $con = mysqli_connect(Database::hostName,Database::username,Database::password,Database::name);
+    private function getConnection(){
+        $con = mysqli_connect($this::$hostName,$this::$username,$this::$password,$this::$name);
         //check connection
         if (mysqli_connect_errno()){
             throw new dbException("could not connect to database", dbException::LVL_FATAL);
@@ -47,15 +53,15 @@ public class Database {
     }
 }
 
-public class dbException {
+class dbException {
     const LVL_WARNING = 0;
     const LVL_FATAL = 1;
     private $msg;
     private $level;
     
     function __construct($msg, $level){
-        this->$msg = $msg;
-        this->$level = $level;
+        $this->$msg = $msg;
+        $this->$level = $level;
     }
 }
 

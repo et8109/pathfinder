@@ -1,11 +1,19 @@
 <?php
+
+require_once("database.php");
+
 /**
  *The interface between the logic/application and the database
  */
-public class Interface {
+class Interface_class {
+    protected static $db;
     
-    protected function prepVar($var){
-        $var = mysqli_real_escape_string($this->con,$var);
+    public static function init(){
+        Interface_class::$db = new Database();
+    }
+    
+    protected static function prepVar($var){
+        $var = Interface_class::$db->escapeString($var);
         //replace ' with ''
         //$var = str_replace("'", "''", $var);
         //if not a number, surround in quotes
@@ -15,4 +23,6 @@ public class Interface {
         return $var;
     }
 }
+//initialize db object
+Interface_class::init();
 ?>
