@@ -50,16 +50,16 @@ try{
     $npcResult = MainInterface::getNpcsInZone($player->zone);
     //loop though npcs
     foreach($npcResult as $npcRow){
-        new Npc($npcRow['posx'],$npcRow['posy'],$npcRow['id'],$npcRow['finish'], $npcRow['start'], $npcRow['lastAudio'])
-        ->interactPlayer($player);
+        $n = new Npc($npcRow['posx'],$npcRow['posy'],$npcRow['id'],$npcRow['finish'], $npcRow['start'], $npcRow['lastAudio']);
+        $n->interactPlayer($player);
     }
     
     //get enemies in zone
     MainInterface::getEnemiesInZone($zone);
     //loop though enemies
     foreach($enemyResult as $enemyRow){
-        new Enemy($enemyRow['posx'],$enemyRow['posy'],$enemyRow['id'],$enemyRow['health'], $enemyRow['start'], $enemyRow['lastAudio')
-        ->interactPlayer($player);,
+        $e = new Enemy($enemyRow['posx'],$enemyRow['posy'],$enemyRow['id'],$enemyRow['health'], $enemyRow['start'], $enemyRow['lastAudio']);
+        $e->interactPlayer($player);
     }
     
     //check nearby players
