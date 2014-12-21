@@ -22,15 +22,28 @@ class Interface_class {
         }
         return $var;
     }
-    
+    /**
+     *general header, not for game page
+     */
     public static function addHeader(){
         include("header.inc");
+    }
+    /**
+     *Header for the main game page
+     */
+    public static function addHeaderIndex(){
+        include("headerIndex.inc");
     }
     
     public static function addFooter(){
         include("footer.inc");
     }
 }
-//initialize db object
-Interface_class::init();
+try{
+    //initialize db object
+    Interface_class::init();
+} catch(Exception $e){
+    require_once("errorHandle.php");
+    ErrorHandler::handle($e);
+}
 ?>
