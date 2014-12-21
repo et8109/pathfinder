@@ -1,8 +1,8 @@
 <?php
 class Database {
     private static $hostName = "localhost";
-    private static $username = "ignatymc_admin";
-    private static $password = "1Gn4tym";
+    private static $username = "root";//"ignatymc_admin";
+    private static $password = null;//"1Gn4tym";
     private static $name = "ignatymc_pathfinder";
     private $con;
     public function __construct() {
@@ -44,24 +44,21 @@ class Database {
     }
     
     private function getConnection(){
-        $con = mysqli_connect($this::$hostName,$this::$username,$this::$password,$this::$name);
+        $con = mysqli_connect(self::$hostName,self::$username,self::$password/*,self::$name*/);
         //check connection
         if (mysqli_connect_errno()){
-            throw new dbException("could not connect to database", dbException::LVL_FATAL);
+            throw new dbException("could not connect to database", dbException::CODE_COULD_NOT_CONNECT);
         }
         return $con;
     }
 }
 
-class dbException {
-    const LVL_WARNING = 0;
-    const LVL_FATAL = 1;
+class dbException extends Exception{
+    const CODE_COULD_NOT_CONNECT = 0;
     private $msg;
-    private $level;
     
-    function __construct($msg, $level){
-        $this->$msg = $msg;
-        $this->$level = $level;
+    function __construct($msg, $code){
+        parent::__construct($msg,$code);
     }
 }
 

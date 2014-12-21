@@ -39,11 +39,6 @@ class Interface_class {
         include("footer.inc");
     }
 }
-try{
-    //initialize db object
-    Interface_class::init();
-} catch(Exception $e){
-    require_once("errorHandle.php");
-    ErrorHandler::handle($e);
-}
+//initialize db object
+Interface_class::init();
 ?>

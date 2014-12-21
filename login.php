@@ -1,37 +1,32 @@
 <?php
 require_once("loginInterface.php");
-require_once("errorHandle.php");
+session_start();
+LoginInterface::addHeader();
 
-try{
-    session_start();
-    LoginInterface::addHeader();
-    //make sure they are not logged in
-    if(isset($_SESSION['playerID'])){
-        header("Location: index.php");
+//make sure they are not logged in
+if(isset($_SESSION['playerID'])){
+    header("Location: index.php");
+}
+
+if(isset($_POST['uname'])){
+    //sanitize
+    $uname = $_POST['uname'];
+    $pass = $_POST['pass'];
+    if($uname == null || $uname == ""){
+        throw new Exception("Enter a valid username");
     }
-    
-    if(isset($_POST['uname'])){
-        //sanitize
-        $uname = $_POST['uname'];
-        $pass = $_POST['pass'];
-        if($uname == null || $uname == ""){
-            throw new Exception("Enter a valid username");
-        }
-        if($pass == null || $pass == ""){
-            throw new Exception("Enter a valid password");
-        }
-        //get username, password
-        $playerRow = LoginInterface::getInfo($uname,$pass);
-        if($playerRow == false){
-            throw new Exception("Incorrect username or password");
-        }
-        //set session
-        $_SESSION['playerID'] = $playerRow['id'];
-        $_SESSION['lastupdateTime'] = 0;
-        header("Location: index.php");
+    if($pass == null || $pass == ""){
+        throw new Exception("Enter a valid password");
     }
-} catch (Exception $e){
-    ErrorHandler::handle($e);
+    //get username, password
+    $playerRow = LoginInterface::getInfo($uname,$pass);
+    if($playerRow == false){
+        throw new Exception("Incorrect username or password");
+    }
+    //set session
+    $_SESSION['playerID'] = $playerRow['id'];
+    $_SESSION['lastupdateTime'] = 0;
+    header("Location: index.php");
 }
 ?>
 <form action="login.php" method="post">

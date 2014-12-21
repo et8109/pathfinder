@@ -1,17 +1,12 @@
 <?php
 require_once("adminInterface.php");
-require_once("errorHandle.php");
+AdminInterface::addHeader();
 
-try{
-    AdminInterface::addHeader();
-    if(isset($_POST['reset'])){
-        if($_POST['reset'] == "RESET"){
-            AdminInterface::resetDatabase();
-            echo "done db reset";
-        }
+if(isset($_POST['reset'])){
+    if($_POST['reset'] == "RESET"){
+        AdminInterface::resetDatabase();
+        echo "done db reset";
     }
-} catch (Exception $e){
-    ErrorHandler::handle($e);
 }
 ?>
 <form action="admin.php" method="post">

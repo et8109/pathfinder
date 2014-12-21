@@ -1,10 +1,10 @@
 <?php
 require_once("interface.php");
 
-public class AdminInterface extends Interface{
+class AdminInterface extends Interface_class{
     private function __construct() {}//static only
     
-    public static function resetDatabase() throws dbException{
+    public static function resetDatabase(){
         self::$db->querySingle("DROP DATABASE ignatymc_pathfinder");
         self::$db->querySingle("CREATE DATABASE ignatymc_pathfinder");
         //ambient sounds

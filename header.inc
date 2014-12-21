@@ -4,6 +4,7 @@
             body{
                 background-color: black;
                 overflow: scroll;
+                color: grey;
             }
             h1{
                 color:#7f7f7f;
@@ -43,3 +44,18 @@
         </style>
     </head>
     <body>
+        <?php
+            function handle($e){
+                //db exception
+                if($e instanceof dbException){
+                    if($e->getCode() == dbException::CODE_COULD_NOT_CONNECT){
+                        echo $e->getMessage();
+                    }
+                //normal exception
+                } else{
+                    echo "general exception:";
+                    echo $e->getMessage();
+                }
+            }
+            set_exception_handler("handle");
+        ?>
