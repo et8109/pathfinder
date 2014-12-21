@@ -38,6 +38,7 @@ Guest account available,</br>
 username and password are "guest".</br></br>
 *The site only works on browsers that have implemented the most recent web-related APIs and whatnot</br>
 **This is still a work in progress. All text on screen is for debugging.</br>
+<a href="register.php"> Register </a>
 <?php
 LoginInterface::addFooter();
 ?>

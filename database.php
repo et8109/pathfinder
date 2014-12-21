@@ -44,7 +44,7 @@ class Database {
     }
     
     private function getConnection(){
-        $con = mysqli_connect(self::$hostName,self::$username,self::$password/*,self::$name*/);
+        $con = mysqli_connect(self::$hostName,self::$username,self::$password,self::$name);
         //check connection
         if (mysqli_connect_errno()){
             throw new dbException("could not connect to database", dbException::CODE_COULD_NOT_CONNECT);
