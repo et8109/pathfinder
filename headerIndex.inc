@@ -46,3 +46,18 @@
         <script src="controls.js"></script>
     </head>
     <body onkeypress="keyPressed(event)" onkeyup="keyUp(event)">
+        <?php
+            function handle($e){
+                //db exception
+                if($e instanceof dbException){
+                    if($e->getCode() == dbException::CODE_COULD_NOT_CONNECT){
+                        echo $e->getMessage();
+                    }
+                //normal exception
+                } else{
+                    echo "general exception:";
+                    echo $e->getMessage();
+                }
+            }
+            set_exception_handler("handle");
+        ?>
