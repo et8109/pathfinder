@@ -2,8 +2,7 @@
 
 require_once("constants.php");
 require_once("mainInterface.php");
-require_once("errorHandle.php");
-
+session_start();
 try{
     //setup
     AudioObj::initState();//sets up globals: time and json array
@@ -13,8 +12,8 @@ try{
     $posx = $_POST['posx'];
     $posy = $_POST['posy'];
     $zone = AudioObj::findZone($posx, $posy);
+    $newZone = true;
     if($playerInfo['zone'] != $zone){
-        $newZone = true;
         if ($posx < 0){
             $posx = $posx + distances::edgeBump;
             $newZone = false;
@@ -46,7 +45,7 @@ try{
         exit(0);
     }
     //remove old player events
-    MainInterface::removeOldPlayerEvents(AudioObj::$state->time);
+    MainInterface::removeOldPlayerEvents(AudioObj::$time);
     //get npcs in zone
     $npcResult = MainInterface::getNpcsInZone($player->zone);
     //loop though npcs
@@ -108,7 +107,7 @@ class Npc extends audioObj{
     }
     
     private function addEvent($audio){
-        MainInterface::addNPCEvent(AudioObj::$state->time, AudioObj::$state->time+constants::npcDuration,$audio,$npc->id);
+        MainInterface::addNPCEvent(AudioObj::$time, AudioObj::$time+constants::npcDuration,$audio,$npc->id);
         parent::addEvent($audio);
     }
     
@@ -233,12 +232,11 @@ class AudioObj {
     public $prevStart;//when the last audio from this obj started
     public $prevDone;//when the last audio from this obj will be done
     public $objType;//a string which identifies which audioObj type this is
-    public static $state;//global state
     public static $arrayJSON;//json array to send to clinet
     public static $time;//server time when request was recieved from client
     
     public function __construct($objType, $posx, $posy, $id, $prevDone, $prevStart, $prevAudio){
-        $this->busy = $finishTime > $this->state->time ? True : False;
+        $this->busy = $prevDone > self::$time;
         $this->objType = $objType;
         $this->posx = $posx;
         $this->posy = $posy;
@@ -259,14 +257,14 @@ class AudioObj {
     }
     
     protected function askQuestion(){
-        AudioObj::$state->arrayJSON[] = (array(
+        AudioObj::$arrayJSON[] = (array(
             "question" => true,
             "start" => true
         ));
     }
     
     protected function doneQuestion(){
-        AudioObj::$state->arrayJSON[] = (array(
+        AudioObj::$arrayJSON[] = (array(
             "question" => true,
             "done" => true
         ));
@@ -339,7 +337,7 @@ class Player extends AudioObj{
     
     public function addEvent($audio){
         //TODO o verride always false
-        return MainInterface::addPlayerEvent(AudioObj::$state->time, AudioObj::$state->time + constants::playerDuration, $audio, $_SESSION['playerID'], $this->zone, false);
+        return MainInterface::addPlayerEvent(AudioObj::$time, AudioObj::$time + constants::playerDuration, $audio, $_SESSION['playerID'], $this->zone, false);
     }
     
     /**
@@ -380,7 +378,7 @@ class Sprite {
         "spriteEvent" => true,
         "audioType" => $audioType
         );
-        AudioObj::$state->arrayJSON[] = $toSend();
+        AudioObj::$arrayJSON[] = $toSend();
     }
 }
 
