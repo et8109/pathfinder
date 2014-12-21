@@ -305,7 +305,7 @@ class AudioObj {
      *Add a json array to the list of json objects to send
      */
     public static function addJson($toAdd){
-        self::$arrayJSON[] = $toAdd();
+        self::$arrayJSON[] = $toAdd;
     }
     /**
      *Send the json object to the client
