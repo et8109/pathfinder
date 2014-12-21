@@ -2,6 +2,7 @@
 
 require_once("constants.php");
 require_once("mainInterface.php");
+require_once("errorHandle.php");
 
 try{
     //setup
@@ -78,6 +79,7 @@ try{
     $_SESSION['lastupdateTime'] = $time;
     
 } catch(Exception $e){
+    ErrorHandler::handle($e);
     //add exception to json to send
     AudioObj::$state->addJson(array(
         "error" => ($e->getMessage())

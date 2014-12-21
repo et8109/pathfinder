@@ -22,6 +22,14 @@ class Interface_class {
         }
         return $var;
     }
+    
+    public static function addHeader(){
+        include("header.inc");
+    }
+    
+    public static function addFooter(){
+        include("footer.inc");
+    }
 }
 //initialize db object
 Interface_class::init();

@@ -1,18 +1,5 @@
-client
-------
-onload: get setup data from server
-track player movements
-continually send player position to server
-
-server
-------
-check if new zone
-    new: load all entities in the zone
-check all current events in zone
-send response
-
-todo:
 Database disconnect from db on death
+Database checks that it is called from an interface
 convert player/npc/enemy/sprite info to object
     give objects json array methods
 improve error handling with exceptions and levels

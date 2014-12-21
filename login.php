@@ -1,8 +1,10 @@
 <?php
-require("loginInterface.php");
-session_start();
+require_once("loginInterface.php");
+require_once("errorHandle.php");
 
 try{
+    session_start();
+    LoginInterface::addHeader();
     //make sure they are not logged in
     if(isset($_SESSION['playerID'])){
         header("Location: index.php");
@@ -29,15 +31,9 @@ try{
         header("Location: index.php");
     }
 } catch (Exception $e){
-    if($e instanceof dbException){
-        echo "woops";
-    } else{
-        echo $e->getMessage();
-    }
+    ErrorHandler::handle($e);
 }
 ?>
-<html>
- <body>
 <form action="login.php" method="post">
   Username: <input type=text name=uname maxlength=20></input>
   Password: <input type=password name=pass maxlength=20></input>
@@ -47,5 +43,6 @@ Guest account available,</br>
 username and password are "guest".</br></br>
 *The site only works on browsers that have implemented the most recent web-related APIs and whatnot</br>
 **This is still a work in progress. All text on screen is for debugging.</br>
- </body>
-</html>
+<?php
+LoginInterface::addFooter();
+?>
