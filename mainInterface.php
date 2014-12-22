@@ -33,7 +33,7 @@ class MainInterface extends Interface_class{
     
     public static function getEnemiesInZone($zone) {
         $zone = self::prepVar($zone);
-        $enemyResult = self::$db->queryMulti("select id,posx,posy,finish,start,lastAudio,health from enemies where zone=$zone");
+        $r = self::$db->queryMulti("select id,posx,posy,finish,start,lastAudio,health from enemies where zone=$zone");
         return $r;
     }
     
@@ -88,7 +88,7 @@ class MainInterface extends Interface_class{
         $endTime = self::prepVar($endTime);
         $audioInt = self::prepVar($audioInt);
         $enemyId = self::prepVar($enemyId);
-        self::$db->querySingle("update enemies set start=$startTime, finish=$endTime, lastAudio=$autioInt where id=$enemyId");
+        self::$db->querySingle("update enemies set start=$startTime, finish=$endTime, lastAudio=$audioInt where id=$enemyId");
     }
     
     public static function addPlayerEvent($startTime, $endTime, $audioInt, $playerid, $zone, $override) {
@@ -98,7 +98,7 @@ class MainInterface extends Interface_class{
         $playerid = self::prepVar($playerid);
         $zone = self::prepVar($zone);
         $override = self::prepVar($override);
-        $checkRow = self::$db->querySingle("select 1 from playerevents where id=$pid limit 1");
+        $checkRow = self::$db->querySingle("select 1 from playerevents where id=$playerid limit 1");
         if (self::$db->lastQueryNumRows() == 1 && !$override) {
             self::$db->querySingle("insert into playerevents (id,zone,audiotype,start,finish) values ($pid,$zone,$audioInt,$time,$endTime)");
             return true;

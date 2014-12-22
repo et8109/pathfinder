@@ -12,8 +12,9 @@ try{
     $posx = $_POST['posx'];
     $posy = $_POST['posy'];
     $zone = AudioObj::findZone($posx, $posy);
-    $newZone = true;
+    $newZone = false;
     if($playerInfo['zone'] != $zone){
+        $newZone = true;
         if ($posx < 0){
             $posx = $posx + distances::edgeBump;
             $newZone = false;
@@ -55,16 +56,16 @@ try{
     }
     
     //get enemies in zone
-    MainInterface::getEnemiesInZone($zone);
+    $enemyResult = MainInterface::getEnemiesInZone($zone);
     //loop though enemies
     foreach($enemyResult as $enemyRow){
-        $e = new Enemy($enemyRow['posx'],$enemyRow['posy'],$enemyRow['id'],$enemyRow['health'], $enemyRow['start'], $enemyRow['lastAudio']);
+        $e = new Enemy($enemyRow['posx'],$enemyRow['posy'],$enemyRow['id'],$enemyRow['health'], $enemyRow['finish'], $enemyRow['start'], $enemyRow['lastAudio']);
         $e->interactPlayer($player);
     }
     
     //check nearby players
     //check player events
-    MainInterface::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
+    $eventsResult = MainInterface::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
     foreach($eventsResult as $row){
         AudioObj::addJson(array(
             "event" => true,
@@ -75,7 +76,7 @@ try{
     }
     
     //update last event time
-    $_SESSION['lastupdateTime'] = $time;
+    $_SESSION['lastupdateTime'] = AudioObj::$time;
     
 } catch(Exception $e){
     ErrorHandler::handle($e);
@@ -91,135 +92,6 @@ try{
 ////////////////////////////////////////////////////////////////
 ///////////////////////////--classes--//////////////////////////
 ////////////////////////////////////////////////////////////////
-
-class Npc extends audioObj{
-    //aucio ints
-    const audio_greet = 0;
-    const audio_ask = 1;
-    const audio_onYes = 2;
-    const audio_onNo = 3;
-    
-    const dist_talk = 5;
-    const dist_notice = 10;
-
-    public function __construct($posx, $posy, $id, $finishTime, $prevStart, $prevAudio){
-        parent::__construct("npc", $posx, $posy, $id, $finishTime, $prevStart, $prevAudio);
-    }
-    
-    private function addEvent($audio){
-        MainInterface::addNPCEvent(AudioObj::$time, AudioObj::$time+constants::npcDuration,$audio,$npc->id);
-        parent::addEvent($audio);
-    }
-    
-    private function askQuestion(){
-        parent::askQuestion();
-    }
-    
-    private function doneQuestion(){
-        parent::doneQuestion();
-    }
-    
-    public function interactPlayer($player){
-        //if an event was set after last update
-        parent::checkEvent();
-        $dist = $this->findDist($player);
-        if($dist < Npc::dist_talk && !$this->busy){
-            //if answered
-            if($player->ans != null){
-                if($player->ans == 1){
-                    $this->addEvent(Npc::audio_onYes);
-                } else if($player->ans == 0){
-                    $this->addEvent(Npc::audio_onNo);
-                }
-                $this->doneQuestion();
-            } else{
-                //not answered
-                $this->addEvent(Npc::audio_ask);
-                $this->askQuestion();
-            }
-        }
-        else if($dist < Npc::dist_notice && !$this->busy){
-            $this->addEvent(Npc::audio_greet);
-        }
-    }
-}
-
-class Enemy extends audioObj{
-    const audio_notice = 0;
-    const audio_attack = 1;
-    const audio_death = 2;
-    
-    const dist_attack = 4;
-    
-    const max_health = 4;
-    private $health;
-    
-    public function __construct($posx, $posy, $id, $health, $finishTime, $prevStart, $prevAudio){
-        parent::__construct("enemy", $posx, $posy, $id, $finishTime, $prevStart, $prevAudio);
-        $this->health = $health;
-    }
-    
-    private function addEvent($audio){
-        MainInterface::addEnemyEvent($time, $time + constants::enemyDuration,$audio, $id);
-        parent::addEvent($audio);
-    }
-    
-    public function interactPlayer($player){
-        //if an event was set after last update
-        parent::checkEvent();
-        //if dead
-        if($health < 1){
-            $this->dead($player->zone);
-            return;
-        }
-        //if alive
-        $dist = $this->findDist($player);
-        if($dist < Enemy::dist_attack){
-            if($player->addEvent(Player::audio_attack)){//if player attacks
-                //lower monster health
-                $dead = MainInterface::lowerEnemyHealth($this->id,$this->posx, $this->posy);
-                if($dead){
-                    //enemy is killed
-                    $this->addEvent(Enemy::audio_death);
-                    //add to kill count
-                    MainInterface::increasePlayerKills($_SESSION['playerID']);
-                }
-            }
-            if(!$player->busy){//if enemy attacks
-                $this->addEvent(Enemy::audio_attack);
-                //lower player health
-                MainInterface::lowerPlayerHealth($_SESSION['playerID']);
-                //if dead
-                if($player->health < 2){
-                    $player->dead();
-                    return;
-                }
-                //if low health
-                else if($player->health < 3){
-                    $player->sprite->addEvent(Sprite::audio_lowHealth);
-                    return;
-                }
-            } 
-        }
-        else if($dist < distances::enemyNotice && !$player->busy){
-            $this->addEvent(Enemy::audio_notice);
-        }
-    }
-    /**
-     *resets the position in the database
-     */
-    private function dead($zone){
-        //revive elsewhere in zone
-        $y = floor(($zone-1)/constants::numZonesSrt);//zone num
-        $x = ($zone-1)-($y*constants::numZonesSrt);//zone num
-        $y = constants::zoneWidth*$y + rand(constants::zoneBuffer,constants::zoneWidth-constants::zoneBuffer);
-        $x = constants::zoneWidth*$x + rand(constants::zoneBuffer,constants::zoneWidth-constants::zoneBuffer);
-        //check if overlapping with anything
-        //set new pos and max health
-        MainInterface::resetEnemy($x,$y,Enemy::max_health,$this->id);
-    }
-}
-
 /**
  *A parent class for all audio objects
  */
@@ -249,10 +121,10 @@ class AudioObj {
     protected function addEvent($audio){
         $toSend['audioType'] = $audio;
         $toSend['event'] = true;
-        $toSend['id'] = $audioObj->id;
-        $toSend['posx'] = $audioObj->posx;
-        $toSend['posy'] = $audioObj->posy;
-        $toSend[$objType] = $audioObj->objType;
+        $toSend['id'] = $this->id;
+        $toSend['posx'] = $this->posx;
+        $toSend['posy'] = $this->posy;
+        $toSend[$this->objType] = true;
         AudioObj::addJson($toSend);
     }
     
@@ -294,7 +166,7 @@ class AudioObj {
      */
     protected function checkEvent(){
         if($_SESSION['lastupdateTime'] < $this->prevStart){
-            $this->sendEvent($this->prevAudio);
+            $this->addEvent($this->prevAudio);
         }
     }
     public static function initState(){
@@ -361,6 +233,134 @@ class Player extends AudioObj{
     }
 }
 
+class Npc extends audioObj{
+    //aucio ints
+    const audio_greet = 0;
+    const audio_ask = 1;
+    const audio_onYes = 2;
+    const audio_onNo = 3;
+    
+    const dist_talk = 5;
+    const dist_notice = 10;
+
+    public function __construct($posx, $posy, $id, $finishTime, $prevStart, $prevAudio){
+        parent::__construct("npc", $posx, $posy, $id, $finishTime, $prevStart, $prevAudio);
+    }
+    
+    protected function addEvent($audio){
+        MainInterface::addNPCEvent(AudioObj::$time, AudioObj::$time+constants::npcDuration,$audio,$this->id);
+        parent::addEvent($audio);
+    }
+    
+    protected function askQuestion(){
+        parent::askQuestion();
+    }
+    
+    protected function doneQuestion(){
+        parent::doneQuestion();
+    }
+    
+    public function interactPlayer($player){
+        //if an event was set after last update
+        parent::checkEvent();
+        $dist = $this->findDist($player);
+        if($dist < Npc::dist_talk && !$this->busy){
+            //if answered
+            if($player->ans != null){
+                if($player->ans == 1){
+                    $this->addEvent(Npc::audio_onYes);
+                } else if($player->ans == 0){
+                    $this->addEvent(Npc::audio_onNo);
+                }
+                $this->doneQuestion();
+            } else{
+                //not answered
+                $this->addEvent(Npc::audio_ask);
+                $this->askQuestion();
+            }
+        }
+        else if($dist < Npc::dist_notice && !$this->busy){
+            $this->addEvent(Npc::audio_greet);
+        }
+    }
+}
+
+class Enemy extends audioObj{
+    const audio_notice = 0;
+    const audio_attack = 1;
+    const audio_death = 2;
+    
+    const dist_attack = 4;
+    
+    const max_health = 4;
+    private $health;
+    
+    public function __construct($posx, $posy, $id, $health, $finishTime, $prevStart, $prevAudio){
+        parent::__construct("enemy", $posx, $posy, $id, $finishTime, $prevStart, $prevAudio);
+        $this->health = $health;
+    }
+    
+    protected function addEvent($audio){
+        MainInterface::addEnemyEvent(AudioObj::$time, AudioObj::$time + constants::enemyDuration,$audio, $this->id);
+        parent::addEvent($audio);
+    }
+    
+    public function interactPlayer($player){
+        //if an event was set after last update
+        parent::checkEvent();
+        //if dead
+        if($this->health < 1){
+            $this->dead($player->zone);
+            return;
+        }
+        //if alive
+        $dist = $this->findDist($player);
+        if($dist < Enemy::dist_attack){
+            if($player->addEvent(Player::audio_attack)){//if player attacks
+                //lower monster health
+                $dead = MainInterface::lowerEnemyHealth($this->id,$this->posx, $this->posy);
+                if($dead){
+                    //enemy is killed
+                    $this->addEvent(Enemy::audio_death);
+                    //add to kill count
+                    MainInterface::increasePlayerKills($_SESSION['playerID']);
+                }
+            }
+            if(!$player->busy){//if enemy attacks
+                $this->addEvent(Enemy::audio_attack);
+                //lower player health
+                MainInterface::lowerPlayerHealth($_SESSION['playerID']);
+                //if dead
+                if($player->health < 2){
+                    $player->dead();
+                    return;
+                }
+                //if low health
+                else if($player->health < 3){
+                    $player->sprite->addEvent(Sprite::audio_lowHealth);
+                    return;
+                }
+            } 
+        }
+        else if($dist < distances::enemyNotice && !$player->busy){
+            $this->addEvent(Enemy::audio_notice);
+        }
+    }
+    /**
+     *resets the position in the database
+     */
+    private function dead($zone){
+        //revive elsewhere in zone
+        $y = floor(($zone-1)/constants::numZonesSrt);//zone num
+        $x = ($zone-1)-($y*constants::numZonesSrt);//zone num
+        $y = constants::zoneWidth*$y + rand(constants::zoneBuffer,constants::zoneWidth-constants::zoneBuffer);
+        $x = constants::zoneWidth*$x + rand(constants::zoneBuffer,constants::zoneWidth-constants::zoneBuffer);
+        //check if overlapping with anything
+        //set new pos and max health
+        MainInterface::resetEnemy($x,$y,Enemy::max_health,$this->id);
+    }
+}
+
 /**
  *must be instanciated by player class
  */
@@ -376,7 +376,7 @@ class Sprite {
         //TODO integrate with audioObj
         $toSend = array(
         "spriteEvent" => true,
-        "audioType" => $audioType
+        "audioType" => $audio
         );
         AudioObj::$arrayJSON[] = $toSend();
     }

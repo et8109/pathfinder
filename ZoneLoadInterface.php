@@ -18,7 +18,7 @@ class ZoneLoadInterface extends Interface_class{
     
     public static function getEnemies($zone) {
         $zone = self::prepVar($zone);
-        $r = self::$db->queryMulti("select E.id,E.posx,E.posy,I.audioURL from enemies E, enemyinfo I where zone=$zone and E.id = I.id");
+        $r = self::$db->queryMulti("select E.id,E.posx,E.posy,I.audioURL from enemies E, enemyinfo I where zone=$zone");
         return $r;
     }
     

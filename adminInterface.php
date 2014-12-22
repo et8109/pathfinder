@@ -75,6 +75,14 @@ class AdminInterface extends Interface_class{
                            "kills int(3),".
                            "PRIMARY KEY (id)".
                            ")");
+        //populate databases
+        self::$db->querySingle("INSERT INTO ambient (zone, posx, posy, audioURL) values (1, 10, 10, 'Birds.mp3')");
+        self::$db->querySingle("INSERT INTO enemies (id, posx, posy, zone, health, lastAudio, finish, start) values (0, 20, 20, 1, 4, 1, 0, 0)");
+        self::$db->querySingle("INSERT INTO enemyInfo (id, audioURL) values (0, 'Growl.mp3,Chomp.mp3,ed.mp3')");
+        self::$db->querySingle("INSERT INTO movement (zone, audioURL) values (1, 'carpetStep.wav')");
+        self::$db->querySingle("INSERT INTO npcs (id, zone, posx, posy, audioURL, lastAudio, finish, start) values (0, 1, 5, 10, 'wc.mp3,Kntq.mp3,Knty.mp3,Kntn.mp3', 0, 0, 0)");
+        self::$db->querySingle("INSERT INTO playerinfo (id, uname, pass, posx, posy, zone, peerid, health, audioURL, kills) values ".
+                               "(1, 'guest', 'guest', 1, 1, 0, 'abcd1234', 3, 'attack.mp3', 0)");
     }
 }
 ?>
