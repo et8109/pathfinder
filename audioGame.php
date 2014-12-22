@@ -144,7 +144,7 @@ class AudioObj {
     
     protected function findDist($obj){
         $dist = abs($this->posx-$obj->posx);
-        $dist2 = abs($this->posx-$obj->posy);
+        $dist2 = abs($this->posy-$obj->posy);
         if($dist > $dist2){
             return $dist;
         }
@@ -326,7 +326,7 @@ class Enemy extends audioObj{
                     MainInterface::increasePlayerKills($_SESSION['playerID']);
                 }
             }
-            if(!$player->busy){//if enemy attacks
+            if(!$this->busy){//if enemy attacks
                 $this->addEvent(Enemy::audio_attack);
                 //lower player health
                 MainInterface::lowerPlayerHealth($_SESSION['playerID']);
@@ -342,7 +342,7 @@ class Enemy extends audioObj{
                 }
             } 
         }
-        else if($dist < distances::enemyNotice && !$player->busy){
+        else if($dist < distances::enemyNotice && !$this->busy){
             $this->addEvent(Enemy::audio_notice);
         }
     }
@@ -378,7 +378,7 @@ class Sprite {
         "spriteEvent" => true,
         "audioType" => $audio
         );
-        AudioObj::$arrayJSON[] = $toSend();
+        AudioObj::$arrayJSON[] = $toSend;
     }
 }
 

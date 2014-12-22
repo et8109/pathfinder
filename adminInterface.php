@@ -31,7 +31,7 @@ class AdminInterface extends Interface_class{
         //enemy types
         self::$db->querySingle("CREATE TABLE enemyinfo (".
                            "id int(3) AUTO_INCREMENT,".
-                           "audioURL varchar(10),".
+                           "audioURL varchar(30),".
                            "PRIMARY KEY (id)".
                            ")");
         //walking audio for zones
