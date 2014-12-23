@@ -5,7 +5,7 @@ session_start();
 if(!isset($_SESSION['playerID'])){
     header("Location: login.php");
 }
-require_once("interface.php");
+require_once("../interfaces/interface.php");
 Interface_class::addHeaderIndex();
 ?>
 <audio id="playerAudio" muted="true" autoplay></audio>

@@ -1,5 +1,5 @@
 <?php
-require_once("adminInterface.php");
+require_once("../interfaces/adminInterface.php");
 AdminInterface::addHeader();
 
 if(isset($_POST['reset'])){

@@ -1,5 +1,5 @@
 <?php
-require_once("loginInterface.php");
+require_once("../interfaces/loginInterface.php");
 session_start();
 LoginInterface::addHeader();
 

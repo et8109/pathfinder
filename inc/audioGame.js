@@ -61,7 +61,8 @@ var types = {
 }
 
 window.onload = function(){
-    sendRequest("setup.php",
+    alert("sending setup request");
+    sendRequest("../inc/setup.php",
                 "",
                 function(response){
                     log("starting loading")
@@ -140,7 +141,7 @@ function loadRequestArray(requestArray){
     }
     var info = requestArray.pop();
     request = new XMLHttpRequest();
-    request.open("GET","audio/"+info[1],true/*asynchronous*/);
+    request.open("GET","../audio/"+info[1],true/*asynchronous*/);
     request.responseType = "arraybuffer";
     request.onload = function(){
         if (request.response == null) {
@@ -379,7 +380,7 @@ function update(){
     if (answer != null) {
         req += "&ans="+(answer==true ? 1 : 0);
     }
-    sendRequest("audioGame.php",
+    sendRequest("../inc/audioGame.php",
                 req,
                 function(response){
                     checkUpdateResponse(response);

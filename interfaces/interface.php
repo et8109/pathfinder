@@ -1,6 +1,6 @@
 <?php
 
-require_once("database.php");
+require_once("../inc/database.php");
 
 /**
  *The interface between the logic/application and the database
@@ -26,17 +26,17 @@ class Interface_class {
      *general header, not for game page
      */
     public static function addHeader(){
-        include("header.inc");
+        include("../inc/header.inc");
     }
     /**
      *Header for the main game page
      */
     public static function addHeaderIndex(){
-        include("headerIndex.inc");
+        include("../inc/headerIndex.inc");
     }
     
     public static function addFooter(){
-        include("footer.inc");
+        include("../inc/footer.inc");
     }
 }
 //initialize db object

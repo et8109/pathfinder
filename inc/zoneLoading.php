@@ -1,5 +1,5 @@
 <?php
-require_once("ZoneLoadInterface.php");
+require_once("../interfaces/ZoneLoadInterface.php");
 
 AudioObj::addJson(array("newZone" => true));
 //send ambient sounds

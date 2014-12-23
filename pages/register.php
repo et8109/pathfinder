@@ -1,5 +1,5 @@
 <?php
-require_once("registerInterface.php");
+require_once("../interfaces/registerInterface.php");
 session_start();
 RegisterInterface::addHeader();
 

@@ -1,5 +1,0 @@
-Database disconnect from db on death
-Database checks that it is called from an interface
-convert player/npc/enemy/sprite info to object
-    give objects json array methods
-improve error handling with exceptions and levels
