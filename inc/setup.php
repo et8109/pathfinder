@@ -3,8 +3,9 @@ require("../interfaces/setupInterface.php");
 session_start();
 $arrayJSON = array();
 $infoRow = SetupInterface::getPlayerInfo($_SESSION['playerID']);
+$spriteRow = SetupInterface::getSpriteAudio();
 $arrayJSON[] = (array(
-                    "spriteaudioURL" => "Lowlife.mp3,Dead.mp3",
+                    "spriteaudioURL" => $spriteRow[0]['url'].",".$spriteRow[1]['url'],
                     "playerID" => $_SESSION['playerID'],
                     "playeraudioURL" => $infoRow['audioURL'],
                     "peerID" => $infoRow['peerid'],

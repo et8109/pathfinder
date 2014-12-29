@@ -9,5 +9,11 @@ class SetupInterface extends Interface_class{
         $r = self::$db->querySingle("select posx, posy, peerid, audioURL from playerinfo where id=$pid");
         return $r;
     }
+    
+    public static function getSpriteAudio(){
+        $audioId = self::prepVar("s0");
+        $r = self::$db->queryMulti("select url from audio where objid=$audioId");
+        return $r;
+    }
 }
 ?>
