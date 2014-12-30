@@ -51,9 +51,9 @@ do {
         $talkback = "PHP: You said '$buf'.\n";
         socket_write($msgsock, $talkback, strlen($talkback));
         echo "$buf\n";
-    } while (true);
+    } while ($running);
     socket_close($msgsock);
-} while (true);
+} while ($running);
 
 socket_close($sock);
 ?>
