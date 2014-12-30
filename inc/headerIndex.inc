@@ -44,6 +44,7 @@
         <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
         <script src="../inc/audioGame.js"></script>
         <script src="../inc/controls.js"></script>
+        <script src="../inc/sockets.js"></script>
     </head>
     <body onkeypress="keyPressed(event)" onkeyup="keyUp(event)">
         <?php
