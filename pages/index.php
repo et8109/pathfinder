@@ -18,6 +18,8 @@ Interface_class::addHeaderIndex();
     </div>
 </div>
 <div id="log"></div>
+<script src="../imported/PHPWebSocket-Chat/fancywebsocket.js"></script>
+<script src="../inc/sockets.js"></script>
 <?php
 Interface_class::addFooter();
 ?>

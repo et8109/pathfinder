@@ -1,27 +1,22 @@
-if (!"WebSocket" in window)
-  {
-    alert("websockets not supported");
-  }
-
-alert("creating socket");
-var ws = new WebSocket("ws://localhost:10000/inc/updateServer.php");
-    ws.onopen = function()
-     {
-        alert("created, sending msg");
-        // Web Socket is connected, send data using send()
-        ws.send("Message to send");
-        alert("Message is sent...");
-     };
-    ws.onmessage = function (evt) 
-     { 
-        var received_msg = evt.data;
-        alert("Message is received: "+received_msg);
-     };
-    ws.onerror = function(error){
-        console.log('Error detected: ' + error);
-     };
-    ws.onclose = function()
-     { 
-        // websocket is closed.
-        alert("Connection is closed..."); 
-     };
+var Server;
+function send( text ) {
+  Server.send( 'message', text );
+}
+log('Connecting...');
+Server = new FancyWebSocket('ws://127.0.0.1:9300');
+ 
+//Let the user know we're connected
+  Server.bind('open', function() {
+  log( "Connected." );
+  send("hello server!");
+  log("msg sent");
+});
+//OH NOES! Disconnection occurred.
+Server.bind('close', function( data ) {
+  log( "Disconnected. "+data );
+});
+//Log any messages sent from server
+Server.bind('message', function( payload ) {
+  log( payload );
+});
+Server.connect();
