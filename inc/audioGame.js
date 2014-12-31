@@ -65,7 +65,7 @@ window.onload = function(){
     sendRequest("../inc/setup.php",
                 "",
                 function(response){
-                    log("starting loading")
+                    log("starting loading");
                     response=response[0];
                     //load sprite and player audio
                     spriteObject.requestBuffer(response.spriteaudioURL);
@@ -375,17 +375,14 @@ function recordedAttack(blob){
  *reacts to recieved data
  */
 function update(){
+    log("start update");
     log("u: "+posX+" x "+posY);
-    var req = "posx="+Math.floor(posX)+"&posy="+Math.floor(posY);
-    if (answer != null) {
-        req += "&ans="+(answer==true ? 1 : 0);
-    }
-    sendRequest("../inc/audioGame.php",
-                req,
-                function(response){
-                    checkUpdateResponse(response);
-                }
-                );
+    var data={posx:posX,
+            posy:posY,
+            ans:answer==true ? 1 : 0};
+    var json = JSON.stringify(data);
+    log("to sock: "+json);
+    sendToServer(json);
 }
 
 /**

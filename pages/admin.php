@@ -1,5 +1,6 @@
 <?php
 require_once("../interfaces/adminInterface.php");
+require_once("../inc/constants.php");
 AdminInterface::addHeader();
 
 //resetting database
@@ -19,6 +20,7 @@ if(isset($_POST['start'])){
 if(isset($_POST['end'])){
     if($_POST['end'] == "END"){
         //the server only listens to websockets, so the js sends the shutdown message
+        //echo "<script> var portNum = ".constants::portNum."; var ipAddr = ".constants::ipAddr.";</script>";
         echo "<script src='../imported/PHPWebSocket-Chat/fancywebsocket.js'></script><script src='../inc/endServer.js'></script>";
         echo "server is now down";
     }

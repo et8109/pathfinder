@@ -1,49 +1,52 @@
 <?php
+require_once("../inc/constants.php");
+
 // prevent the server from timing out
 set_time_limit(0);
 
 // include the web sockets server script (the server is started at the far bottom of this file)
 require 'class.PHPWebSocket.php';
+//include the cache, which the server requests for data
+include '../inc/cache.php';
 
 // when a client sends data to the server
 function wsOnMessage($clientID, $message, $messageLength, $binary) {
 	global $Server;
-	$ip = long2ip( $Server->wsClients[$clientID][6] );
+	//$ip = long2ip( $Server->wsClients[$clientID][6] );
 
 	// check if message length is 0
 	if ($messageLength == 0) {
 		$Server->wsClose($clientID);
 		return;
 	}
-	//if($message == "END_SERVER"){
+	if($message == "END_SERVER"){
 		$Server->wsStopServer();
-		//die("server stopped");
-	//}
-	$Server->wsSend($clientID, "hello, this is the server.");
+		die("server stopped");
+	} else{
+		wsSendMessage($clientID, "server recived: $message");
+		cacheUpdatePlayer($clientID, $message);
+	}
+	//$Server->wsSend($clientID, "hello, this is the server.");
 }
 
 // when a client connects
 function wsOnOpen($clientID)
 {
 	global $Server;
-	$ip = long2ip( $Server->wsClients[$clientID][6] );
-
-	//Send a join notice to everyone but the person who joined
-	foreach ( $Server->wsClients as $id => $client )
-		if ( $id != $clientID )
-			//$Server->wsSend($id, "Visitor $clientID ($ip) has joined the room.");
-			echo "open";
+	//$ip = long2ip( $Server->wsClients[$clientID][6] );
+	//$Server->wsSend($id, "Visitor $clientID ($ip) has joined the room.");
 }
 
 // when a client closes or lost connection
 function wsOnClose($clientID, $status) {
 	global $Server;
-	$ip = long2ip( $Server->wsClients[$clientID][6] );
+	//$ip = long2ip( $Server->wsClients[$clientID][6] );
+	//$Server->wsSend($id, "Visitor $clientID ($ip) has left the room.");
+}
 
-	//Send a user left notice to everyone in the room
-	foreach ( $Server->wsClients as $id => $client )
-		//$Server->wsSend($id, "Visitor $clientID ($ip) has left the room.");
-		echo "close";
+function wsSendMessage($clientID, $msg){
+	global $Server;
+	$Server->wsSend($clientID, $msg);
 }
 
 // start the server
@@ -53,6 +56,6 @@ $Server->bind('open', 'wsOnOpen');
 $Server->bind('close', 'wsOnClose');
 // for other computers to connect, you will probably need to change this to your LAN IP or external IP,
 // alternatively use: gethostbyaddr(gethostbyname($_SERVER['SERVER_NAME']))
-$Server->wsStartServer('127.0.0.1', 9300);
+$Server->wsStartServer(constants::ipAddr, constants::portNum);
 
 ?>

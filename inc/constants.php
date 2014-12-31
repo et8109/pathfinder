@@ -7,6 +7,8 @@ final class constants {
     const npcDuration = 10;
     const enemyDuration = 10;
     const playerDuration = 6;
+    const portNum = 9300;
+    const ipAddr = "127.0.0.1";
 }
 
 /**
