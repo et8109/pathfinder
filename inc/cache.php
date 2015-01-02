@@ -15,7 +15,7 @@ function cacheUpdatePlayer($clientID, $json){
         //setup
         AudioObj::initState();//sets up globals: time and json array
         //get player db info
-        $playerInfo = MainInterface::getPlayerInfo($info['playerID']);
+        $playerInfo = MainInterface::getPlayerInfo($info->{'playerID'});
         //check if out of map range
         $posx = $_POST['posx'];
         $posy = $_POST['posy'];
@@ -40,7 +40,7 @@ function cacheUpdatePlayer($clientID, $json){
         }
         $zone = $newZone ? $zone : $playerInfo['zone']; //set to new or old zone
         //create player obj
-        $player = new Player($info['playerID'],//id
+        $player = new Player($info->{'playerID'},//id
                              $posx, $posy,//coords
                              isset($_POST['ans']) ? $_POST['ans'] : null,//answer
                              $zone, //zone from calculation above
