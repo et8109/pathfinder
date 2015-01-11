@@ -11,11 +11,11 @@ $cache = "this string was cached at "+time();
  */
 function cacheUpdatePlayer($clientID, $json){
     try{
-        $info = json_decode($json);
+        $info = json_decode($json, true);//turned into an assosiative array
         //setup
         AudioObj::initState();//sets up globals: time and json array
         //get player db info
-        $playerInfo = MainInterface::getPlayerInfo($info->{'playerID'});
+        $playerInfo = MainInterface::getPlayerInfo($info['playerID']);
         //check if out of map range
         $posx = $_POST['posx'];
         $posy = $_POST['posy'];
@@ -40,7 +40,7 @@ function cacheUpdatePlayer($clientID, $json){
         }
         $zone = $newZone ? $zone : $playerInfo['zone']; //set to new or old zone
         //create player obj
-        $player = new Player($info->{'playerID'},//id
+        $player = new Player($info['playerID'],//id
                              $posx, $posy,//coords
                              isset($_POST['ans']) ? $_POST['ans'] : null,//answer
                              $zone, //zone from calculation above
@@ -219,7 +219,7 @@ class Player extends AudioObj{
     
     public function addEvent($audio){
         //TODO o verride always false
-        return MainInterface::addPlayerEvent(AudioObj::$time, AudioObj::$time + constants::playerDuration, $audio, $_SESSION['playerID'], $this->zone, false);
+        return MainInterface::addPlayerEvent(AudioObj::$time, AudioObj::$time + constants::playerDuration, $audio, $info['playerID'], $this->zone, false);
     }
     
     /**
@@ -227,7 +227,7 @@ class Player extends AudioObj{
      */
     public function dead(){
         $this->reposition(0,0);
-        MainInterface::resetPlayer($_SESSION['playerID'],Player::max_health,0,0);
+        MainInterface::resetPlayer($info['playerID'],Player::max_health,0,0);
         //_addPlayerEvent(1, $time, $zone,true);//death sound as event
         $this->sprite->addEvent(Sprite::audio_dead);
     }
@@ -333,13 +333,13 @@ class Enemy extends audioObj{
                     //enemy is killed
                     $this->addEvent(Enemy::audio_death);
                     //add to kill count
-                    MainInterface::increasePlayerKills($_SESSION['playerID']);
+                    MainInterface::increasePlayerKills($info['playerID']);
                 }
             }
             if(!$this->busy){//if enemy attacks
                 $this->addEvent(Enemy::audio_attack);
                 //lower player health
-                MainInterface::lowerPlayerHealth($_SESSION['playerID']);
+                MainInterface::lowerPlayerHealth($info['playerID']);
                 //if dead
                 if($player->health < 2){
                     $player->dead();

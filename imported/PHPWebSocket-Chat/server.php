@@ -2,7 +2,7 @@
 require_once("../inc/constants.php");
 
 // prevent the server from timing out
-set_time_limit(0);
+set_time_limit(60);
 
 // include the web sockets server script (the server is started at the far bottom of this file)
 require 'class.PHPWebSocket.php';
@@ -12,6 +12,7 @@ include '../inc/cache.php';
 // when a client sends data to the server
 function wsOnMessage($clientID, $message, $messageLength, $binary) {
 	global $Server;
+	set_time_limit(10);
 	//$ip = long2ip( $Server->wsClients[$clientID][6] );
 
 	// check if message length is 0
