@@ -9,6 +9,95 @@ require 'class.PHPWebSocket.php';
 //include the cache, which the server requests for data
 include '../inc/cache.php';
 
+$tmpStr = "before changing.";
+
+function tmpThreadFunc(){
+	global $tmpStr;
+	$tmpStr = "after thread";
+}
+
+class Updater extends Thread{
+	private $clientID;
+	public $result;
+	private $joined;
+	//private $server;
+	function __construct($clientID){
+		$this->clientID = $clientID;
+		//$this->server = $server;
+		//$this->result = "str from thread before run";
+		$this->result = "result before";
+		$this->joined = false;
+		$this->done = false;
+	}
+	public function run(){
+		/*$this->return = cacheUpdatePlayer($this->clientID, $this->message);
+		$this->server->wsSend($this->clientID, $this->return);*/
+		//$this->server->wsSend($this->clientID, "inside thread run function");
+		//tmpThreadFunc();
+		//wsSendMessage($this->clientID, "message from thread.");
+		/*
+		if( $this->result = "str from thread after run" ){
+			return true;
+		}
+		return false;
+		*/
+		$this->result = "done running thread";
+		$this->done = true;
+		
+		$this->synchronized(function($self){
+			//$self->wait();
+			//$self->result = "done w/e sync, after";
+			$self->done = true;
+		}, $this);
+	}
+	
+	public function getResponse(){
+		if(!$this->joined) {
+			$this->joined = true;
+			$this->join();
+		}
+		return $this->result;
+	}
+	
+	public static function update($clientID){
+		$thread = new Updater($clientID);
+		$thread->start();
+		/*if($thread->start()){
+			return $thread->result;
+		} else{
+			return "could not update";
+		}*/
+		global $Server;
+		wsSendMessage($clientID, "before sync");
+		//sync 1: do action
+		$thread->synchronized(function($self){
+			$done = $self->done;
+			$tmpStr = $self->result;
+			wsSendMessage($self->clientID, "inside sync. done = $done");
+			wsSendMessage($self->clientID, "inside sync. result = $tmpStr");
+			if (!$self->done) {
+				$self->notify();
+			} else {
+				//nothing
+			}
+		}, $thread);
+		//sync 2: get result
+		$thread->synchronized(function($self){
+			$done = $self->done;
+			$tmpStr = $self->result;
+			wsSendMessage($self->clientID, "inside sync. done = $done");
+			wsSendMessage($self->clientID, "inside sync. result = $tmpStr");
+			if (!$self->done) {
+				$self->notify();
+			} else {
+				//nothing
+			}
+		}, $thread);
+		
+	}
+}
+
+
 // when a client sends data to the server
 function wsOnMessage($clientID, $message, $messageLength, $binary) {
 	global $Server;
@@ -25,7 +114,10 @@ function wsOnMessage($clientID, $message, $messageLength, $binary) {
 		die("server stopped");
 	} else{
 		wsSendMessage($clientID, "server recived: $message");
-		cacheUpdatePlayer($clientID, $message);
+		//$threadMsg = Updater::update($clientID);
+		//global $tmpStr;
+		//wsSendMessage($clientID, $threadMsg);
+		Updater::update($clientID);
 	}
 	//$Server->wsSend($clientID, "hello, this is the server.");
 }

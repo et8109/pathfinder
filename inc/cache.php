@@ -5,9 +5,13 @@
  */
 require_once("../interfaces/mainInterface.php");
 $cache = "this string was cached at "+time();
+$cachedNpcs = [];
+$cachedEnemies = [];
 
 /**
- *recives info from the player, which is used to update the cache/db and then updates are sent out to whomever needs them
+ *recives info from the player, which is used to update the cache/db.
+ *reutrns the string to send back to the client.
+ *operates in a separate thread
  */
 function cacheUpdatePlayer($clientID, $json){
     try{
@@ -50,7 +54,7 @@ function cacheUpdatePlayer($clientID, $json){
         //send new zone info if needed
         if($newZone){
             require_once("zoneLoading.php");
-            AudioObj::sendJson();
+            return AudioObj::sendJson();
             exit(0);
         }
         //remove old player events
@@ -94,7 +98,7 @@ function cacheUpdatePlayer($clientID, $json){
         ));
     } finally {
         //send all info
-        AudioObj::sendJson();
+        return AudioObj::sendJson();
     }   
 }
 
@@ -193,7 +197,7 @@ class AudioObj {
      *Send the json object to the client
      */
     public static function sendJson(){
-        wsSendMessage($clientID, json_encode(self::$arrayJSON));
+        return json_encode(self::$arrayJSON);
     }
 }
 
