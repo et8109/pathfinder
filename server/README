@@ -1,0 +1,7 @@
+The server code.
+
+http requests are sent to the communication layer.
+
+communication layer sends data requests to the interface layer
+
+interface layer can query with database layer

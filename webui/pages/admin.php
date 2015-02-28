@@ -1,7 +1,11 @@
 <?php
+session_start();
 require_once("../interfaces/adminInterface.php");
 require_once("../inc/constants.php");
-AdminInterface::addHeader();
+require_once("../inc/pageBuilder.php");
+$builder = new PageBuilder(PageBuilder::pageTypes::normal);
+$builder->redirectIfLoggedOut();
+$builder->addHeader();
 
 //resetting database
 if(isset($_POST['reset'])){
@@ -39,5 +43,5 @@ if(isset($_POST['end'])){
     type END to end server: <input type=password name=end maxlength=5></input>
 <input type=submit></input>
 <?php
-AdminInterface::addFooter();
+$builder->addFooter();
 ?>

@@ -1,12 +1,9 @@
 <?php
-
 session_start();
-//make sure they are logged in
-if(!isset($_SESSION['playerID'])){
-    header("Location: login.php");
-}
-require_once("../interfaces/interface.php");
-Interface_class::addHeaderIndex();
+include("../inc/pageBuilder.php");
+$builder = new PageBuilder(PageBuilder::pageTypes::index);
+$builder->redirectIfLoggedOut();
+$builder->addHeader();
 ?>
 <audio id="playerAudio" muted="true" autoplay></audio>
 <audio id="otherAudio" autoplay></audio>
@@ -18,8 +15,6 @@ Interface_class::addHeaderIndex();
     </div>
 </div>
 <div id="log"></div>
-<script src="../imported/PHPWebSocket-Chat/fancywebsocket.js"></script>
-<script src="../inc/sockets.js"></script>
 <?php
-Interface_class::addFooter();
+$buider->addFooter();
 ?>

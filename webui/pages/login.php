@@ -1,12 +1,10 @@
 <?php
-require_once("../interfaces/loginInterface.php");
 session_start();
-LoginInterface::addHeader();
-
-//make sure they are not logged in
-if(isset($_SESSION['playerID'])){
-    header("Location: index.php");
-}
+require_once("../interfaces/loginInterface.php");
+include("../inc/pageBuilder.php");
+$builder = new PageBuilder(PageBuilder::pageTypes::normal);
+$builder->redirectIfLoggedIn();
+$builder->addHeader();
 
 if(isset($_POST['uname'])){
     //sanitize
@@ -40,5 +38,5 @@ username and password are "guest".</br></br>
 **This is still a work in progress. All text on screen is for debugging.</br>
 <a href="register.php"> Register </a>
 <?php
-LoginInterface::addFooter();
+$builder->addFooter();
 ?>

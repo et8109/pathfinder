@@ -1,7 +1,11 @@
 <?php
-require_once("../interfaces/registerInterface.php");
 session_start();
-RegisterInterface::addHeader();
+require_once("../interfaces/registerInterface.php");
+require_once("../inc/pageBuilder.php");
+$builder = new PageBuilder(PageBuilder::pageTypes::normal);
+$builder->redirectIfLoggedIn();
+$builder->addHeader();
+
 
 $uname="";
 
@@ -32,5 +36,5 @@ if(isset($_POST['uname'])){
   <input type=submit></input>
 </form>
 <?php
-RegisterInterface::addFooter();
+$builder->addFooter();
 ?>
