@@ -8,16 +8,26 @@ class Database {
     public function __construct() {
         $this->con = $this->getConnection();
     }
-    
+
+    /**
+     * All string going into the db should be escaped
+     */
     public function escapeString($str){
         return mysqli_real_escape_string($this->con,$str);
     }
-    
+
+    /**
+     * Do not use unless other query functions won't work
+     * remember to mysqli_free_result
+     */
     public function _query($sql){
         $result = mysqli_query($this->con, $sql);
         return $result;
     }
-    
+
+    /**
+     * throws an exception if multiple rows are returned.
+     */
     public function querySingle($sql){
         $result = mysqli_query($this->con, $sql);
         if(is_bool($result)){
@@ -50,6 +60,20 @@ class Database {
             throw new dbException("could not connect to database", dbException::CODE_COULD_NOT_CONNECT);
         }
         return $con;
+    }
+
+    public static function resetdb(){
+        $db = new Database();
+        $db->querySingle("DROP DATABASE IF EXISTS ignatymc_pathfinder");
+        $db->querySingle("CREATE DATABASE ignatymc_pathfinder");
+        $db->querySingle("USE ignatymc_pathfinder");
+        foreach (new DirectoryIterator('./tables') as $file) {
+            if($file->isDot()) continue;
+            $name = $file->getFilename();
+            require_once "./tables/$name.php";
+            $name::create();
+            $name::init();
+        }
     }
 }
 

@@ -1,107 +1,117 @@
 <?php
 /**
- *The cache stores data about the environment of the game so it does not have to query the db all the time.
- *The server is included at the bottom.
+ * This page recieves requests to move scenes.
  */
-require_once("../interfaces/mainInterface.php");
-$cache = "this string was cached at "+time();
-$cachedNpcs = [];
-$cachedEnemies = [];
 
+session_start();
+require_once("../shared/constants.php");
 /**
- *recives info from the player, which is used to update the cache/db.
- *reutrns the string to send back to the client.
- *operates in a separate thread
+ * define autoload for classes
+ * throws exception if not found
  */
-function cacheUpdatePlayer($clientID, $json){
-    try{
-        $info = json_decode($json, true);//turned into an assosiative array
-        //setup
-        AudioObj::initState();//sets up globals: time and json array
-        //get player db info
-        $playerInfo = MainInterface::getPlayerInfo($info['playerID']);
-        //check if out of map range
-        $posx = $_POST['posx'];
-        $posy = $_POST['posy'];
-        $zone = AudioObj::findZone($posx, $posy);
-        $newZone = false;
-        if($playerInfo['zone'] != $zone){
-            $newZone = true;
-            if ($posx < 0){
-                $posx = $posx + distances::edgeBump;
-                $newZone = false;
-            } else if ($posx > constants::numZonesSrt*constants::zoneWidth){
-                $posx = $posx - distances::edgeBump;
-                $newZone = false;
-            }
-            if ($posy < 0){
-                $posy = $posy + distances::edgeBump;
-                $newZone = false;
-            } else if ($posy > constants::numZonesSrt*constants::zoneWidth){
-                $posy = $posy - distances::edgeBump;
-                $newZone = false;
-            }
-        }
-        $zone = $newZone ? $zone : $playerInfo['zone']; //set to new or old zone
-        //create player obj
-        $player = new Player($info['playerID'],//id
-                             $posx, $posy,//coords
-                             isset($_POST['ans']) ? $_POST['ans'] : null,//answer
-                             $zone, //zone from calculation above
-                             $playerInfo);//db info
-        //update db info for player
-        MainInterface::updatePlayerInfo($player->posx,$player->posy,$player->zone,$player->id);
-        //send new zone info if needed
-        if($newZone){
-            require_once("zoneLoading.php");
-            return AudioObj::sendJson();
-            exit(0);
-        }
-        //remove old player events
-        MainInterface::removeOldPlayerEvents(AudioObj::$time);
-        //get npcs in zone
-        $npcResult = MainInterface::getNpcsInZone($player->zone);
-        //loop though npcs
-        foreach($npcResult as $npcRow){
-            $n = new Npc($npcRow['posx'],$npcRow['posy'],$npcRow['id'],$npcRow['finish'], $npcRow['start'], $npcRow['lastAudio']);
-            $n->interactPlayer($player);
-        }
-        
-        //get enemies in zone
-        $enemyResult = MainInterface::getEnemiesInZone($zone);
-        //loop though enemies
-        foreach($enemyResult as $enemyRow){
-            $e = new Enemy($enemyRow['posx'],$enemyRow['posy'],$enemyRow['id'],$enemyRow['health'], $enemyRow['finish'], $enemyRow['start'], $enemyRow['lastAudio']);
-            $e->interactPlayer($player);
-        }
-        
-        //check nearby players
-        //check player events
-        $eventsResult = MainInterface::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
-        foreach($eventsResult as $row){
-            AudioObj::addJson(array(
-                "event" => true,
-                "player" => true,
-                "id" => $row['id'],
-                "audioType" => $row['audiotype']
-            ));
-        }
-        
-        //update last event time
-        $_SESSION['lastupdateTime'] = AudioObj::$time;
-        
-    } catch(Exception $e){
-        ErrorHandler::handle($e);
-        //add exception to json to send
-        AudioObj::addJson(array(
-            "error" => ($e->getMessage())
-        ));
-    } finally {
-        //send all info
-        return AudioObj::sendJson();
-    }   
+function __autoload($class_name) {
+        require "../interfaces/objectified/$class_name.php";
 }
 
+try{
+//only posts should be accepted. other verbs are ignored.
+if(!empty($_POST)){
+    //setup
+    //AudioObj::initState();//sets up globals: time and json array
+    //get player db info
+    $playerInfo = Player::fromDatabase($_POST['playerID']);
+    $zone= new Zone($playerInfo['zonex'],
+                    $playerInfo['zoney']);
+    $dir = $_POST['dir'];
+    //set new zone co-ords
+    $newZone = null;
+    switch($dir){
+    case 'N':
+        if($zoney >= constants::numZonesSrt){
+            throw new Exception("out of map range");
+        }
+        $newZone = new Zone($zone->posx,
+                            $zone->posy + 1);
+    case 'S':
+        if($zoney <= 0){
+            throw new Exception("out of map range");
+        }
+        $newZone = new Zone($zone->posx,
+                            $zone->posy - 1);
+    case 'E':
+        if($zonex >= constants::numZonesSrt){
+            throw new Exception("out of map range");
+        }
+        $newZone = new Zone($zone->posx + 1,
+                            $zone->posy);
+    case 'W':
+        if($zoney <= 0){
+            throw new Exception("out of map range");
+        }
+        $newZone = new Zone($zone->posx - 1,
+                            $zone->posy);
+    default:
+        throw new Exception("unknown direction");
+    }
+    //create player obj
+    $player = new Player($info['playerID'],//id
+                         $newZone,//coords
+                         $zone,
+
+                     isset($_POST['ans']) ? $_POST['ans'] : null,//answer
+                     $playerInfo);//db info
+       //update db info for player
+       MainInterface::updatePlayerInfo($player->posx,$player->posy,$player->zone,$player->id);
+       //send new zone info if needed
+       if($newZone){
+       require_once("zoneLoading.php");
+       return AudioObj::sendJson();
+       exit(0);
+       }
+       //remove old player events
+       MainInterface::removeOldPlayerEvents(AudioObj::$time);
+       //get npcs in zone
+       $npcResult = MainInterface::getNpcsInZone($player->zone);
+       //loop though npcs
+       foreach($npcResult as $npcRow){
+       $n = new Npc($npcRow['posx'],$npcRow['posy'],$npcRow['id'],$npcRow['finish'], $npcRow['start'], $npcRow['lastAudio']);
+       $n->interactPlayer($player);
+       }
+       
+       //get enemies in zone
+       $enemyResult = MainInterface::getEnemiesInZone($zone);
+       //loop though enemies
+       foreach($enemyResult as $enemyRow){
+       $e = new Enemy($enemyRow['posx'],$enemyRow['posy'],$enemyRow['id'],$enemyRow['health'], $enemyRow['finish'], $enemyRow['start'], $enemyRow['lastAudio']);
+       $e->interactPlayer($player);
+       }
+       
+       //check nearby players
+       //check player events
+       $eventsResult = MainInterface::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
+       foreach($eventsResult as $row){
+       AudioObj::addJson(array(
+        "event" => true,
+        "player" => true,
+        "id" => $row['id'],
+        "audioType" => $row['audiotype']
+       ));
+       }
+       
+       //update last event time
+       $_SESSION['lastupdateTime'] = AudioObj::$time;
+       
+    }
+    } else{
+        throw new Exception("unknown verb");
+    }
+} catch(Exception $e){
+                ErrorHandler::handle($e);
+                    //add exception to json to send
+  AudioObj::addJson(array(
+     "error" => ($e->getMessage())
+  ));
+}
 
 ////////////////////////////////////////////////////////////////
 ///////////////////////////--classes--//////////////////////////
@@ -110,8 +120,7 @@ function cacheUpdatePlayer($clientID, $json){
  *A parent class for all audio objects
  */
 class AudioObj {
-    public $posx;
-    public $posy;
+    public $zone;
     public $id;
     public $busy;//if the obj is currently playing audio
     public $prevAudio;//the numner of the last audio this obj played
@@ -121,11 +130,10 @@ class AudioObj {
     public static $arrayJSON;//json array to send to clinet
     public static $time;//server time when request was recieved from client
     
-    public function __construct($objType, $posx, $posy, $id, $prevDone, $prevStart, $prevAudio){
+    public function __construct($objType, $zone, $id, $prevDone, $prevStart, $prevAudio){
         $this->busy = $prevDone > self::$time;
         $this->objType = $objType;
-        $this->posx = $posx;
-        $this->posy = $posy;
+        $this->zone = $zone;
         $this->id = $id;
         $this->prevDone = $prevDone;
         $this->prevStart = $prevStart;
@@ -204,13 +212,12 @@ class AudioObj {
 class Player extends AudioObj{
     const audio_attack = 0;
     const max_health = 4;
-    public $ans;
     public $zone;
     public $zonePrev;
     public $health;
     public $sprite;
     
-    public function __construct($id, $posx, $posy, $ans, $zone,  $dbInfo){
+    public function __construct($id, $newzone, $oldZone, $dbInfo){
         parent::__construct("player", $posx, $posy, $id, null, null, null);
         $this->ans = $ans;
         $this->zone = $zone;
@@ -393,6 +400,18 @@ class Sprite {
         "audioType" => $audio
         );
         AudioObj::$arrayJSON[] = $toSend;
+    }
+}
+
+/**
+ * A class to hold zone data
+ */
+class Zone {
+    public $posx;
+    public $posy;
+    public function __construct($posx, $posy){
+        $this->posx = $posx;
+        $this->posy = $posy;
     }
 }
 ?>
