@@ -27,13 +27,20 @@ class Enemies extends Table{
 
     }
 
-    public static function getZoneEnemies($zone){
-        $zonex = self::prepVar($zone->posx);
-        $zoney = self::prepVar($zone->posy);
+    public static function getZoneUpdate($zonex, $zoney){
+        $zonex = self::prepVar($zonex);
+        $zoney = self::prepVar($zoney);
         $r = self::$db->queryMulti("select id, type, finish, start, lastAudio, health from enemies where zonex=$zonex and zoney=$zoney");
+        return $r;
+    }
+
+    public static function getZonePrep($zonex, $zoney){
+        $zonex = self::prepVar($zonex);
+        $zoney = self::prepVar($zoney);
+        $r = self::$db->queryMulti("select id from enemies where zonex=$zonex and zoney=$zoney");
         for($i=0; isset($r[$i]); $i++){
             $objid = "e".$r[$i]['type'];
-            $r[$i]['audioURL'] = self::getURLs($objid);
+            $r[$i]['audioURL'] = Audio::getURLs($objid);
         }
         return $r;
     }

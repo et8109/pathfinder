@@ -9,17 +9,22 @@ function __autoload($class_name) {
  * Initialized at the bottom of the file.
  */
 class AudioObj {
-    public $zone;
-    public $id;
-    public $busy;//if the obj is currently playing audio
-    public $prevAudio;//the numner of the last audio this obj played
-    public $prevStart;//when the last audio from this obj started
-    public $prevDone;//when the last audio from this obj will be done
-    public $objType;//a string which identifies which audioObj type this is
-    public static $arrayJSON;//json array to send to clinet
-    public static $time;//server time when request was recieved from client
+
+    const TYPE_PLAYER = 0;
+    const TYPE_NPC = 1;
+    const TYPE_ENEMY = 2;
+
+    protected $zone;//zone that the object is in
+    protected $id; //id of the object
+    protected $busy;//if the obj is currently playing audio
+    protected $prevAudio;//the numner of the last audio this obj played
+    protected $prevStart;//when the last audio from this obj started
+    protected $prevDone;//when the last audio from this obj will be done
+    protected $objType;//a type which identifies which audioObj type this is
+    protected static $arrayJSON;//json array to send to client
+    protected static $time;//server time when request was recieved from client
     
-    public function __construct($objType, $zone, $id, $prevDone, $prevStart, $prevAudio){
+    protected function __construct($objType, $id, $zone, $prevDone, $prevStart, $prevAudio){
         $this->busy = $prevDone > self::$time;
         $this->objType = $objType;
         $this->zone = $zone;

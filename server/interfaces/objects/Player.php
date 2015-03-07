@@ -4,18 +4,17 @@ require_once("shared/AudioObj.php");
 class Player extends AudioObj{
     const audio_attack = 0;
     const max_health = 4;
-    public $zone;
-    public $zonePrev;
     public $health;
     public $sprite;
-    
-    public function __construct($id, $newzone, $oldZone, $dbInfo){
-        parent::__construct("player", $posx, $posy, $id, null, null, null);
+
+    /**
+     * Should only be initialized from inside the class
+     */ 
+    private function __construct($id, $zone, $health){
+             parent::__construct(AudioObj::TYPE_PLAYER, 
+                $id, $zone, null, null, null);
         $this->ans = $ans;
-        $this->zone = $zone;
-        //from db
-        $this->zonePrev = $dbInfo['zone'];
-        $this->health = $dbInfo['health'];
+        $this->health = $health;
         //sprite
         $this->sprite = new Sprite();
     }
@@ -24,12 +23,16 @@ class Player extends AudioObj{
      * Returns a player class for the given player ID
      */
     public static function fromDatabase($playerID){
-        return new Player
+        $info = PlayerInfo::getInfoById($playerID);
+        return new Player(
+            $playerID, 
+            new Zone($info["zonex"], $info["zoney"]),
+            $info["health"]);
     }
     
     public function addEvent($audio){
-        //TODO o verride always false
-        return MainInterface::addPlayerEvent(AudioObj::$time, AudioObj::$time + constants::playerDuration, $audio, $info['playerID'], $this->zone, false);
+        //TODO override always false
+        PlayerEvents::addEvent(AudioObj::$time, AudioObj::$time + constants::playerDuration, $audio, $this->id, $this->zone->posx, $this->zone->posy, false);
     }
     
     /**
@@ -37,19 +40,26 @@ class Player extends AudioObj{
      */
     public function dead(){
         $this->reposition(0,0);
-        MainInterface::resetPlayer($info['playerID'],Player::max_health,0,0);
+        PlayerInfo::resetPlayer($this->id,self::max_health,0,0);
         //_addPlayerEvent(1, $time, $zone,true);//death sound as event
         $this->sprite->addEvent(Sprite::audio_dead);
     }
     /**
      *repositions the player in the db and sends a json notice
      */
-    public function reposition($x, $y){
+    public function reposition($zone){
         AudioObj::addJson(array(
             "playerInfo" => true,
-            "posX" => $x,
-            "posY" => $y
+            "zoneX" => $zone->posx,
+            "zoneY" => $zone->posy
         ));
+    }
+
+    /**
+     * Removes all the old events from the log, not just from this player
+     */
+    public static removeAllOldEvents($time){
+        PlayerEvents::removeExpired($time);
     }
 }
 

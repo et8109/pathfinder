@@ -11,13 +11,13 @@ class Enemy extends AudioObj{
     const max_health = 4;
     private $health;
     
-    public function __construct($zone, $id, $health, $finishTime, $prevStart, $prevAudio){
-        parent::__construct("enemy", $posx, $posy, $id, $finishTime, $prevStart, $prevAudio);
+    public function __construct($id, $zone, $health, $finishTime, $prevStart, $prevAudio){
+        parent::__construct(AudioObj::TYPE_ENEMY, $id, $zone, $finishTime, $prevStart, $prevAudio);
         $this->health = $health;
     }
     
     protected function addEvent($audio){
-        MainInterface::addEnemyEvent(AudioObj::$time, AudioObj::$time + constants::enemyDuration,$audio, $this->id);
+        Enemies::addEvent(AudioObj::$time, AudioObj::$time + constants::enemyDuration,$audio, $this->id);
         parent::addEvent($audio);
     }
     
@@ -73,7 +73,30 @@ class Enemy extends AudioObj{
         $x = constants::zoneWidth*$x + rand(constants::zoneBuffer,constants::zoneWidth-constants::zoneBuffer);
         //check if overlapping with anything
         //set new pos and max health
-        MainInterface::resetEnemy($x,$y,Enemy::max_health,$this->id);
+        Enemies::resetEnemy($x,$y,Enemy::max_health,$this->id);
     }
+
+    /**
+     * Returns the prep info needed when entering a new scene for each enemy.
+     */
+    public static function getPrepInfo($zone){
+        Enemies::getZonePrep($zone->posx, $zone->posy);
+    }
+
+    public static function getUpdateInfo($zone){
+        $arr = Enemies::getZoneUpdate($zone->posx, $zone->posy);
+        $list = [];
+        for($arr as $n){
+            $list[] = new Enemy(
+                $arr[$n]["id"],
+                new Zone($arr[$n]["zonex"],
+                         $arr[$n]["zoney"]),
+                $arr[$n]["health"],
+                $arr[$n]["finish"],
+                $arr[$n]["start"],
+                $arr[$n]["lastAudio"]);
+        }
+    }
+
 }
 ?>

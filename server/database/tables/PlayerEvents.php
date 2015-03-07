@@ -19,7 +19,7 @@ class PlayerEvents extends Table{
             ")");
     }
 
-   public static function removeOldPlayerEvents($time) {
+   public static function removeExpired($time) {
         $time = self::prepVar($time);
         self::$db->querySingle("delete from playerevents where finish < $time");
         return;

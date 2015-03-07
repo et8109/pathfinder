@@ -11,8 +11,8 @@ class Npc extends AudioObj{
     const dist_talk = 5;
     const dist_notice = 10;
 
-    public function __construct($posx, $posy, $id, $finishTime, $prevStart, $prevAudio){
-        parent::__construct("npc", $posx, $posy, $id, $finishTime, $prevStart, $prevAudio);
+    public function __construct($id, $zone, $finishTime, $prevStart, $prevAudio){
+        parent::__construct(AudioObj::TYPE_NPC, $id, $zone, $finishTime, $prevStart, $prevAudio);
     }
     
     protected function addEvent($audio){
@@ -49,6 +49,27 @@ class Npc extends AudioObj{
         }
         else if($dist < Npc::dist_notice && !$this->busy){
             $this->addEvent(Npc::audio_greet);
+        }
+    }
+    
+    /**
+     * Returns the prep info needed when entering a new scene for each npc.
+     */
+    public static function getPrepInfo($zone){
+        Npcs::getZonePrep($zone->posx, $zone->posy);
+    }
+
+    public static function getUpdateInfo($zone){
+        $arr = Npcs::getZoneUpdate($zone->posx, $zone->posy);
+        $list = [];
+        for($arr as $n){
+            $list[] = new Npc(
+                $arr[$n]["id"],
+                new Zone($arr[$n]["zonex"],
+                         $arr[$n]["zoney"]),
+                $arr[$n]["finish"],
+                $arr[$n]["start"], 
+                $arr[$n]["lastAudio"]);
         }
     }
 }
