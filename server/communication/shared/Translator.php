@@ -18,6 +18,17 @@ public class Translator{
         self::$time = time();
         self:$JSON = array();
     }
-}
 
+    public function add($arr){
+        self::$JSON[] = $arr;
+    }
+
+    public function send(){
+        return json_encode(self::$JSON);
+    }
+
+    public function clear(){
+        self::$JSON = array();
+    }
+}
 ?>

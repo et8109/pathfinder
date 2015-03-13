@@ -21,9 +21,6 @@ abstract class AudioObj {
     protected $prevStart;//when the last audio from this obj started
     protected $prevDone;//when the last audio from this obj will be done
     protected $objType;//a type which identifies which audioObj type this is
-    protected static $arrayJSON;//json array to send to client
-    protected static $time;//server time when request was recieved from client
-
     abstract public function getPrepInfo();//returns info needed before audio can be played
     abstract public static function getInZone($zonex, $zoney);//returns all of the given class in the given zone
     abstract public function fromDatabase($id);//returns the object of the class with the given id
@@ -46,7 +43,7 @@ abstract class AudioObj {
         $toSend['id'] = $this->id;
         $toSend['zone'] = $this->zone;
         $toSend[$this->objType] = true;
-        self::addJson($toSend);
+        Translator::add($toSend);
     }
 
     /**
@@ -60,18 +57,18 @@ abstract class AudioObj {
         for($audioArr as $a){
             $toSend['audio'][] = $audioArr[$a];
         }
-        self::addJson($toSend);
+        Translator::add($toSend);
     }
     
     protected function askQuestion(){
-        self::$arrayJSON[] = (array(
+        Translator::add[] = (array(
             "question" => true,
             "start" => true
         ));
     }
     
     protected function doneQuestion(){
-        self::$arrayJSON[] = (array(
+        Translator::add[] = (array(
             "question" => true,
             "done" => true
         ));
@@ -93,16 +90,6 @@ abstract class AudioObj {
         if($_SESSION['lastupdateTime'] < $this->prevStart){
             $this->addEvent($this->prevAudio);
         }
-    }
-    public static function initState(){
-        self::$arrayJSON = array();
-        self::$time = time();
-    }
-    /**
-     *Add a json array to the list of json objects to send
-     */
-    private static function addJson($toAdd){
-        self::$arrayJSON[] = $toAdd;
     }
     /**
      *Send the json object to the client

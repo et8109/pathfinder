@@ -50,16 +50,12 @@ if(!empty($_POST)){
     //prep audio for things in the zone
     Npc::getPrepInfo($newZone);
     Enemy::getPrepInfo($newZone);
-
+    return Translator::send();
 
     } else{
         throw new Exception("unknown verb");
     }
 } catch(Exception $e){
     require_once("shared/ErrorHandler");
-    ErrorHandler::handle($e);
-    //add exception to json to send
-    AudioObj::addJson(array(
-     "error" => ($e->getMessage())
-  ));
+    return ErrorHandler::handle($e);
 }
