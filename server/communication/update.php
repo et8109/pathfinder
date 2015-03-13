@@ -19,19 +19,19 @@ try{
         $player = Player::fromDatabase($_POST['playerID']);
         Player::removeAllOldEvents(AudioObj::$time);
         //get npcs in zone
-        $npcs = Npc::getUpdateInfo($player->zone);
+        $npcs = Npc::getInZone($player->zone);
         foreach($npcs as $npc){
             $npc->interactPlayer($player);
         }
         //get enemies in zone
-        $enemies = Enemy::getUpdateInfo($player->zone);
+        $enemies = Enemy::getInZone($player->zone);
         foreach($enemies as $enemy){
             $enemy->interactPlayer($player);
         }
        
        //check nearby players
        //check player events
-       $eventsResult = MainInterface::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
+       /*$eventsResult = Player::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
        foreach($eventsResult as $row){
        AudioObj::addJson(array(
         "event" => true,
@@ -40,7 +40,7 @@ try{
         "audioType" => $row['audiotype']
        ));
        }
-       
+        */
        //update last event time
        $_SESSION['lastupdateTime'] = AudioObj::$time;
        

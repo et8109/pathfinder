@@ -30,7 +30,7 @@ class Player extends AudioObj{
             $info["health"]);
     }
     
-    public function addEvent($audio){
+    protected function addEvent($audio){
         //TODO override always false
         PlayerEvents::addEvent(AudioObj::$time, AudioObj::$time + constants::playerDuration, $audio, $this->id, $this->zone->posx, $this->zone->posy, false);
     }
@@ -70,6 +70,10 @@ class Sprite {
     public function __construct(){}
     const audio_dead = 0;
     const audio_lowHealth = 1;
+
+    public function getPrepInfo(){
+        //TODO
+    }
     
     public function addEvent($audio){
         //TODO integrate with audioObj

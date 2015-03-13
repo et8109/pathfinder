@@ -2,8 +2,8 @@
 require("../interfaces/setupInterface.php");
 session_start();
 $arrayJSON = array();
-$infoRow = SetupInterface::getPlayerInfo($_SESSION['playerID']);
-$spriteRow = SetupInterface::getSpriteAudio();
+$player = Player::fromDatabase($_SESSION['playerID']);
+$spriteRow = ::getSpriteAudio();
 $arrayJSON[] = (array(
                     "spriteaudioURL" => $spriteRow[0]['url'].",".$spriteRow[1]['url'],
                     "playerID" => $_SESSION['playerID'],

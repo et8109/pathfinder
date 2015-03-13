@@ -27,7 +27,7 @@ class Enemies extends Table{
 
     }
 
-    public static function getZoneUpdate($zonex, $zoney){
+    public static function getInZone($zonex, $zoney){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
         $r = self::$db->queryMulti("select id, type, finish, start, lastAudio, health from enemies where zonex=$zonex and zoney=$zoney");
@@ -37,10 +37,10 @@ class Enemies extends Table{
     public static function getZonePrep($zonex, $zoney){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
-        $r = self::$db->queryMulti("select id from enemies where zonex=$zonex and zoney=$zoney");
+        $r = self::$db->queryMulti("select id, type from enemies where zonex=$zonex and zoney=$zoney");
         for($i=0; isset($r[$i]); $i++){
             $objid = "e".$r[$i]['type'];
-            $r[$i]['audioURL'] = Audio::getURLs($objid);
+            $r[$i]['audioURLs'] = Audio::getURLs($objid);
         }
         return $r;
     }

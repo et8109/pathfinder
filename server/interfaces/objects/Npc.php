@@ -56,11 +56,17 @@ class Npc extends AudioObj{
      * Returns the prep info needed when entering a new scene for each npc.
      */
     public static function getPrepInfo($zone){
-        Npcs::getZonePrep($zone->posx, $zone->posy);
+        $arr = Npcs::getZonePrep($zone->posx, $zone->posy);
+        for($arr as $n){
+            self::addPrepInfo($arr[$n]['id'], $arr[$n]['audioURLs']);
+        }
     }
 
-    public static function getUpdateInfo($zone){
-        $arr = Npcs::getZoneUpdate($zone->posx, $zone->posy);
+    /**
+     * Returns the npcs in the given zone
+     */
+    public static function getInZone($zone){
+        $arr = Npcs::getInZone($zone->posx, $zone->posy);
         $list = [];
         for($arr as $n){
             $list[] = new Npc(

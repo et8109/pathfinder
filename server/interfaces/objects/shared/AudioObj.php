@@ -8,7 +8,7 @@ function __autoload($class_name) {
  * A parent class for all audio objects
  * Initialized at the bottom of the file.
  */
-class AudioObj {
+abstract class AudioObj {
 
     const TYPE_PLAYER = 0;
     const TYPE_NPC = 1;
@@ -23,7 +23,12 @@ class AudioObj {
     protected $objType;//a type which identifies which audioObj type this is
     protected static $arrayJSON;//json array to send to client
     protected static $time;//server time when request was recieved from client
-    
+
+    abstract public function getPrepInfo();//returns info needed before audio can be played
+    abstract public static function getInZone($zonex, $zoney);//returns all of the given class in the given zone
+    abstract public function fromDatabase($id);//returns the object of the class with the given id
+    abstract protected function addEvent($audioID);//adds an event to the outgoing json
+
     protected function __construct($objType, $id, $zone, $prevDone, $prevStart, $prevAudio){
         $this->busy = $prevDone > self::$time;
         $this->objType = $objType;
@@ -35,11 +40,26 @@ class AudioObj {
     }
     
     protected function addEvent($audio){
+        $toSend = [];
         $toSend['audioType'] = $audio;
         $toSend['event'] = true;
         $toSend['id'] = $this->id;
         $toSend['zone'] = $this->zone;
         $toSend[$this->objType] = true;
+        self::addJson($toSend);
+    }
+
+    /**
+     * Info sent to clinet before any audio can be played
+     */
+    protected function addPrepInfo($id, $audioArr){
+        $toSend = [];
+        $toSend['prep'] = true;
+        $toSend['id'] = $id;
+        $toSend['audio'] = [];
+        for($audioArr as $a){
+            $toSend['audio'][] = $audioArr[$a];
+        }
         self::addJson($toSend);
     }
     
@@ -81,7 +101,7 @@ class AudioObj {
     /**
      *Add a json array to the list of json objects to send
      */
-    public static function addJson($toAdd){
+    private static function addJson($toAdd){
         self::$arrayJSON[] = $toAdd;
     }
     /**
