@@ -1,8 +1,8 @@
 <?php
 //autoload for objects, which need to load tables
-function __autoload($class_name) {
-    require "../../database/tables/$class_name.php";
-}
+spl_autoload_register(function ($class_name) {
+            include "../database/tables/$class_name.php";
+});
 
 /**
  * A parent class for all audio objects
@@ -21,7 +21,7 @@ abstract class AudioObj {
     protected $prevStart;//when the last audio from this obj started
     protected $prevDone;//when the last audio from this obj will be done
     protected $objType;//a type which identifies which audioObj type this is
-    abstract public function getPrepInfo();//returns info needed before audio can be played
+    //abstract static public function getPrepInfo();//returns info needed before audio can be played
     //abstract public static function getInZone($zonex, $zoney);//returns all of the given class in the given zone
     //abstract public static function fromDatabase($id);//returns the object of the class with the given id
     //TODO wont let me se them to asbtract

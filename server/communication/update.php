@@ -2,16 +2,8 @@
 /**
  * This page recieves requests to know what's going on.
  */
-
-session_start();
-require_once("../shared/constants.php");
-/**
- * define autoload for classes
- * throws exception if not found
- */
-function __autoload($class_name) {
-        require "../interfaces/objectified/$class_name.php";
-}
+require_once("shared/Header.php");
+require_once("shared/Translator.php");
 
 try{
 //only posts should be accepted. other verbs are ignored.

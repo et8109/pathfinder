@@ -4,7 +4,6 @@ include_once("../inc/pageBuilder.php");
 $builder = new PageBuilder(PageBuilder::TYPE_NORMAL);
 $builder->redirectIfLoggedIn();
 $builder->addHeader();
-include_once("../../server/interfaces/objects/Player.php");
 
 if(isset($_POST['uname'])){
     //sanitize
@@ -17,14 +16,18 @@ if(isset($_POST['uname'])){
         throw new Exception("Enter a valid password");
     }
     //get username, password
-    $id = User::IDfromLogin($uname,$pass);
+    $id = $builder->sendRequest("login", array(
+        'uname' => $uname, 
+        'pass' => $pass
+    ));
+    var_dump($id);
     if($id == false){
         throw new Exception("Incorrect username or password");
     }
     //set session
     $_SESSION['playerID'] = $id;
     $_SESSION['lastupdateTime'] = 0;
-    header("Location: index.php");
+    //header("Location: index.php");
 }
 ?>
 <form action="login.php" method="post">

@@ -57,6 +57,17 @@ class PlayerInfo extends Table{
  
     }
 
+    public static function getZonePrep(){
+        $zonex = self::prepVar($zonex);
+        $zoney = self::prepVar($zoney);
+        $r = self::$db->queryMulti("select id from playerinfo where zonex=$zonex and zoney=$zoney");
+        for($i=0; isset($r[$i]); $i++){
+            $objid = "p".$r[$i]['id'];
+            $r[$i]['audioURLs'] = Audio::getURLs($objid);
+        }
+        return $r; 
+    }
+
     public static function register($uname, $pass){
         $uname = self::prepVar($uname);
         $pass = self::prepVar($pass);

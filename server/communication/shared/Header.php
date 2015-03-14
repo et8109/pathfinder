@@ -5,10 +5,10 @@ session_start();
 require_once("../shared/constants.php");
 
 /**
- * define autoload for classes
+ * define and additional autoload for classes
  * throws exception if not found
  */
-function __autoload($class_name) {
-    require "../interfaces/objectified/$class_name.php";
-}
+spl_autoload_register(function ($class_name) {
+        include "../interfaces/objects/$class_name.php";
+});
 ?>

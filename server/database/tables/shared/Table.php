@@ -3,6 +3,7 @@
 /**
  * Abstract class for all tables
  */
+require_once("../database/database.php");
 abstract class Table{
     protected static $db;
     private static $initialized = false;

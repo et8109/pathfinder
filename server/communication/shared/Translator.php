@@ -2,15 +2,15 @@
 /*
  * translates to and from json in the communication layer
  */
-public class Translator{
+class Translator{
 
     private static $time;//server time when initialized
     private static $JSON;
-    private boolean $initialized = false;
+    private static $initialized = false;
 
-    private function __construct(){}//static only
+    protected function __construct(){}//static only
 
-    public function init(){
+    public static function init(){
         if(self::$initialized){
             throw new Exception("Translator initialized twice");
         }
@@ -19,16 +19,17 @@ public class Translator{
         self:$JSON = array();
     }
 
-    public function add($arr){
+    public static function add($arr){
         self::$JSON[] = $arr;
     }
 
-    public function send(){
+    public static function send(){
         return json_encode(self::$JSON);
     }
 
-    public function clear(){
+    public static function clear(){
         self::$JSON = array();
     }
 }
+Translator::init();
 ?>

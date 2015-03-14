@@ -11,7 +11,7 @@ class Enemy extends AudioObj{
     const max_health = 4;
     private $health;
     
-    public function __construct($id, $zone, $health, $finishTime, $prevStart, $prevAudio){
+    protected function __construct($id, $zone, $health, $finishTime, $prevStart, $prevAudio){
         parent::__construct(AudioObj::TYPE_ENEMY, $id, $zone, $finishTime, $prevStart, $prevAudio);
         $this->health = $health;
     }

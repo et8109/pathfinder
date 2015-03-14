@@ -1,7 +1,7 @@
 <?php
 session_start();
 include("../inc/pageBuilder.php");
-$builder = new PageBuilder(PageBuilder::pageTypes::index);
+$builder = new PageBuilder(PageBuilder::TYPE_INDEX);
 $builder->redirectIfLoggedOut();
 $builder->addHeader();
 ?>

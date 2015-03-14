@@ -10,7 +10,7 @@ class Player extends AudioObj{
     /**
      * Should only be initialized from inside the class
      */ 
-    private function __construct($id, $zone, $health){
+    protected function __construct($id, $zone, $health){
              parent::__construct(AudioObj::TYPE_PLAYER, 
                 $id, $zone, null, null, null);
         $this->ans = $ans;
@@ -31,7 +31,15 @@ class Player extends AudioObj{
     }
 
     public static function IDfromLogin($uname, $pass){
+        //require_once("../../../database/tables/PlayerInfo.php");
        return PlayerInfo::getInfoLogin($uname, $pass)['id'];
+    }
+
+    public static function getPrepInfo(){
+        $arr = PlayerInfo::getZonePrep($zone->posx, $zone->posy);
+        foreach($arr as $n){
+            self::addPrepInfo($arr[$n]['id'], $arr[$n]['audioURLs']);
+        }
     }
     
     protected function addEvent($audio){

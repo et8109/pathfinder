@@ -3,7 +3,7 @@
 /**
  * Handles errors in the communication layer
  */
-public class ErrorHandler{
+class ErrorHandler{
 
 
     public static function handle($e){

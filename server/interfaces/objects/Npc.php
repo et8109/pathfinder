@@ -11,7 +11,7 @@ class Npc extends AudioObj{
     const dist_talk = 5;
     const dist_notice = 10;
 
-    public function __construct($id, $zone, $finishTime, $prevStart, $prevAudio){
+    protected function __construct($id, $zone, $finishTime, $prevStart, $prevAudio){
         parent::__construct(AudioObj::TYPE_NPC, $id, $zone, $finishTime, $prevStart, $prevAudio);
     }
     
