@@ -29,6 +29,10 @@ class Player extends AudioObj{
             new Zone($info["zonex"], $info["zoney"]),
             $info["health"]);
     }
+
+    public static function IDfromLogin($uname, $pass){
+       return PlayerInfo::getInfoLogin($uname, $pass)['id'];
+    }
     
     protected function addEvent($audio){
         //TODO override always false
@@ -48,7 +52,7 @@ class Player extends AudioObj{
      *repositions the player in the db and sends a json notice
      */
     public function reposition($zone){
-        AudioObj::addJson(array(
+        self::addJson(array(
             "playerInfo" => true,
             "zoneX" => $zone->posx,
             "zoneY" => $zone->posy
@@ -58,7 +62,7 @@ class Player extends AudioObj{
     /**
      * Removes all the old events from the log, not just from this player
      */
-    public static removeAllOldEvents($time){
+    public static function removeAllOldEvents($time){
         PlayerEvents::removeExpired($time);
     }
 }

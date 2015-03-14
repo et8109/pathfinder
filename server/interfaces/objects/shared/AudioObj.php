@@ -22,9 +22,9 @@ abstract class AudioObj {
     protected $prevDone;//when the last audio from this obj will be done
     protected $objType;//a type which identifies which audioObj type this is
     abstract public function getPrepInfo();//returns info needed before audio can be played
-    abstract public static function getInZone($zonex, $zoney);//returns all of the given class in the given zone
-    abstract public function fromDatabase($id);//returns the object of the class with the given id
-    abstract protected function addEvent($audioID);//adds an event to the outgoing json
+    //abstract public static function getInZone($zonex, $zoney);//returns all of the given class in the given zone
+    //abstract public static function fromDatabase($id);//returns the object of the class with the given id
+    //TODO wont let me se them to asbtract
 
     protected function __construct($objType, $id, $zone, $prevDone, $prevStart, $prevAudio){
         $this->busy = $prevDone > self::$time;
@@ -54,21 +54,21 @@ abstract class AudioObj {
         $toSend['prep'] = true;
         $toSend['id'] = $id;
         $toSend['audio'] = [];
-        for($audioArr as $a){
+        foreach($audioArr as $a){
             $toSend['audio'][] = $audioArr[$a];
         }
         Translator::add($toSend);
     }
     
     protected function askQuestion(){
-        Translator::add[] = (array(
+        Translator::add(array(
             "question" => true,
             "start" => true
         ));
     }
     
     protected function doneQuestion(){
-        Translator::add[] = (array(
+        Translator::add(array(
             "question" => true,
             "done" => true
         ));
@@ -98,5 +98,4 @@ abstract class AudioObj {
         return json_encode(self::$arrayJSON);
     }
 }
-AudioObj::initState();
 ?>

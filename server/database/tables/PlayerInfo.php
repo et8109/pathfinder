@@ -34,12 +34,13 @@ class PlayerInfo extends Table{
     }
 
     /**
-     * used for logging in
+     * returns true if the user exists
+     * false if not found
      */
     public static function getInfoLogin($uname, $pass){
         $uname = self::prepVar($uname);
         $pass = self::prepVar($pass);
-        $r = self::$db->querySingle("select id,peerid,zonex,zoney,audioURL from playerinfo where uname=$uname and pass=$pass");
+        $r = self::$db->querySingle("select id where uname=$uname and pass=$pass");
         return $r;
     }   
 

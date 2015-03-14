@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once("../interfaces/loginInterface.php");
-include("../inc/pageBuilder.php");
-$builder = new PageBuilder(PageBuilder::pageTypes::normal);
+include_once("../inc/pageBuilder.php");
+$builder = new PageBuilder(PageBuilder::TYPE_NORMAL);
 $builder->redirectIfLoggedIn();
 $builder->addHeader();
+include_once("../../server/interfaces/objects/Player.php");
 
 if(isset($_POST['uname'])){
     //sanitize
@@ -17,12 +17,12 @@ if(isset($_POST['uname'])){
         throw new Exception("Enter a valid password");
     }
     //get username, password
-    $playerRow = LoginInterface::getInfo($uname,$pass);
-    if($playerRow == false){
+    $id = User::IDfromLogin($uname,$pass);
+    if($id == false){
         throw new Exception("Incorrect username or password");
     }
     //set session
-    $_SESSION['playerID'] = $playerRow['id'];
+    $_SESSION['playerID'] = $id;
     $_SESSION['lastupdateTime'] = 0;
     header("Location: index.php");
 }

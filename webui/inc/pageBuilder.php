@@ -5,16 +5,20 @@
 
 class PageBuilder {
 
+    const TYPE_NORMAL = 0;
+    const TYPE_INDEX = 1;
+    const TYPE_ADMIN = 2;
+
     private $pageType;
 
-    public __construct($pageType){
+    public function __construct($pageType){
         $this->pageType = $pageType;
     }
 
     /**
      * Redirects the user to the index page if they are logged in.
      */
-    public function redirectIfLogggedIn(){
+    public function redirectIfLoggedIn(){
         if(isset($_SESSION['playerID'])){
                 header("Location: index.php");
         }
@@ -34,10 +38,10 @@ class PageBuilder {
      */
     public function addHeader(){
         switch($this->pageType){
-            case pageTypes::normal:
+            case self::TYPE_NORMAL:
                 include("header.inc");
                 break;
-            case pageTypes::index:
+            case self::TYPE_INDEX:
                 include("headerIndex.inc");
                 break;
         }
@@ -49,15 +53,8 @@ class PageBuilder {
     public function addFooter(){
         include("footer.inc");
     }
-
-    /**
-     * Types of pages.
-     */
-    public static class pageTypes {
-        const normal = 0;
-        const index = 1;
-        const admin = 2;
-    }
 }
+
+
 
 ?>
