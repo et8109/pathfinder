@@ -1,3 +1,13 @@
+/**
+ *  onload:
+ *      load player and sprite defaults
+ *      load current zone
+ *  onmove:
+ *      load new zone
+ *  onupdate:
+ *      read response to play/pause
+ */
+
 window.onerror = function(msg, url, line) {
     log("Error: "+msg+" url: "+url+" line: "+line);
 };
@@ -5,14 +15,16 @@ window.onerror = function(msg, url, line) {
 //page setup
 var loading = true;
 
+//p2p chat
 var peer;
-var localStream;
+var localStream;//audio from local device
 var connections=[];
 
 window.URL = window.URL || window.webkitURL;
 navigator.getMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
 var audioContext = window.AudioContext || window.webkitAudioContext;
 
+//get audio stream from device
 navigator.getMedia({
       audio: true,
       video: false
@@ -34,12 +46,11 @@ var context = new webkitAudioContext();
 /**
  *The audio source with the sound for walking.
  */
-var walkObject;
 var spriteObject=new node();
 var question = false;
 var answer = null;
 
-var requestArray=[];
+var requestArray=[];//used to request audio
 var npcs=[];
 var enemies = [];
 var ambient =[];
@@ -47,8 +58,6 @@ var players=[];
 
 var updater;
 var ticker;
-var posX=0;
-var posY=0;
 
 /**
  *repeated in db
@@ -60,9 +69,10 @@ var types = {
     person: 3
 }
 
+//load defualt playe rinfo
 window.onload = function(){
     alert("sending setup request");
-    sendRequest("../inc/setup.php",
+    sendRequest("../../server/communication/setup.php",
                 "",
                 function(response){
                     log("starting loading");
@@ -72,26 +82,34 @@ window.onload = function(){
                     players[response.playerID] = new node();
                     players[response.playerID].requestBuffer(response.playeraudioURL);
                     loadRequestArray(requestArray);
+                    //load current scene
+                    //TODO
+
                     //create peer
                     createPeer(response.peerID);
-                    //set position
-                    posX = parseInt(response.posX);
-                    posY = parseInt(response.posY);
                     //start updater
                     updater = setInterval("update()", 3000);
-                    ticker = setInterval("tick()",1000);
                     log("client version 2");
                     log("server version "+response.version);
                     }
+                    loading = false;
                );
 }
 
+window.onkeypress = function(event){
+   if(event.keyCode != 13){
+        if (textLineListener == listener_attack_again) {
+            endListening();
+        }
+        return;
+    }
+ 
+}
+
 function node(){
-    this.posx = null;
-    this.posy = null;
-    this.posz = null;
-    this.buffers=[];
-    this.audioURLs=[];
+    this.buffers=[];//bufferend audio
+    this.audioURLs=[];//string array of urls
+
     /**
      *adds a request to requestArray to get buffers for audio urls
      *takes comma separated urls
@@ -109,13 +127,8 @@ function node(){
         log("starting: "+this.audioURLs[audioNum]);
         this.audioSource && this.audioSource.stop();
         log(this.buffers[audioNum]);
-        if (this.posx==null) {
-            //no panner
-            this.audioSource = createAudioSource(this.buffers[audioNum],false/*no panner*/);
-        } else{
-            //with panner
-            this.audioSource = createAudioSource(this.buffers[audioNum],true/*panner*/,this.posx,this.posy,this.posz);
-        }
+        this.audioSource = createAudioSource(this.buffers[audioNum],false/*no panner*/);
+        //this.audioSource = createAudioSource(this.buffers[audioNum],true/*panner*/,this.posx,this.posy,this.posz);
         if (this.loop){
             this.audioSource.loop = true;//for walking
         }
@@ -141,7 +154,7 @@ function loadRequestArray(requestArray){
     }
     var info = requestArray.pop();
     request = new XMLHttpRequest();
-    request.open("GET","../audio/"+info[1],true/*asynchronous*/);
+    request.open("GET","../../server/audio/"+info[1],true/*asynchronous*/);
     request.responseType = "arraybuffer";
     request.onload = function(){
         if (request.response == null) {
@@ -233,85 +246,9 @@ function checkUpdateResponse(response) {
             }
         }
         loadRequestArray(requestArray);
-    } else{
-        //play events
-        for(j in response){
-            var data = response[j];
-            if (data.event) {
-                //if npc event
-                if (data.npc) {
-                    npcs[data.id].play(data.audioType);
-                } else if(data.enemy){
-                    enemies[data.id].play(data.audioType);
-                } else if (data.player) {
-                    players[data.id].play(data.audioType);
-                }
-            } else if (data.spriteEvent) {
-                spriteObject.play(data.audioType);
-            } else if (data.playerInfo) {
-                //update position
-                posX = parseInt(data.posX);
-                posY = parseInt(data.posY);
-            } else if(data.question){
-                if (data.start){
-                    question = true;
-                }
-                else if (data.done){
-                    answer = null;
-                }
-            }
-            //nearby players
-            //add to players array players[id]
-        }
-    }
-    loading = false;
+    } 
 }
 
-/**
- *started when login request is recieved
- *updates position
- *updates audio
- */
-function tick(){
-    if (loading) {
-        return;
-    }
-    if (question) {
-        log("question")
-        if (pressedA && pressedD) {
-            answer = false;
-            question = false;
-        }
-        else if (pressedW && pressedS) {
-            answer = true;
-            question = false;
-        }
-        return;
-    }
-    else if (pressedA || pressedD || pressedS || pressedW) {
-        log("walking")
-        //play walk audio
-        if (!walkObject.playing) {
-            log("start walk audio")
-            walkObject.play(0);
-            walkObject.playing = true;
-        }
-        //find walk angle
-        var walkAngle = getWalkAngle();
-        //update position based on angle
-        posX+= Math.cos(walkAngle)*2;
-        posY+= Math.sin(walkAngle)*2;
-        //update listener position
-        context.listener.setPosition(posX,posY,0/*z-coord*/);
-        context.listener.setOrientation(Math.cos(angle),Math.sin(angle),0,0,0,1);
-    } else{
-        //stop walk audio
-        if (walkObject.playing) {
-            walkObject.stop();
-            walkObject.playing = false;
-        }
-    }
-}
 
 /**
  *set up convolver
@@ -375,14 +312,46 @@ function recordedAttack(blob){
  *reacts to recieved data
  */
 function update(){
-    log("start update");
-    log("u: "+posX+" x "+posY);
-    var data={posx:posX,
-            posy:posY,
-            ans:answer==true ? 1 : 0};
-    var json = JSON.stringify(data);
-    log("to sock: "+json);
-    sendToServer(json);
+    log("sending update");
+    sendRequest("../../server/communication/update.php","ans="+answer==true? 1:0,
+    function(response){
+        alert("update recived");
+        for(d in response){
+            if(response[d].play){
+                //play audio
+                 //play events
+        for(j in response){
+            var data = response[j];
+            if (data.event) {
+                //if npc event
+                if (data.npc) {
+                    npcs[data.id].play(data.audioType);
+                } else if(data.enemy){
+                    enemies[data.id].play(data.audioType);
+                } else if (data.player) {
+                    players[data.id].play(data.audioType);
+                }
+            } else if (data.spriteEvent) {
+                spriteObject.play(data.audioType);
+            } else if (data.playerInfo) {
+                //update position
+                posX = parseInt(data.posX);
+                posY = parseInt(data.posY);
+            } else if(data.question){
+                if (data.start){
+                    question = true;
+                }
+                else if (data.done){
+                    answer = null;
+                }
+            }
+            //nearby players
+            //add to players array players[id]
+        }
+
+            }
+        }
+    })
 }
 
 /**

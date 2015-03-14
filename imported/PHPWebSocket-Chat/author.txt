@@ -1,2 +1,0 @@
-https://github.com/Flynsarmy/PHPWebSocket-Chat
-used 12/30/2014
