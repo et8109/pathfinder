@@ -5,7 +5,6 @@
  */
 class ErrorHandler{
 
-
     public static function handle($e){
         Translator::clear();
         Translator::add(array(

@@ -3,14 +3,14 @@
 /**
  * Abstract class for all tables
  */
-require_once("../database/database.php");
+require_once(constants::server_root."/database/core/database.php");
 abstract class Table{
     protected static $db;
     private static $initialized = false;
-    abstract public function create();
-    abstract public function init();
+    abstract static public function create();
+    abstract static public function init();
 
-    protected static function prepVar(){
+    protected static function prepVar($var){
         self::$db->escapeString($var);
         //if not a number, surround in quotes
         if(!is_numeric($var)){
@@ -23,7 +23,7 @@ abstract class Table{
         if(self::$initialized){
             throw new Exception("Cannot initialize db twice");
         }
-        self::$db = new Database();
+        self::$db = new DBCore();
         self::$initialized = true;
     }
 }

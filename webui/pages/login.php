@@ -5,6 +5,9 @@ $builder = new PageBuilder(PageBuilder::TYPE_NORMAL);
 $builder->redirectIfLoggedIn();
 $builder->addHeader();
 
+require_once("/home/elliot/projects/pathfinder/server/shared/constants.php");
+require_once("/home/elliot/projects/pathfinder/server/interfaces/objects/Player.php");
+
 if(isset($_POST['uname'])){
     //sanitize
     $uname = $_POST['uname'];
@@ -15,19 +18,15 @@ if(isset($_POST['uname'])){
     if($pass == null || $pass == ""){
         throw new Exception("Enter a valid password");
     }
-    //get username, password
-    $id = $builder->sendRequest("login", array(
-        'uname' => $uname, 
-        'pass' => $pass
-    ));
-    var_dump($id);
-    if($id == false){
-        throw new Exception("Incorrect username or password");
+    try{
+        $id = Player::IDfromLogin($uname, $pass);
+        //set session
+        $_SESSION['playerID'] = $id;
+        $_SESSION['lastupdateTime'] = 0;
+        header("Location: index.php");
+    } catch(Exception $e){
+        echo "incorrect uname/pass combo";
     }
-    //set session
-    $_SESSION['playerID'] = $id;
-    $_SESSION['lastupdateTime'] = 0;
-    //header("Location: index.php");
 }
 ?>
 <form action="login.php" method="post">

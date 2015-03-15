@@ -1,5 +1,5 @@
 <?php
-class Database {
+class DBCore {
     private static $hostName = "localhost";
     private static $username = "root";//"ignatymc_admin";
     private static $password = null;//"1Gn4tym";
@@ -63,7 +63,7 @@ class Database {
     }
 
     public static function resetdb(){
-        $db = new Database();
+        $db = new DBCore();
         $db->querySingle("DROP DATABASE IF EXISTS ignatymc_pathfinder");
         $db->querySingle("CREATE DATABASE ignatymc_pathfinder");
         $db->querySingle("USE ignatymc_pathfinder");

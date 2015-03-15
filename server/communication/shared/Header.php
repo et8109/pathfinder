@@ -9,6 +9,6 @@ require_once("../shared/constants.php");
  * throws exception if not found
  */
 spl_autoload_register(function ($class_name) {
-        include "../interfaces/objects/$class_name.php";
+        include constants::server_root."/interfaces/objects/$class_name.php";
 });
 ?>

@@ -1,8 +1,10 @@
 <?php
 //autoload for objects, which need to load tables
+//
+//
 spl_autoload_register(function ($class_name) {
-            include "../database/tables/$class_name.php";
-});
+            include constants::server_root."/database/tables/$class_name.php";
+}, true, true);
 
 /**
  * A parent class for all audio objects

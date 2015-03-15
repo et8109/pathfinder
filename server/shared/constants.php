@@ -9,6 +9,7 @@ final class constants {
     const playerDuration = 6;
     const portNum = 9300;
     const ipAddr = "127.0.0.1";
+    const server_root = "/home/elliot/projects/pathfinder/server";
 }
 
 /**

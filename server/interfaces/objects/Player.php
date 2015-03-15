@@ -31,8 +31,10 @@ class Player extends AudioObj{
     }
 
     public static function IDfromLogin($uname, $pass){
-        //require_once("../../../database/tables/PlayerInfo.php");
-       return PlayerInfo::getInfoLogin($uname, $pass)['id'];
+        $r = PlayerInfo::getInfoLogin($uname, $pass)['id'];
+        if($r == null){
+            throw new Exception("name/pass combo not found");
+        }
     }
 
     public static function getPrepInfo(){
