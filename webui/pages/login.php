@@ -18,9 +18,9 @@ if(isset($_POST['uname'])){
     if($pass == null || $pass == ""){
         throw new Exception("Enter a valid password");
     }
+    $id = false;
     try{
         $id = Player::IDfromLogin($uname, $pass);
-        //set session
         $_SESSION['playerID'] = $id;
         $_SESSION['lastupdateTime'] = 0;
         header("Location: index.php");

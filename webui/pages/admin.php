@@ -11,6 +11,7 @@ if(isset($_POST['reset'])){
         $r = $builder->sendRequest("resetDB", array(
             'reset' => true
         ));  
+        echo $r;
         echo "done db reset";
     } else{
         echo "incorrect input";

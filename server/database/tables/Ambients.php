@@ -3,7 +3,7 @@ require_once("shared/Table.php");
 /**
  * Stores the ambients sounds for each zone
  */
-class Ambient extends Table{
+class Ambients extends Table{
     private function __construct() {}//static only
 
     public static function create(){

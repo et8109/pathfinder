@@ -67,12 +67,14 @@ class DBCore {
         $db->querySingle("DROP DATABASE IF EXISTS ignatymc_pathfinder");
         $db->querySingle("CREATE DATABASE ignatymc_pathfinder");
         $db->querySingle("USE ignatymc_pathfinder");
-        foreach (new DirectoryIterator('./tables') as $file) {
+        foreach (new DirectoryIterator(constants::server_root.'/database/tables') as $file) {
             if($file->isDot()) continue;
+            if(is_dir($file)) continue;
             $name = $file->getFilename();
-            require_once "./tables/$name.php";
-            $name::create();
-            $name::init();
+            require_once constants::server_root."/database/tables/$name";
+            $class_name = substr($name, 0, -4);//remove .php
+            $class_name::create();
+            $class_name::init();
         }
     }
 }

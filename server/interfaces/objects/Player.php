@@ -35,6 +35,7 @@ class Player extends AudioObj{
         if($r == null){
             throw new Exception("name/pass combo not found");
         }
+        return $r;
     }
 
     public static function getPrepInfo(){

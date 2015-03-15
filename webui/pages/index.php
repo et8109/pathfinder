@@ -1,4 +1,7 @@
 <?php
+
+echo "welcome to index";
+
 session_start();
 include("../inc/pageBuilder.php");
 $builder = new PageBuilder(PageBuilder::TYPE_INDEX);

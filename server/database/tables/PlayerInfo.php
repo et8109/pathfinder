@@ -40,7 +40,7 @@ class PlayerInfo extends Table{
     public static function getInfoLogin($uname, $pass){
         $uname = self::prepVar($uname);
         $pass = self::prepVar($pass);
-        $r = self::$db->querySingle("select id where uname=$uname and pass=$pass");
+        $r = self::$db->querySingle("select id from playerinfo where uname=$uname and pass=$pass");
         return $r;
     }   
 

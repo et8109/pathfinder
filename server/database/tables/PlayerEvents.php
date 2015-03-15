@@ -11,12 +11,15 @@ class PlayerEvents extends Table{
             "CREATE TABLE playerevents (".
             "id int(3),".
             "zonex int(3),".
-            "zoney int(3),"
+            "zoney int(3),".
             "audiotype int(3),".
             "finish int(10),".
             "start int(10),".
             "PRIMARY KEY (id)".
             ")");
+    }
+
+    public static function init(){
     }
 
    public static function removeExpired($time) {
