@@ -44,7 +44,11 @@ class DBCore {
     
     public function queryMulti($sql){
         $result = mysqli_query($this->con, $sql);
-        $arr =  $result->fetch_all(MYSQLI_ASSOC);
+        $arr = [];
+        while ($row = $result->fetch_assoc()) {
+            $arr[] = $row;
+        }
+        //$arr =  $result->fetch_all(MYSQLI_ASSOC);
         mysqli_free_result($result);
         return $arr;
     }

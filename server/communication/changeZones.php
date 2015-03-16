@@ -22,30 +22,35 @@ if(!empty($_POST)){
             throw new Exception("out of map range");
         }
         $newZone = new Zone($zone->posx,
-                            $zone->posy + 1);
+            $zone->posy + 1);
+        break;
     case 'S':
         if($zoney <= 0){
             throw new Exception("out of map range");
         }
         $newZone = new Zone($zone->posx,
-                            $zone->posy - 1);
+            $zone->posy - 1);
+        break;
     case 'E':
         if($zonex >= constants::numZonesSrt){
             throw new Exception("out of map range");
         }
         $newZone = new Zone($zone->posx + 1,
-                            $zone->posy);
+            $zone->posy);
+        break;
     case 'W':
         if($zoney <= 0){
             throw new Exception("out of map range");
         }
         $newZone = new Zone($zone->posx - 1,
             $zone->posy);
+        break;
     case 'init':
         //initial zone, just needs to load
         $newZone = $zone;
+        break;
     default:
-        throw new Exception("unknown direction");
+        throw new Exception("unknown direction: $dir");
     }
     //continue to change zone
     $player->reposition($newZone);

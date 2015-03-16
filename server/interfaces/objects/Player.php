@@ -70,10 +70,10 @@ class Player extends AudioObj{
      *repositions the player in the db and sends a json notice
      */
     public function reposition($zone){
-        self::addJson(array(
+        Translator::add(array(
             "playerInfo" => true,
-            "zoneX" => $zone->posx,
-            "zoneY" => $zone->posy
+            "zoneX" => $zone->zonex,
+            "zoneY" => $zone->zoney
         ));
     }
 

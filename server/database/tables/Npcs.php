@@ -32,7 +32,7 @@ class Npcs extends Table{
     public static function getZonePrep($zonex, $zoney){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
-        $r = self::$db->queryMulti("select id, from npcs where zonex=$zonex and zoney=$zoney");
+        $r = self::$db->queryMulti("select id from npcs where zonex=$zonex and zoney=$zoney");
         for($i=0; isset($r[$i]); $i++){
             $objid = "n".$r[$i]['id'];
             $r[$i]['audioURLs'] = Audio::getURLs($objid);

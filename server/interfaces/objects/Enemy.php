@@ -80,8 +80,8 @@ class Enemy extends AudioObj{
      * Returns the prep info needed when entering a new scene for each enemy.
      */
     public static function getPrepInfo($zone){
-        $arr = Enemies::getZonePrep($zone->posx, $zone->posy);
-        for($arr as $n){
+        $arr = Enemies::getZonePrep($zone->zonex, $zone->zoney);
+        foreach($arr as $n){
             self::addPrepInfo($arr[$n]['type'], $arr[$n]['audioURLs']);
         }
     }
@@ -90,9 +90,9 @@ class Enemy extends AudioObj{
      * Returns the enemies in the given zone
      */
     public static function getInZone($zone){
-        $arr = Enemies::getInZone($zone->posx, $zone->posy);
+        $arr = Enemies::getInZone($zone->zonex, $zone->zoney);
         $list = [];
-        for($arr as $n){
+        foreach($arr as $n){
             $list[] = new Enemy(
                 $arr[$n]["id"],
                 new Zone($arr[$n]["zonex"],
