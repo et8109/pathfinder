@@ -1,13 +1,3 @@
-/**
- *  onload:
- *      load player and sprite defaults
- *      load current zone
- *  onmove:
- *      load new zone
- *  onupdate:
- *      read response to play/pause
- */
-
 window.onerror = function(msg, url, line) {
     log("Error: "+msg+" url: "+url+" line: "+line);
 };
@@ -53,6 +43,21 @@ var answer = null;
 var requestArray=[];//used to request audio
 var npcs=[];
 var enemies = [];
+
+/**
+ *The audiocontext for the entire page.
+ */
+var context = new webkitAudioContext();
+/**
+ *The audio source with the sound for walking.
+ */
+var spriteObject=new node();
+var question = false;
+var answer = null;
+
+var requestArray=[];//used to request audio
+var npcs=[];
+var enemies = [];
 var ambient =[];
 var players=[];
 
@@ -70,29 +75,44 @@ var types = {
 }
 
 //load defualt playe rinfo
+
+
+/**
+ *  onload:
+ *      load player and sprite defaults
+ *      load current zone
+ *  onmove:
+ *      load new zone
+ *  onupdate:
+ *      read response to play/pause
+ */
+
 window.onload = function(){
     alert("sending setup request");
-    sendRequest("../../server/communication/setup.php",
-                "",
+    sendRequest("setup.php",
+                "setup=true",
                 function(response){
                     log("starting loading");
                     response=response[0];
                     //load sprite and player audio
-                    spriteObject.requestBuffer(response.spriteaudioURL);
+                    //spriteObject.requestBuffer(response.spriteaudioURL); TODO load sprite
                     players[response.playerID] = new node();
                     players[response.playerID].requestBuffer(response.playeraudioURL);
                     loadRequestArray(requestArray);
                     //load current scene
-                    //TODO
-
+                    sendRequest("changeZones.php",
+                        "playerID="+response.playerID+"&dir=init",
+                        function(response){
+                            log("response from current scene");
+                        });
                     //create peer
                     createPeer(response.peerID);
                     //start updater
-                    updater = setInterval("update()", 3000);
+                    //updater = setInterval("update()", 3000);
                     log("client version 2");
                     log("server version "+response.version);
-                    }
                     loading = false;
+                }
                );
 }
 
@@ -313,7 +333,7 @@ function recordedAttack(blob){
  */
 function update(){
     log("sending update");
-    sendRequest("../../server/communication/update.php","ans="+answer==true? 1:0,
+    sendRequest("update.php","ans="+answer==true? 1:0,
     function(response){
         alert("update recived");
         for(d in response){
@@ -437,7 +457,7 @@ function log(msg){
  */
 function sendRequest(url,params,returnFunction){
 var request = new XMLHttpRequest();
-request.open("POST",url);
+request.open("POST","../../server/communication/"+url);
 request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 request.setRequestHeader("Content-length", params.length);
 request.setRequestHeader("Connection", "close");

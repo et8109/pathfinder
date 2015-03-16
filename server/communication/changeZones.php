@@ -12,8 +12,7 @@ if(!empty($_POST)){
     //AudioObj::initState();//sets up globals: time and json array
     //get player db info
     $player = Player::fromDatabase($_POST['playerID']);
-    $zone= new Zone($playerInfo['zonex'],
-                    $playerInfo['zoney']);
+    $zone= $player->zone;
     $dir = $_POST['dir'];
     //set new zone co-ords
     $newZone = null;
@@ -41,7 +40,10 @@ if(!empty($_POST)){
             throw new Exception("out of map range");
         }
         $newZone = new Zone($zone->posx - 1,
-                            $zone->posy);
+            $zone->posy);
+    case 'init':
+        //initial zone, just needs to load
+        $newZone = $zone;
     default:
         throw new Exception("unknown direction");
     }
@@ -50,12 +52,12 @@ if(!empty($_POST)){
     //prep audio for things in the zone
     Npc::getPrepInfo($newZone);
     Enemy::getPrepInfo($newZone);
-    return Translator::send();
+    echo Translator::send();
 
     } else{
         throw new Exception("unknown verb");
     }
 } catch(Exception $e){
-    require_once("shared/ErrorHandler");
-    return ErrorHandler::handle($e);
+    require_once("shared/ErrorHandler.php");
+    echo ErrorHandler::handle($e);
 }

@@ -1,8 +1,8 @@
 <?php
 class Zone{
 
-    public final $zonex;
-    public final $zoney;
+    public $zonex;
+    public $zoney;
 
     public function __construct($zonex, $zoney){
         $this->zonex = $zonex;

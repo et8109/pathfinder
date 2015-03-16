@@ -4,7 +4,7 @@
  */
 class Translator{
 
-    private static $time;//server time when initialized
+    public static $time;//server time when initialized. audioobj need to know it
     private static $JSON;
     private static $initialized = false;
 

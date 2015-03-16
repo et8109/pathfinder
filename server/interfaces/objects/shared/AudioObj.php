@@ -3,7 +3,10 @@
 //
 //
 spl_autoload_register(function ($class_name) {
-            include constants::server_root."/database/tables/$class_name.php";
+    $file = $_SERVER['DOCUMENT_ROOT']."/server/database/tables/$class_name.php";
+    if (file_exists($file)) {
+        include_once($file);
+    }
 }, true, true);
 
 /**
@@ -16,7 +19,7 @@ abstract class AudioObj {
     const TYPE_NPC = 1;
     const TYPE_ENEMY = 2;
 
-    protected $zone;//zone that the object is in
+    public $zone;//zone that the object is in
     protected $id; //id of the object
     protected $busy;//if the obj is currently playing audio
     protected $prevAudio;//the numner of the last audio this obj played
@@ -29,7 +32,7 @@ abstract class AudioObj {
     //TODO wont let me se them to asbtract
 
     protected function __construct($objType, $id, $zone, $prevDone, $prevStart, $prevAudio){
-        $this->busy = $prevDone > self::$time;
+        $this->busy = $prevDone > Translator::$time;
         $this->objType = $objType;
         $this->zone = $zone;
         $this->id = $id;

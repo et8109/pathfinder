@@ -46,7 +46,7 @@ class PlayerInfo extends Table{
 
     public static function getInfoById($pid){
         $pid = self::prepVar($pid);
-        $r = self::$db->querySingle("select zonex, zoney, peerid, audioURL from playerinfo where id=$pid");
+        $r = self::$db->querySingle("select zonex, zoney, peerid, audioURL, health from playerinfo where id=$pid");
         return $r;
     }
 

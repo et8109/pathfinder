@@ -13,7 +13,7 @@ class Player extends AudioObj{
     protected function __construct($id, $zone, $health){
              parent::__construct(AudioObj::TYPE_PLAYER, 
                 $id, $zone, null, null, null);
-        $this->ans = $ans;
+        //$this->ans = $ans;
         $this->health = $health;
         //sprite
         $this->sprite = new Sprite();
@@ -38,13 +38,20 @@ class Player extends AudioObj{
         return $r;
     }
 
-    public static function getPrepInfo(){
+    public static function getPrepInfo($zone){
         $arr = PlayerInfo::getZonePrep($zone->posx, $zone->posy);
         foreach($arr as $n){
             self::addPrepInfo($arr[$n]['id'], $arr[$n]['audioURLs']);
         }
     }
-    
+
+    /**
+     * Setup info required only when initializing the game
+     */
+    public function getSetupInfo(){
+        return PlayerInfo::getInfoById($this->id);
+    }
+
     protected function addEvent($audio){
         //TODO override always false
         PlayerEvents::addEvent(AudioObj::$time, AudioObj::$time + constants::playerDuration, $audio, $this->id, $this->zone->posx, $this->zone->posy, false);
