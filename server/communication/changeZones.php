@@ -11,39 +11,39 @@ if(!empty($_POST)){
     //setup
     //AudioObj::initState();//sets up globals: time and json array
     //get player db info
-    $player = Player::fromDatabase($_POST['playerID']);
+    $player = Player::fromDatabase($_SESSION['playerID']);
     $zone= $player->zone;
     $dir = $_POST['dir'];
     //set new zone co-ords
     $newZone = null;
     switch($dir){
     case 'N':
-        if($zoney >= constants::numZonesSrt){
+        if($zone->zoney >= constants::numZonesSrt){
             throw new Exception("out of map range");
         }
-        $newZone = new Zone($zone->posx,
-            $zone->posy + 1);
+        $newZone = new Zone($zone->zonex,
+            $zone->zoney + 1);
         break;
     case 'S':
-        if($zoney <= 0){
+        if($zone->zoney <= 0){
             throw new Exception("out of map range");
         }
-        $newZone = new Zone($zone->posx,
-            $zone->posy - 1);
+        $newZone = new Zone($zone->zonex,
+            $zone->zoney - 1);
         break;
     case 'E':
-        if($zonex >= constants::numZonesSrt){
+        if($zone->zonex >= constants::numZonesSrt){
             throw new Exception("out of map range");
         }
-        $newZone = new Zone($zone->posx + 1,
-            $zone->posy);
+        $newZone = new Zone($zone->zonex + 1,
+            $zone->zoney);
         break;
     case 'W':
-        if($zoney <= 0){
+        if($zone->zonex <= 0){
             throw new Exception("out of map range");
         }
-        $newZone = new Zone($zone->posx - 1,
-            $zone->posy);
+        $newZone = new Zone($zone->zonex - 1,
+            $zone->zoney);
         break;
     case 'init':
         //initial zone, just needs to load

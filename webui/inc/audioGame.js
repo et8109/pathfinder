@@ -100,11 +100,7 @@ window.onload = function(){
                     players[response.playerID].requestBuffer(response.playeraudioURL);
                     loadRequestArray(requestArray);
                     //load current scene
-                    sendRequest("changeZones.php",
-                        "playerID="+response.playerID+"&dir=init",
-                        function(response){
-                            log("response from current scene");
-                        });
+                    moveZone('init');
                     //create peer
                     createPeer(response.peerID);
                     //start updater
@@ -117,10 +113,29 @@ window.onload = function(){
 }
 
 window.onkeypress = function(event){
-   if(event.keyCode != 13){
-        if (textLineListener == listener_attack_again) {
-            endListening();
-        }
+    alert("key pressed");
+    //a, left
+    if(event.keyCode == 97 || event.keyCode == 65){
+        moveZone('W');
+        log("left");
+        return;
+    }
+    //d, right
+    if(event.keyCode == 68 || event.keyCode == 100){
+        moveZone('E');
+        log("right");
+        return;
+    }
+    //w, up
+    if(event.keyCode == 87 || event.keyCode == 119){
+        moveZone('N');
+        log("up");
+        return;
+    }
+    //s, down
+    if(event.keyCode == 83 || event.keyCode == 115){
+        moveZone('S');
+        log("down");
         return;
     }
  
@@ -187,6 +202,17 @@ function loadRequestArray(requestArray){
         loadRequestArray(requestArray);
     }
     request.send()
+}
+
+/**
+ * Moves the player n, s, e or w.
+ * use init when loading curent zone
+ */
+function moveZone(dir){
+    sendRequest("changeZones.php",
+                "dir="+dir,
+                function(response){
+                });
 }
 
 /**
