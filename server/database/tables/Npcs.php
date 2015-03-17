@@ -22,7 +22,7 @@ class Npcs extends Table{
     public static function init(){
         self::$db->querySingle(
             "INSERT INTO npcs (id, zonex, zoney, lastAudio, finish, start) 
-                       values ( 0,     1,     5,         0,      0,     0)");
+                       values ( 0,     1,     2,         0,      0,     0)");
 
     }
 

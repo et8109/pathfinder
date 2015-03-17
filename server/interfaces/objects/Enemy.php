@@ -81,8 +81,8 @@ class Enemy extends AudioObj{
      */
     public static function getPrepInfo($zone){
         $arr = Enemies::getZonePrep($zone->zonex, $zone->zoney);
-        foreach($arr as $n){
-            self::addPrepInfo($arr[$n]['type'], $arr[$n]['audioURLs']);
+        foreach($arr as $e){
+            self::addPrepInfo(self::TYPE_ENEMY, $e['type'], $e['audioURLs']);
         }
     }
 

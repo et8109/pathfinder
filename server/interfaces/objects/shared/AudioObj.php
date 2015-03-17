@@ -15,9 +15,9 @@ spl_autoload_register(function ($class_name) {
  */
 abstract class AudioObj {
 
-    const TYPE_PLAYER = 0;
-    const TYPE_NPC = 1;
-    const TYPE_ENEMY = 2;
+    const TYPE_PLAYER = 'p';
+    const TYPE_NPC = 'n';
+    const TYPE_ENEMY = 'e';
 
     public $zone;//zone that the object is in
     protected $id; //id of the object
@@ -47,20 +47,21 @@ abstract class AudioObj {
         $toSend['event'] = true;
         $toSend['id'] = $this->id;
         $toSend['zone'] = $this->zone;
-        $toSend[$this->objType] = true;
+        $toSend['type'] = $this->objType;
         Translator::add($toSend);
     }
 
     /**
      * Info sent to clinet before any audio can be played
      */
-    protected function addPrepInfo($id, $audioArr){
+    protected static function addPrepInfo($type, $id, $audioArr){
         $toSend = [];
         $toSend['prep'] = true;
+        $toSend['type'] = $type;
         $toSend['id'] = $id;
         $toSend['audio'] = [];
         foreach($audioArr as $a){
-            $toSend['audio'][] = $audioArr[$a];
+            $toSend['audio'][] = $a;
         }
         Translator::add($toSend);
     }

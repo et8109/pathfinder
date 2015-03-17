@@ -58,7 +58,7 @@ class Npc extends AudioObj{
     public static function getPrepInfo($zone){
         $arr = Npcs::getZonePrep($zone->zonex, $zone->zoney);
         foreach($arr as $n){
-            self::addPrepInfo($arr[$n]['id'], $arr[$n]['audioURLs']);
+            self::addPrepInfo(self::TYPE_NPC, $n['id'], $n['audioURLs']);
         }
     }
 

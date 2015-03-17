@@ -113,7 +113,6 @@ window.onload = function(){
 }
 
 window.onkeypress = function(event){
-    alert("key pressed");
     //a, left
     if(event.keyCode == 97 || event.keyCode == 65){
         moveZone('W');
