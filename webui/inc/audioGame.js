@@ -97,7 +97,7 @@ window.onload = function(){
                     //spriteObject.requestBuffer(response.spriteaudioURL); TODO load sprite
                     players[response.playerID] = new node(false, response.playeraudioURL);
                     players[response.playerID].requestBuffer();
-                    loadRequestArray(requestArray);
+                    //loadRequestArray(requestArray);
                     //load current scene
                     moveZone('init');
                     //create peer
@@ -184,6 +184,7 @@ function node(loop, audioURLs){
 function loadRequestArray(requestArray){
     if (!requestArray.length >0) {
         //done loading
+        log("done loading");
         //update();
         return;
     }
@@ -301,7 +302,7 @@ function checkUpdateResponse(response) {
                 }
             }
         }
-        loadRequestArray(requestArray);
+        //loadRequestArray(requestArray);
     } 
 }
 

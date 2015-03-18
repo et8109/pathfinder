@@ -14,7 +14,7 @@ try{
         Translator::add(array(
             //"spriteaudioURL" => $spriteRow[0]['url'].",".$spriteRow[1]['url'],
             "playerID" => $_SESSION['playerID'],
-            "playeraudioURL" => array("incomplete.mp3"),
+            "playeraudioURL" => array("Attack.mp3"),
             "peerID" => $info['peerid'],
             "zoneX" => $info['zonex'],
             "zoneY" => $info['zoney'],
