@@ -58,7 +58,7 @@ var answer = null;
 var requestArray=[];//used to request audio
 var npcs=[];
 var enemies = [];
-var ambient =[];
+var ambients =[];
 var players=[];
 
 var updater;
@@ -88,7 +88,6 @@ var types = {
  */
 
 window.onload = function(){
-    alert("sending setup request");
     sendRequest("setup.php",
                 "setup=true",
                 function(response){
@@ -96,8 +95,8 @@ window.onload = function(){
                     response=response[0];
                     //load sprite and player audio
                     //spriteObject.requestBuffer(response.spriteaudioURL); TODO load sprite
-                    players[response.playerID] = new node();
-                    players[response.playerID].requestBuffer(response.playeraudioURL);
+                    players[response.playerID] = new node(false, response.playeraudioURL);
+                    players[response.playerID].requestBuffer();
                     loadRequestArray(requestArray);
                     //load current scene
                     moveZone('init');
@@ -140,16 +139,16 @@ window.onkeypress = function(event){
  
 }
 
-function node(){
+function node(loop, audioURLs){
+    this.loop = loop;
     this.buffers=[];//bufferend audio
-    this.audioURLs=[];//string array of urls
+    this.audioURLs = audioURLs;//string array of urls
 
     /**
      *adds a request to requestArray to get buffers for audio urls
      *takes comma separated urls
      */
-    this.requestBuffer=function(URLString){
-        this.audioURLs=URLString.split(",");
+    this.requestBuffer=function(){
         //TODO look into this
         var l = this.audioURLs.length-1;//to flip it around
         for(u in this.audioURLs){
@@ -184,10 +183,13 @@ function node(){
  */
 function loadRequestArray(requestArray){
     if (!requestArray.length >0) {
+        //done loading
+        //update();
         return;
     }
     var info = requestArray.pop();
     request = new XMLHttpRequest();
+    alert(info[1]);
     request.open("GET","../../server/audio/"+info[1],true/*asynchronous*/);
     request.responseType = "arraybuffer";
     request.onload = function(){
@@ -211,6 +213,15 @@ function moveZone(dir){
     sendRequest("changeZones.php",
                 "dir="+dir,
                 function(response){
+                    for(data of response){
+                        if(data.prep){
+                            if(data.type == 'a'){
+                                ambients[data.id] = new node(true, data.audio);
+                                ambients[data.id].requestBuffer();
+                            }
+                        }
+                        loadRequestArray(requestArray);
+                    }
                 });
 }
 
@@ -358,7 +369,7 @@ function recordedAttack(blob){
  */
 function update(){
     log("sending update");
-    sendRequest("update.php","ans="+answer==true? 1:0,
+    sendRequest("update.php",
     function(response){
         alert("update recived");
         for(d in response){

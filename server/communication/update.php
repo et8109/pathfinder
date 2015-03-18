@@ -8,8 +8,8 @@ require_once("shared/Translator.php");
 try{
 //only posts should be accepted. other verbs are ignored.
     if(!empty($_POST)){
-        $player = Player::fromDatabase($_POST['playerID']);
-        Player::removeAllOldEvents(AudioObj::$time);
+        $player = Player::fromDatabase($_SESSION['playerID']);
+        Player::removeAllOldEvents(Translator::$time);
         //get npcs in zone
         $npcs = Npc::getInZone($player->zone);
         foreach($npcs as $npc){
@@ -20,7 +20,6 @@ try{
         foreach($enemies as $enemy){
             $enemy->interactPlayer($player);
         }
-       
        //check nearby players
        //check player events
        /*$eventsResult = Player::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
@@ -34,16 +33,12 @@ try{
        }
         */
        //update last event time
-       $_SESSION['lastupdateTime'] = AudioObj::$time;
-       
-    }
+        $_SESSION['lastupdateTime'] = Translator::$time;
+        echo Translator::send();
     } else{
         throw new Exception("unknown verb");
     }
 } catch(Exception $e){
-                ErrorHandler::handle($e);
-                    //add exception to json to send
-  AudioObj::addJson(array(
-     "error" => ($e->getMessage())
-  ));
+    require_once("shared/ErrorHandler.php");
+    echo ErrorHandler::handle($e);
 }

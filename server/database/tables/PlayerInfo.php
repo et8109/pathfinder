@@ -13,7 +13,6 @@ class PlayerInfo extends Table{
             "pass varchar(20),".
             "zonex int(3),".
             "zoney int(3),".
-            "audioURL varchar(10),".
             "peerid varchar(10),".
             "health int(3),".
             "kills int(3),".
@@ -46,7 +45,7 @@ class PlayerInfo extends Table{
 
     public static function getInfoById($pid){
         $pid = self::prepVar($pid);
-        $r = self::$db->querySingle("select zonex, zoney, peerid, audioURL, health from playerinfo where id=$pid");
+        $r = self::$db->querySingle("select zonex, zoney, peerid, health from playerinfo where id=$pid");
         return $r;
     }
 

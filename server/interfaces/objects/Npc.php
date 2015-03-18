@@ -16,7 +16,7 @@ class Npc extends AudioObj{
     }
     
     protected function addEvent($audio){
-        MainInterface::addNPCEvent(AudioObj::$time, AudioObj::$time+constants::npcDuration,$audio,$this->id);
+        Npc::addEvent(Translator::$time, Translator::$time+constants::npcDuration,$audio,$this->id);
         parent::addEvent($audio);
     }
     
@@ -77,6 +77,7 @@ class Npc extends AudioObj{
                 $arr[$n]["start"], 
                 $arr[$n]["lastAudio"]);
         }
+        return $list;
     }
 }
 ?>

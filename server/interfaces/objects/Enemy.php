@@ -102,6 +102,7 @@ class Enemy extends AudioObj{
                 $arr[$n]["start"],
                 $arr[$n]["lastAudio"]);
         }
+        return $list;
     }
 
 }
