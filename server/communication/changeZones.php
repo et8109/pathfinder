@@ -16,7 +16,7 @@ try{
         //prep audio for things in the zone
         Npc::getPrepInfo($newZone);
         Enemy::getPrepInfo($newZone);
-        
+        Zone::getPrepInfo($newZone);        
         echo Translator::send();
     } else{
         throw new Exception("unknown verb");
@@ -53,7 +53,7 @@ function getNewZone($prev, $dir){
         if($prev->zonex <= 0){
             throw new Exception("out of map range");
         }
-        $newZone = new Zone($prev->zonex - 1,
+        return new Zone($prev->zonex - 1,
                             $prev->zoney);
     case 'init':
         //initial zone, just needs to load

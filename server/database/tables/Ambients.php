@@ -12,7 +12,6 @@ class Ambients extends Table{
             "id int(3),".
             "zonex int(3),".
             "zoney int(3),".
-            "audioURL varchar(10),".
             "PRIMARY KEY (zonex, zoney, id)".
             ")"
         );
@@ -24,12 +23,13 @@ class Ambients extends Table{
                           values (0 ,     1,     1, 'Birds.mp3')");
     }
 
-    public static function getZoneSounds($zone){
-        $zone = self::prepVar($zone);
-        $r = self::$db->queryMulti("select zonex,zoney,id from ambient where zone=$zone");
+    public static function getZonePrep($zonex, $zoney){
+        $zonex = self::prepVar($zonex);
+        $zoney = self::prepVar($zoney);
+        $r = self::$db->queryMulti("select id from ambient where zonex=$zonex and zoney=$zoney");
         for($i=0; isset($r[$i]); $i++){
             $objid = "a".$r[$i]['id'];
-            $r[$i]['audioURL'] = self::getURLs($objid);
+            $r[$i]['audioURLs'] = Audio::getURLs($objid);
         }
         return $r;
     }
