@@ -3,6 +3,7 @@
 
 session_start();
 require_once("../shared/constants.php");
+$_timeRecieved = time();
 
 /**
  * define and additional autoload for classes
@@ -15,6 +16,5 @@ spl_autoload_register(function ($class_name) {
     if (file_exists($file)) {
         include_once($file);
     }
-
 });
 ?>

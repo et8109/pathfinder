@@ -6,6 +6,7 @@ class Player extends AudioObj{
     const max_health = 4;
     public $health;
     public $sprite;
+    public $ans = null;
 
     /**
      * Should only be initialized from inside the class
@@ -71,11 +72,6 @@ class Player extends AudioObj{
      */
     public function reposition($zone){
         PlayerInfo::updateInfo($this->id, $zone->zonex, $zone->zoney);
-        Translator::add(array(
-            "playerInfo" => true,
-            "zoneX" => $zone->zonex,
-            "zoneY" => $zone->zoney
-        ));
     }
 
     /**

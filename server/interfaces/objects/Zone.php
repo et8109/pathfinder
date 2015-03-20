@@ -10,25 +10,36 @@ class Zone{
     }
 
     public static function getPrepInfo($zone){
-        $arr = Ambients::getZonePrep($zone->zonex, $zone->zoney);
-        foreach($arr as $a){
-            $toSend = [];
-            $toSend['prep'] = true;
-            $toSend['type'] = "a";
-            $toSend['id'] = $a['id'];
-            $toSend['audio'] = [];
+        $ids = Ambients::getZonePrep($zone->zonex, $zone->zoney);
+        $toSend = [];
+        foreach($ids as $a){
+            $arr = [];
+            $arr['id'] = $a['id'];
+            $arr['audio'] = [];
             foreach($a['audioURLs'] as $audio){
-                $toSend['audio'][] = $audio;
+                $arr['audio'][] = $audio;
             }
-            Translator::add($toSend);
+            $toSend[] = $arr;
         }
+        return $toSend;
     }
 
     public static function getPlayingAmbients($zone){
         $toSend = [];
         $toSend['type'] = 'a';
         $toSend['play'] = 'all';
-        Translator::add($toSend);
+        return $toSend;
+    }
+
+    public static function endPrevZone($zone){
+        $ids = Ambients::getInZone($zone->zonex, $zone->zoney);
+        $toSend = [];
+        foreach($ids as $id){
+            $a = [];
+            $a['id'] = $id['id'];
+            $toSend[] = $a;
+        }
+        return $toSend;
     }
 }
 ?>

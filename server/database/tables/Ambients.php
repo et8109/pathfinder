@@ -24,13 +24,23 @@ class Ambients extends Table{
     }
 
     public static function getZonePrep($zonex, $zoney){
+        $ids = self::getInZone($zonex, $zoney);
+        $zonex = self::prepVar($zonex);
+        $zoney = self::prepVar($zoney);
+        foreach($ids as &$id){//might not work becuase foreach doe snot give actual link to array
+            $objid = "a".$id['id'];
+            $id['audioURLs'] = Audio::getURLs($objid);
+        }
+        return $ids;
+    }
+
+    /**
+     * returns the ids of the audio in the given zone
+     */
+    public static function getInZone($zonex, $zoney){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
         $r = self::$db->queryMulti("select id from ambient where zonex=$zonex and zoney=$zoney");
-        for($i=0; isset($r[$i]); $i++){
-            $objid = "a".$r[$i]['id'];
-            $r[$i]['audioURLs'] = Audio::getURLs($objid);
-        }
         return $r;
     }
 }

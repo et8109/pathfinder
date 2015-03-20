@@ -6,11 +6,9 @@
 class ErrorHandler{
 
     public static function handle($e){
-        Translator::clear();
-        Translator::add(array(
-            "error" => ($e->getMessage())
+        return json_encode(array(
+            "error" => $e->getMessage()
         ));
-        return Translator::send();
     }
 }
 

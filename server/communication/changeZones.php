@@ -3,7 +3,6 @@
  * This page recieves requests to move scenes.
  */
 require_once("shared/Header.php");
-require_once("shared/Translator.php");
 
 try{
 //only posts should be accepted. other verbs are ignored.
@@ -13,11 +12,13 @@ try{
         $newZone = getNewZone($player->zone, $_POST['dir']);
         //move player
         $player->reposition($newZone);
-        //prep audio for things in the zone
-        Npc::getPrepInfo($newZone);
-        Enemy::getPrepInfo($newZone);
-        Zone::getPrepInfo($newZone);        
-        echo Translator::send();
+        echo json_encode(array(
+            "endAmb" => $_POST['dir']=='init' ? "" : 
+                        Zone::endPrevZone($player->zone),
+            "npcPrep" => Npc::getPrepInfo($newZone),
+            "enemyPrep" => Enemy::getPrepInfo($newZone),
+            "ambPrep" => Zone::getPrepInfo($newZone)
+        ));
     } else{
         throw new Exception("unknown verb");
     }

@@ -92,7 +92,6 @@ window.onload = function(){
                 "setup=true",
                 function(response){
                     log("starting loading");
-                    response=response[0];
                     //load sprite and player audio
                     //spriteObject.requestBuffer(response.spriteaudioURL); TODO load sprite
                     players[response.playerID] = new node(false, response.playeraudioURL);
@@ -103,7 +102,6 @@ window.onload = function(){
                     //create peer
                     createPeer(response.peerID);
                     //start updater
-                    //updater = setInterval("update()", 3000);
                     log("client version 2");
                     log("server version "+response.version);
                     loading = false;
@@ -157,7 +155,6 @@ function node(loop, audioURLs){
     }
     
     this.play = function(audioNum){
-        log("playing node audio");
         log("starting: "+this.audioURLs[audioNum]);
         this.audioSource && this.audioSource.stop();
         log(this.buffers[audioNum]);
@@ -196,12 +193,11 @@ function loadRequestArray(requestArray){
         }
         //set object's buffer: http request -> buffer
         context.decodeAudioData(request.response,function(decoded){ //callback function
-            log("loaded "+info[1]);
-                info[0].buffers.push(decoded);
+            info[0].buffers.push(decoded);
+            if(requestArray.length == 0){
+                update();
+            }
             });
-        if(requestArray.length == 0){
-            update();
-        }
         loadRequestArray(requestArray);
     }
     request.send()
@@ -215,13 +211,12 @@ function moveZone(dir){
     sendRequest("changeZones.php",
                 "dir="+dir,
                 function(response){
-                    for(data of response){
-                        if(data.prep){
-                            if(data.type == 'a'){
-                                ambients[data.id] = new node(true, data.audio);
-                                ambients[data.id].requestBuffer();
-                            }
-                        }
+                    for(a of response.endAmb){//end last zone's ambients
+                        ambients[a.id].stop();
+                    }
+                    for(amb of response.ambPrep){
+                        ambients[amb.id] = new node(true, amb.audio);
+                        ambients[amb.id].requestBuffer();
                     }
                     loadRequestArray(requestArray);
                 });
@@ -327,21 +322,13 @@ function recordedAttack(blob){
  *reacts to recieved data
  */
 function update(){
-    log("sending update");
     sendRequest("update.php",
                 "update=true",
     function(response){
         log("update recieved");
-        for(r in response){
-            var data = response[r];
-            switch(data.type){
-                case('a')://ambient sounds
-                    if(data.play == 'all'){
-                        log("# ambients: "+ambients.length);
-                        for(a in ambients){
-                            ambients[a].play(0);
-                        }
-                    }
+        if(response.ambients.play == 'all'){
+            for(a in ambients){
+                ambients[a].play(0);
             }
         }
     });

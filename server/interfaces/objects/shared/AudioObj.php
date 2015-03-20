@@ -32,7 +32,7 @@ abstract class AudioObj {
     //TODO wont let me se them to asbtract
 
     protected function __construct($objType, $id, $zone, $prevDone, $prevStart, $prevAudio){
-        $this->busy = $prevDone > Translator::$time;
+        $this->busy = null;//$prevDone > $_response->time;TODO
         $this->objType = $objType;
         $this->zone = $zone;
         $this->id = $id;
@@ -44,11 +44,9 @@ abstract class AudioObj {
     protected function addEvent($audio){
         $toSend = [];
         $toSend['audioType'] = $audio;
-        $toSend['event'] = true;
         $toSend['id'] = $this->id;
         $toSend['zone'] = $this->zone;
-        $toSend['type'] = $this->objType;
-        Translator::add($toSend);
+        return $toSend;
     }
 
     /**
@@ -56,33 +54,31 @@ abstract class AudioObj {
      */
     protected static function addPrepInfo($type, $id, $audioArr){
         $toSend = [];
-        $toSend['prep'] = true;
-        $toSend['type'] = $type;
         $toSend['id'] = $id;
         $toSend['audio'] = [];
         foreach($audioArr as $a){
             $toSend['audio'][] = $a;
         }
-        Translator::add($toSend);
+        return $toSend;
     }
     
     protected function askQuestion(){
-        Translator::add(array(
+        return array(
             "question" => true,
             "start" => true
-        ));
+        );
     }
     
     protected function doneQuestion(){
-        Translator::add(array(
+        return array(
             "question" => true,
             "done" => true
-        ));
+        );
     }
     
     protected function findDist($obj){
-        $dist = abs($this->posx-$obj->posx);
-        $dist2 = abs($this->posy-$obj->posy);
+        $dist = abs($this->zone->zonex-$obj->zone->zonex);
+        $dist2 = abs($this->zone->zoney-$obj->zone->zoney);
         if($dist > $dist2){
             return $dist;
         }
@@ -94,14 +90,8 @@ abstract class AudioObj {
      */
     protected function checkEvent(){
         if($_SESSION['lastupdateTime'] < $this->prevStart){
-            $this->addEvent($this->prevAudio);
+            return $this->addEvent($this->prevAudio);
         }
-    }
-    /**
-     *Send the json object to the client
-     */
-    public static function sendJson(){
-        return json_encode(self::$arrayJSON);
     }
 }
 ?>

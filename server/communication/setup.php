@@ -4,15 +4,12 @@
  * This page recieves requests to load initial player data
  **/
 require_once("shared/Header.php");
-require_once("shared/Translator.php");
 
 try{
-    //only posts should be accepted. other verbs are ignored.
     if(!empty($_POST)){
         $player = Player::fromDatabase($_SESSION['playerID']);
         $info = $player->getSetupInfo();
-        Translator::add(array(
-            //"spriteaudioURL" => $spriteRow[0]['url'].",".$spriteRow[1]['url'],
+        echo json_encode(array(
             "playerID" => $_SESSION['playerID'],
             "playeraudioURL" => array("Attack.mp3"),
             "peerID" => $info['peerid'],
@@ -20,7 +17,6 @@ try{
             "zoneY" => $info['zoney'],
             "version" => 2
         ));
-        echo Translator::send();
     } else{
         throw new Exception("unknown verb");
     }
@@ -28,5 +24,4 @@ try{
     require_once("shared/ErrorHandler.php");
     echo ErrorHandler::handle($e);
 }
-
 ?>

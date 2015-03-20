@@ -16,7 +16,8 @@ class Npc extends AudioObj{
     }
     
     protected function addEvent($audio){
-        Npc::addEvent(Translator::$time, Translator::$time+constants::npcDuration,$audio,$this->id);
+        global $_timeRecieved;
+        Npc::addEvent($_timeRecieved, $_timeRecieved+constants::npcDuration,$audio,$this->id);
         parent::addEvent($audio);
     }
     
@@ -70,12 +71,12 @@ class Npc extends AudioObj{
         $list = [];
         foreach($arr as $n){
             $list[] = new Npc(
-                $arr[$n]["id"],
-                new Zone($arr[$n]["zonex"],
-                         $arr[$n]["zoney"]),
-                $arr[$n]["finish"],
-                $arr[$n]["start"], 
-                $arr[$n]["lastAudio"]);
+                $n["id"],
+                new Zone($n["zonex"],
+                         $n["zoney"]),
+                $n["finish"],
+                $n["start"], 
+                $n["lastAudio"]);
         }
         return $list;
     }
