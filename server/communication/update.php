@@ -20,6 +20,7 @@ try{
         foreach($enemies as $enemy){
             $enemy->interactPlayer($player);
         }
+        Zone::getPlayingAmbients($player->zone);
        //check nearby players
        //check player events
        /*$eventsResult = Player::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);

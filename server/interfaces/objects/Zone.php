@@ -23,5 +23,12 @@ class Zone{
             Translator::add($toSend);
         }
     }
+
+    public static function getPlayingAmbients($zone){
+        $toSend = [];
+        $toSend['type'] = 'a';
+        $toSend['play'] = 'all';
+        Translator::add($toSend);
+    }
 }
 ?>

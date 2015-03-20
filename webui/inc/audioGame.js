@@ -157,6 +157,7 @@ function node(loop, audioURLs){
     }
     
     this.play = function(audioNum){
+        log("playing node audio");
         log("starting: "+this.audioURLs[audioNum]);
         this.audioSource && this.audioSource.stop();
         log(this.buffers[audioNum]);
@@ -183,14 +184,10 @@ function node(loop, audioURLs){
  */
 function loadRequestArray(requestArray){
     if (!requestArray.length >0) {
-        //done loading
-        log("done loading");
-        //update();
         return;
     }
     var info = requestArray.pop();
     request = new XMLHttpRequest();
-    alert(info[1]);
     request.open("GET","../../server/audio/"+info[1],true/*asynchronous*/);
     request.responseType = "arraybuffer";
     request.onload = function(){
@@ -199,8 +196,12 @@ function loadRequestArray(requestArray){
         }
         //set object's buffer: http request -> buffer
         context.decodeAudioData(request.response,function(decoded){ //callback function
+            log("loaded "+info[1]);
                 info[0].buffers.push(decoded);
             });
+        if(requestArray.length == 0){
+            update();
+        }
         loadRequestArray(requestArray);
     }
     request.send()
@@ -221,60 +222,17 @@ function moveZone(dir){
                                 ambients[data.id].requestBuffer();
                             }
                         }
-                        loadRequestArray(requestArray);
                     }
+                    loadRequestArray(requestArray);
                 });
 }
 
-/**
- *checks which sounds were recived and calls setAudioBuffer for them
- */
-function checkUpdateResponse(response) {
-    if (response == "") {
-        return;
-    }
-    //reset npcs 
-    if (response[0].newZone) {
-        log("new zone");
-        //stop loops
-        for (a in ambient) {
-            ambient[a].stop();
-        }
-        npcs = [];
-        ambient = [];
-        enemies = [];
-        for(j in response){
-            var data = response[j];
-            if (data.ambient) {
-                var n = new node();
-                n.loop = true;//ambient sounds loop
-                n.posx = data.posx;
-                n.posy = data.posy;
-                ambient.push(n);
-                ambient[ambient.length-1].requestBuffer(data.audioURL);
-            } else if (data.movement) {
-                var n = new node();
-                n.loop = true;
-                n.playing = false;
-                walkObject = n;
-                walkObject.requestBuffer(data.audioURL);
-            } else if (data.enemy) {
-                var n = new node();
-                n.posx = data.posx;
-                n.posy = data.posy;
-                enemies[data.id] = n;
-                enemies[data.id].requestBuffer(data.audioURL);
-            } else if (data.npc) {
-                var n = new node();
-                n.posx = data.posx;
-                n.posy = data.posy;
-                npcs[data.id] = n;
-                npcs[data.id].requestBuffer(data.audioURL);
-            } else if (data.player) {
+
+/*
                 log("player found: "+data.peerid);
                 if (connections[data.peerid] == null){
                     log("conn not usable. calling.");
-                    connections[data.peerid] = true;
+                    connections[data.peerid] = true;*/
                     /*var conn = peer.connect(data.peerid);
                     conn.on('error', function(err){
                         log("connection error: ");
@@ -285,7 +243,7 @@ function checkUpdateResponse(response) {
                         log("msg sent");
                     });*/
                     //new audio conn
-                    var call = peer.call(data.peerid, localStream);
+                   /* var call = peer.call(data.peerid, localStream);
                     call.on('error', function(err){
                         log("call error: ");
                         log(err);
@@ -304,7 +262,7 @@ function checkUpdateResponse(response) {
         }
         //loadRequestArray(requestArray);
     } 
-}
+}*/
 
 
 /**
@@ -371,44 +329,22 @@ function recordedAttack(blob){
 function update(){
     log("sending update");
     sendRequest("update.php",
+                "update=true",
     function(response){
-        alert("update recived");
-        for(d in response){
-            if(response[d].play){
-                //play audio
-                 //play events
-        for(j in response){
-            var data = response[j];
-            if (data.event) {
-                //if npc event
-                if (data.npc) {
-                    npcs[data.id].play(data.audioType);
-                } else if(data.enemy){
-                    enemies[data.id].play(data.audioType);
-                } else if (data.player) {
-                    players[data.id].play(data.audioType);
-                }
-            } else if (data.spriteEvent) {
-                spriteObject.play(data.audioType);
-            } else if (data.playerInfo) {
-                //update position
-                posX = parseInt(data.posX);
-                posY = parseInt(data.posY);
-            } else if(data.question){
-                if (data.start){
-                    question = true;
-                }
-                else if (data.done){
-                    answer = null;
-                }
-            }
-            //nearby players
-            //add to players array players[id]
-        }
-
+        log("update recieved");
+        for(r in response){
+            var data = response[r];
+            switch(data.type){
+                case('a')://ambient sounds
+                    if(data.play == 'all'){
+                        log("# ambients: "+ambients.length);
+                        for(a in ambients){
+                            ambients[a].play(0);
+                        }
+                    }
             }
         }
-    })
+    });
 }
 
 /**

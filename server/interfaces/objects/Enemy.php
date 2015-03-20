@@ -94,13 +94,13 @@ class Enemy extends AudioObj{
         $list = [];
         foreach($arr as $n){
             $list[] = new Enemy(
-                $arr[$n]["id"],
-                new Zone($arr[$n]["zonex"],
-                         $arr[$n]["zoney"]),
-                $arr[$n]["health"],
-                $arr[$n]["finish"],
-                $arr[$n]["start"],
-                $arr[$n]["lastAudio"]);
+                $n["id"],
+                new Zone($n["zonex"],
+                         $n["zoney"]),
+                $n["health"],
+                $n["finish"],
+                $n["start"],
+                $n["lastAudio"]);
         }
         return $list;
     }
