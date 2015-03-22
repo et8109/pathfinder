@@ -8,7 +8,7 @@ class Ambients extends Table{
 
     public static function create(){
         self::$db->querySingle(
-            "CREATE TABLE ambient (".
+            "CREATE TABLE ambients (".
             "id int(3),".
             "zonex int(3),".
             "zoney int(3),".
@@ -19,8 +19,8 @@ class Ambients extends Table{
 
     public static function init(){
         self::$db->querySingle(
-            "INSERT INTO ambient (id, zonex, zoney, audioURL) 
-                          values (0 ,     1,     1, 'Birds.mp3')");
+            "INSERT INTO ambients (id, zonex, zoney) 
+                          values (0 ,     1,     1)");
     }
 
     public static function getZonePrep($zonex, $zoney){
@@ -40,7 +40,7 @@ class Ambients extends Table{
     public static function getInZone($zonex, $zoney){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
-        $r = self::$db->queryMulti("select id from ambient where zonex=$zonex and zoney=$zoney");
+        $r = self::$db->queryMulti("select id from ambients where zonex=$zonex and zoney=$zoney");
         return $r;
     }
 }
