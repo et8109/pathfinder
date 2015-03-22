@@ -22,8 +22,8 @@ class PlayerInfo extends Table{
 
     public static function init(){
         self::$db->querySingle(
-            "INSERT INTO playerinfo (id,   uname,    pass, zonex, zoney,     peerid, health,     audioURL, kills) 
-                             values ( 1, 'guest', 'guest',     -1,   -1, 'abcd1234',      3, 'attack.mp3',     0)");
+            "INSERT INTO playerinfo (id,   uname,    pass, zonex, zoney,     peerid, health, kills) 
+                             values ( 1, 'guest', 'guest',     -1,   -1, 'abcd1234',      3,     0)");
 
     }
 

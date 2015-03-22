@@ -18,14 +18,15 @@ class Enemy extends AudioObj{
     
     protected function addEvent($audio){
         Enemies::addEvent(AudioObj::$time, AudioObj::$time + constants::enemyDuration,$audio, $this->id);
-        parent::addEvent($audio);
+        return parent::addEvent($audio);
     }
     
     public function interactPlayer($player){
+        return $this->addEvent(self::audio_notice);
         //if an event was set after last update
-        parent::checkEvent();
+        //parent::checkEvent();
         //if dead
-        if($this->health < 1){
+        /*if($this->health < 1){
             $this->dead($player->zone);
             return;
         }
@@ -60,7 +61,7 @@ class Enemy extends AudioObj{
         }
         else if($dist < distances::enemyNotice && !$this->busy){
             $this->addEvent(Enemy::audio_notice);
-        }
+        }*/
     }
     /**
      *resets the position in the database
@@ -80,10 +81,7 @@ class Enemy extends AudioObj{
      * Returns the prep info needed when entering a new scene for each enemy.
      */
     public static function getPrepInfo($zone){
-        $arr = Enemies::getZonePrep($zone->zonex, $zone->zoney);
-        foreach($arr as $e){
-            self::addPrepInfo(self::TYPE_ENEMY, $e['type'], $e['audioURLs']);
-        }
+        return Enemies::getZonePrep($zone->zonex, $zone->zoney);
     }
 
     /**

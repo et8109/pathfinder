@@ -182,6 +182,11 @@ function node(loop, audioURLs){
  */
 function loadRequestArray(requestArray){
     decodingAudio = requestArray.length;
+    if(requestArray.length == 0){
+        //nothing to load
+        update();
+        return;
+    }
     _sendAudioReq(requestArray);
 }
 

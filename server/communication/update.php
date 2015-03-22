@@ -17,10 +17,10 @@ try{
         }
         //get enemies in zone
         $enemyToSend = [];
-        $enemies = Enemy::getInZone($player->zone);
+        /*$enemies = Enemy::getInZone($player->zone);
         foreach($enemies as $enemy){
             $enemyToSend[] = $enemy->interactPlayer($player);
-        }
+        }*/
         Zone::getPlayingAmbients($player->zone);
        //check player events
        //$eventsResult = Player::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
