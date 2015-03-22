@@ -23,10 +23,10 @@ try{
         }
         Zone::getPlayingAmbients($player->zone);
        //check player events
-       /*$eventsResult = Player::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);*/
+       //$eventsResult = Player::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
        //update last event time
-        $_SESSION['lastupdateTime'] = $_timeRecieved;
-
+       $_SESSION['lastupdateTime'] = $_timeRecieved;
+        
         echo json_encode(array(
             "npcs" => $npcToSend,
             "enemies" => $enemyToSend,

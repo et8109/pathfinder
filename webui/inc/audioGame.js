@@ -41,6 +41,7 @@ var question = false;
 var answer = null;
 
 var requestArray=[];//used to request audio
+var decodingAudio = 0;
 var npcs=[];
 var enemies = [];
 
@@ -180,6 +181,11 @@ function node(loop, audioURLs){
  *[id,url]
  */
 function loadRequestArray(requestArray){
+    decodingAudio = requestArray.length;
+    _sendAudioReq(requestArray);
+}
+
+function _sendAudioReq(requestArray){
     if (!requestArray.length >0) {
         return;
     }
@@ -194,11 +200,12 @@ function loadRequestArray(requestArray){
         //set object's buffer: http request -> buffer
         context.decodeAudioData(request.response,function(decoded){ //callback function
             info[0].buffers.push(decoded);
-            if(requestArray.length == 0){
+            decodingAudio--;
+            if(requestArray.length == 0 && decodingAudio == 0){
                 update();
             }
             });
-        loadRequestArray(requestArray);
+        _sendAudioReq(requestArray);
     }
     request.send()
 }
@@ -217,6 +224,10 @@ function moveZone(dir){
                     for(amb of response.ambPrep){
                         ambients[amb.id] = new node(true, amb.audio);
                         ambients[amb.id].requestBuffer();
+                    }
+                    for(npc of response.npcPrep){
+                        npcs[npc.id] = new node(false, npc.audioURLs);
+                        npcs[npc.id].requestBuffer();
                     }
                     loadRequestArray(requestArray);
                 });
@@ -322,14 +333,16 @@ function recordedAttack(blob){
  *reacts to recieved data
  */
 function update(){
+    log("sending update");
     sendRequest("update.php",
                 "update=true",
     function(response){
         log("update recieved");
-        if(response.ambients.play == 'all'){
-            for(a in ambients){
-                ambients[a].play(0);
-            }
+        for(a of response.ambients){
+            ambients[a.id].play(0);
+        }
+        for(n of response.npcs){
+            npcs[n.id].play(n.audioType);
         }
     });
 }

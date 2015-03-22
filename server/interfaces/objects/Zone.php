@@ -25,10 +25,7 @@ class Zone{
     }
 
     public static function getPlayingAmbients($zone){
-        $toSend = [];
-        $toSend['type'] = 'a';
-        $toSend['play'] = 'all';
-        return $toSend;
+        return Ambients::getInZone($zone->zonex, $zone->zoney);
     }
 
     public static function endPrevZone($zone){

@@ -17,8 +17,8 @@ class Npc extends AudioObj{
     
     protected function addEvent($audio){
         global $_timeRecieved;
-        Npc::addEvent($_timeRecieved, $_timeRecieved+constants::npcDuration,$audio,$this->id);
-        parent::addEvent($audio);
+        Npcs::addEvent($_timeRecieved, $_timeRecieved+constants::npcDuration,$audio,$this->id);
+        return parent::addEvent($audio);
     }
     
     protected function askQuestion(){
@@ -31,26 +31,31 @@ class Npc extends AudioObj{
     
     public function interactPlayer($player){
         //if an event was set after last update
-        parent::checkEvent();
-        $dist = $this->findDist($player);
-        if($dist < Npc::dist_talk && !$this->busy){
+        //parent::checkEvent();
+
+        if(!$this->busy){
+            return $this->addEvent(Npc::audio_greet);
+        }
+
+        /*if($dist < Npc::dist_talk && !$this->busy){
             //if answered
+            echo $player->ans;
             if($player->ans != null){
                 if($player->ans == 1){
-                    $this->addEvent(Npc::audio_onYes);
+                    return $this->addEvent(Npc::audio_onYes);
                 } else if($player->ans == 0){
-                    $this->addEvent(Npc::audio_onNo);
+                    return $this->addEvent(Npc::audio_onNo);
                 }
                 $this->doneQuestion();
             } else{
                 //not answered
-                $this->addEvent(Npc::audio_ask);
+                return $this->addEvent(Npc::audio_ask);
                 $this->askQuestion();
             }
         }
         else if($dist < Npc::dist_notice && !$this->busy){
-            $this->addEvent(Npc::audio_greet);
-        }
+            return $this->addEvent(Npc::audio_greet);
+        }*/
     }
     
     /**
@@ -58,9 +63,10 @@ class Npc extends AudioObj{
      */
     public static function getPrepInfo($zone){
         $arr = Npcs::getZonePrep($zone->zonex, $zone->zoney);
-        foreach($arr as $n){
+        return $arr;
+        /*foreach($arr as &$n){
             self::addPrepInfo(self::TYPE_NPC, $n['id'], $n['audioURLs']);
-        }
+        }*/
     }
 
     /**
