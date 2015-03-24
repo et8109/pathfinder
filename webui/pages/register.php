@@ -1,10 +1,12 @@
 <?php
 session_start();
-require_once("../interfaces/registerInterface.php");
 require_once("../inc/pageBuilder.php");
-$builder = new PageBuilder(PageBuilder::pageTypes::normal);
+$builder = new PageBuilder(PageBuilder::TYPE_NORMAL);
 $builder->redirectIfLoggedIn();
 $builder->addHeader();
+
+require_once("/home/elliot/projects/pathfinder/server/shared/constants.php");
+require_once("/home/elliot/projects/pathfinder/server/interfaces/objects/Player.php");
 
 
 $uname="";
@@ -23,7 +25,7 @@ if(isset($_POST['uname'])){
     if ($pass1 != $pass2){
         echo "Your passwords don't match";
     }
-    RegisterInterface::register($uname, $pass1);
+    Player::register($uname, $pass1);
     echo "Success! <a href='login.php'>Log in</a>";
 }
 

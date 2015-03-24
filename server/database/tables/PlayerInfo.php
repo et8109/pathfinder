@@ -23,7 +23,7 @@ class PlayerInfo extends Table{
     public static function init(){
         self::$db->querySingle(
             "INSERT INTO playerinfo (id,   uname,    pass, zonex, zoney,     peerid, health, kills) 
-                             values ( 1, 'guest', 'guest',     -1,   -1, 'abcd1234',      3,     0)");
+                             values ( 1, 'guest', 'guest',     0,   0, 'abcd1234',      3,     0)");
 
     }
 
@@ -70,8 +70,8 @@ class PlayerInfo extends Table{
     public static function register($uname, $pass){
         $uname = self::prepVar($uname);
         $pass = self::prepVar($pass);
-        self::$db->querySingle("insert into playerinfo ( uname,  pass, zonex, zoney,     audioURL,  peerid, health, kills) 
-                                                values ($uname, $pass,     -1,   -1, 'attack.mp3','123qwe',      3,     0)");
+        self::$db->querySingle("insert into playerinfo ( uname,  pass, zonex, zoney,  peerid, health, kills) 
+                                                values ($uname, $pass,     0,   0, '123qwe',      3,     0)");
     }
 
     /*public static function getZonePlayers($zonex, $zoney, $pid, $numZonesSrt){

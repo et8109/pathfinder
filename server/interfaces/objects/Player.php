@@ -80,6 +80,13 @@ class Player extends AudioObj{
     public static function removeAllOldEvents($time){
         PlayerEvents::removeExpired($time);
     }
+
+    /**
+     * Create a new player with default settings
+     */
+    public static function register($uname, $pass){
+        PlayerInfo::register($uname, $pass); 
+    }
 }
 
 class Sprite {
