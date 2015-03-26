@@ -17,7 +17,8 @@ class Enemy extends AudioObj{
     }
     
     protected function addEvent($audio){
-        Enemies::addEvent(AudioObj::$time, AudioObj::$time + constants::enemyDuration,$audio, $this->id);
+        global $_timeRecieved;
+        Enemies::addEvent($_timeRecieved, $_timeRecieved + constants::enemyDuration,$audio, $this->id);
         return parent::addEvent($audio);
     }
     

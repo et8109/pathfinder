@@ -234,6 +234,11 @@ function moveZone(dir){
                         npcs[npc.id] = new node(false, npc.audioURLs);
                         npcs[npc.id].requestBuffer();
                     }
+                    for(enemy of response.enemyPrep){
+                        enemies[enemy.id] = new node(false, enemy.audioURLs);
+                        enemies[enemy.id].requestBuffer();
+                    }
+
                     loadRequestArray(requestArray);
                 });
 }
@@ -348,6 +353,9 @@ function update(){
         }
         for(n of response.npcs){
             npcs[n.id].play(n.audioType);
+        }
+        for(e of response.enemies){
+            enemies[e.id].play(e.audioType);
         }
     });
 }

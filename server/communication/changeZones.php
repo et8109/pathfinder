@@ -1,6 +1,7 @@
 <?php
 /**
  * This page recieves requests to move scenes.
+ * It sends the prep info (audio, etc.) to the user, but no actual information. Just loading.
  */
 require_once("shared/Header.php");
 

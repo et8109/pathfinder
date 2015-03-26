@@ -30,7 +30,7 @@ class Enemies extends Table{
     public static function getInZone($zonex, $zoney){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
-        $r = self::$db->queryMulti("select id, type, finish, start, lastAudio, health from enemies where zonex=$zonex and zoney=$zoney");
+        $r = self::$db->queryMulti("select id, type, zonex, zoney, finish, start, lastAudio, health from enemies where zonex=$zonex and zoney=$zoney");
         return $r;
     }
 
