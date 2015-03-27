@@ -24,9 +24,11 @@ try{
         }
         //get enemies in zone
         $enemyToSend = [];
+        $playerToSend = [];
         $enemies = Enemy::getInZone($player->zone);
         foreach($enemies as $enemy){
             $enemyToSend[] = $enemy->interactPlayer($player);
+            $playerToSend[] = $player->attack($enemy);
         }
         Zone::getPlayingAmbients($player->zone);
        //check player events
@@ -45,7 +47,8 @@ try{
             "play" => array(
                 "npcs" => $npcToSend,
                 "enemies" => $enemyToSend,
-                "ambients" => Zone::getPlayingAmbients($player->zone)
+                "ambients" => Zone::getPlayingAmbients($player->zone),
+                "player" => $playerToSend
             )
         ));
     } else{

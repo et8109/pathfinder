@@ -356,6 +356,9 @@ function update(play_data){
     for(e of play_data.enemies){
         enemies[e.id].play(e.audioType);
     }
+    for(p of play_data.player){
+        players[p.id].play(p.audioType);
+    }
 }
 
 /**

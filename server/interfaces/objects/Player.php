@@ -55,7 +55,8 @@ class Player extends AudioObj{
 
     protected function addEvent($audio){
         //TODO override always false
-        PlayerEvents::addEvent(AudioObj::$time, AudioObj::$time + constants::playerDuration, $audio, $this->id, $this->zone->posx, $this->zone->posy, false);
+        //PlayerEvents::addEvent(AudioObj::$time, AudioObj::$time + constants::playerDuration, $audio, $this->id, $this->zone->posx, $this->zone->posy, false);
+        return parent::addEvent($audio);
     }
     
     /**
@@ -87,6 +88,13 @@ class Player extends AudioObj{
      */
     public static function register($uname, $pass){
         PlayerInfo::register($uname, $pass); 
+    }
+
+    /**
+     * attacks an enemy
+     */
+    public function attack($enemy){
+        return $this->addEvent(self::audio_attack);
     }
 }
 

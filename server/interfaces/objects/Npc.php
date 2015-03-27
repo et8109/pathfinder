@@ -16,8 +16,8 @@ class Npc extends AudioObj{
     }
     
     protected function addEvent($audio){
-        global $_timeRecieved;
-        Npcs::addEvent($_timeRecieved, $_timeRecieved+constants::npcDuration,$audio,$this->id);
+        //global $_timeRecieved;
+        //Npcs::addEvent($_timeRecieved, $_timeRecieved+constants::npcDuration,$audio,$this->id);
         return parent::addEvent($audio);
     }
     
