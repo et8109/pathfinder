@@ -180,17 +180,17 @@ function node(loop, audioURLs){
  *sends the array created by node's request buffer to the server
  *[id,url]
  */
-function loadRequestArray(requestArray){
+function loadRequestArray(requestArray, play_data){
     decodingAudio = requestArray.length;
     if(requestArray.length == 0){
         //nothing to load
-        update();
+        update(play_data);
         return;
     }
-    _sendAudioReq(requestArray);
+    _sendAudioReq(requestArray, play_data);
 }
 
-function _sendAudioReq(requestArray){
+function _sendAudioReq(requestArray, play_data){
     if (!requestArray.length >0) {
         return;
     }
@@ -207,10 +207,10 @@ function _sendAudioReq(requestArray){
             info[0].buffers.push(decoded);
             decodingAudio--;
             if(requestArray.length == 0 && decodingAudio == 0){
-                update();
+                update(play_data);
             }
             });
-        _sendAudioReq(requestArray);
+        _sendAudioReq(requestArray, play_data);
     }
     request.send()
 }
@@ -223,23 +223,27 @@ function moveZone(dir){
     sendRequest("changeZones.php",
                 "dir="+dir,
                 function(response){
-                    for(a of response.endAmb){//end last zone's ambients
+                    var prep_data = response.prep;
+                    var play_data = response.play;
+                    //end last zone's ambients
+                    for(a of prep_data.endAmb){
                         ambients[a.id].stop();
                     }
-                    for(amb of response.ambPrep){
+                    //load audio urls into nodes
+                    for(amb of prep_data.amb){
                         ambients[amb.id] = new node(true, amb.audio);
                         ambients[amb.id].requestBuffer();
                     }
-                    for(npc of response.npcPrep){
+                    for(npc of prep_data.npcs){
                         npcs[npc.id] = new node(false, npc.audioURLs);
                         npcs[npc.id].requestBuffer();
                     }
-                    for(enemy of response.enemyPrep){
+                    for(enemy of prep_data.enemies){
                         enemies[enemy.id] = new node(false, enemy.audioURLs);
                         enemies[enemy.id].requestBuffer();
                     }
 
-                    loadRequestArray(requestArray);
+                    loadRequestArray(requestArray, play_data);
                 });
 }
 
@@ -342,22 +346,16 @@ function recordedAttack(blob){
  *sends current position to db
  *reacts to recieved data
  */
-function update(){
-    log("sending update");
-    sendRequest("update.php",
-                "update=true",
-    function(response){
-        log("update recieved");
-        for(a of response.ambients){
-            ambients[a.id].play(0);
-        }
-        for(n of response.npcs){
-            npcs[n.id].play(n.audioType);
-        }
-        for(e of response.enemies){
-            enemies[e.id].play(e.audioType);
-        }
-    });
+function update(play_data){
+    for(a of play_data.ambients){
+        ambients[a.id].play(0);
+    }
+    for(n of play_data.npcs){
+        npcs[n.id].play(n.audioType);
+    }
+    for(e of play_data.enemies){
+        enemies[e.id].play(e.audioType);
+    }
 }
 
 /**
