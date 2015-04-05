@@ -16,9 +16,10 @@ class Npc extends AudioObj{
     }
     
     protected function addEvent($audio){
+        global $response;
         //global $_timeRecieved;
         //Npcs::addEvent($_timeRecieved, $_timeRecieved+constants::npcDuration,$audio,$this->id);
-        return parent::addEvent($audio);
+        $response->add_play_npcs(parent::addEvent($audio));
     }
     
     protected function askQuestion(){
@@ -34,7 +35,7 @@ class Npc extends AudioObj{
         //parent::checkEvent();
 
         if(!$this->busy){
-            return $this->addEvent(Npc::audio_greet);
+            $this->addEvent(Npc::audio_greet);
         }
 
         /*if($dist < Npc::dist_talk && !$this->busy){
@@ -62,11 +63,11 @@ class Npc extends AudioObj{
      * Returns the prep info needed when entering a new scene for each npc.
      */
     public static function getPrepInfo($zone){
+        global $response;
         $arr = Npcs::getZonePrep($zone->zonex, $zone->zoney);
-        return $arr;
-        /*foreach($arr as &$n){
-            self::addPrepInfo(self::TYPE_NPC, $n['id'], $n['audioURLs']);
-        }*/
+        foreach($arr as $n){
+            $response->add_prep_npcs($n);
+        }
     }
 
     /**

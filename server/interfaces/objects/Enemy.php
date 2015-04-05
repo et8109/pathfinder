@@ -18,8 +18,9 @@ class Enemy extends AudioObj{
     
     protected function addEvent($audio){
         global $_timeRecieved;
+        global $response;
         Enemies::addEvent($_timeRecieved, $_timeRecieved + constants::enemyDuration,$audio, $this->id);
-        return parent::addEvent($audio);
+        $response->add_play_enemies(parent::addEvent($audio));
     }
     
     public function interactPlayer($player){
@@ -82,7 +83,11 @@ class Enemy extends AudioObj{
      * Returns the prep info needed when entering a new scene for each enemy.
      */
     public static function getPrepInfo($zone){
-        return Enemies::getZonePrep($zone->zonex, $zone->zoney);
+        global $response;
+        $arr = Enemies::getZonePrep($zone->zonex, $zone->zoney);
+        foreach($arr as $e){
+            $response->add_prep_enemies($e);
+        }
     }
 
     /**

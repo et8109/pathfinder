@@ -56,7 +56,8 @@ class Player extends AudioObj{
     protected function addEvent($audio){
         //TODO override always false
         //PlayerEvents::addEvent(AudioObj::$time, AudioObj::$time + constants::playerDuration, $audio, $this->id, $this->zone->posx, $this->zone->posy, false);
-        return parent::addEvent($audio);
+        global $response;
+        $response->add_play_player(parent::addEvent($audio));
     }
     
     /**
@@ -103,20 +104,27 @@ class Sprite {
      *must be instanciated by player class
      */
     public function __construct(){}
-    const audio_dead = 0;
-    const audio_lowHealth = 1;
+    const audio_dead = 0;//player is dead
+    const audio_lowHealth = 1; //player is at low health
+    const audio_edge = 2;//player walks to the edge of the map
 
     public function getPrepInfo(){
         //TODO
     }
     
-    public function addEvent($audio){
+    protected static function addEvent($audio){
         //TODO integrate with audioObj
-        $toSend = array(
-        "spriteEvent" => true,
-        "audioType" => $audio
-        );
-        AudioObj::$arrayJSON[] = $toSend;
+        global $response;
+        $response->add_play_sprite(array(
+            "audioType" => $audio
+        ));
+    }
+
+    /**
+     * returns the sprite audio for walking to the edge of the map
+     */
+    public function outOfBounds(){
+        self::addEvent(self::audio_edge);
     }
 }
 ?>

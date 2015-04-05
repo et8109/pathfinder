@@ -242,7 +242,7 @@ function moveZone(dir){
                         enemies[enemy.id] = new node(false, enemy.audioURLs);
                         enemies[enemy.id].requestBuffer();
                     }
-
+                    //TODO call peeps
                     loadRequestArray(requestArray, play_data);
                 });
 }

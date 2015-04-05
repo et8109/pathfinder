@@ -6,7 +6,7 @@
 class ErrorHandler{
 
     public static function handle($e){
-        return json_encode(array(
+        echo  json_encode(array(
             "error" => $e->getMessage()
         ));
     }

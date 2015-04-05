@@ -4,19 +4,21 @@
  * This page recieves requests to load initial player data
  **/
 require_once("shared/Header.php");
+require_once("responses/setupResponse.php");
 
 try{
     if(!empty($_POST)){
         $player = Player::fromDatabase($_SESSION['playerID']);
         $info = $player->getSetupInfo();
-        echo json_encode(array(
-            "playerID" => $_SESSION['playerID'],
-            "playeraudioURL" => array("Attack.mp3"),
-            "peerID" => $info['peerid'],
-            "zoneX" => $info['zonex'],
-            "zoneY" => $info['zoney'],
-            "version" => 2
-        ));
+        $response = new SetupResponse();
+        
+        $response->add_playerID($_SESSION['playerID']);
+        $response->add_playeraudioURL(array("Attack.mp3"));
+        $response->add_peerID($info['peerid']);
+        $response->add_zoneX($info['zonex']);
+        $response->add_zoneY($info['zoney']);
+        $response->add_version(2);
+        echo $response->send();
     } else{
         throw new Exception("unknown verb");
     }
