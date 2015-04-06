@@ -32,7 +32,6 @@ try{
         $enemies = Enemy::getInZone($player->zone);
         foreach($enemies as $enemy){
             $enemy->interactPlayer($player);
-            $player->attack($enemy);
         }
        //check player events
        //$eventsResult = Player::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
@@ -61,29 +60,13 @@ try{
 function getNewZone($prev, $dir){
     switch($dir){
     case 'N':
-        if($prev->zoney >= constants::numZonesSrt){
-            throw new OutOfBoundsException("out of map range");
-        }
-        return new Zone($prev->zonex,
-                        $prev->zoney + 1);
+        return $prev->path(Zone::dir_north);
     case 'S':
-        if($prev->zoney <= 0){
-            throw new OutOfBoundsException("out of map range");
-        }
-        return new Zone($prev->zonex,
-                        $prev->zoney - 1);
+        return $prev->path(Zone::dir_south);
     case 'E':
-        if($prev->zonex >= constants::numZonesSrt){
-            throw new OutOfBoundsException("out of map range");
-        }
-        return new Zone($prev->zonex + 1,
-                        $prev->zoney);
+        return $prev->path(Zone::dir_east);
     case 'W':
-        if($prev->zonex <= 0){
-            throw new OutOfBoundsException("out of map range");
-        }
-        return new Zone($prev->zonex - 1,
-                            $prev->zoney);
+        return $prev->path(Zone::dir_west);
     case 'init':
         //initial zone, just needs to load
         return $prev;

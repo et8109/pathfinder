@@ -24,59 +24,50 @@ class Enemy extends AudioObj{
     }
     
     public function interactPlayer($player){
-        return $this->addEvent(self::audio_notice);
-        //if an event was set after last update
-        //parent::checkEvent();
-        //if dead
-        /*if($this->health < 1){
-            $this->dead($player->zone);
-            return;
+        //attack audio
+        //lower health
+        //dead audio or run away audio
+        $this->addEvent(self::audio_notice);
+        $player->attack($this);
+        if(Enemies::lowerHealth($this->id, $this->zone->zonex, $this->zone->zoney)){
+            //enemy dead
+            $this->dead();
+        } else{
+            //enemy runs away
+            $this->runAway();
         }
-        //if alive
-        $dist = $this->findDist($player);
-        if($dist < Enemy::dist_attack){
-            if($player->addEvent(Player::audio_attack)){//if player attacks
-                //lower monster health
-                $dead = MainInterface::lowerEnemyHealth($this->id,$this->posx, $this->posy);
-                if($dead){
-                    //enemy is killed
-                    $this->addEvent(Enemy::audio_death);
-                    //add to kill count
-                    MainInterface::increasePlayerKills($info['playerID']);
-                }
-            }
-            if(!$this->busy){//if enemy attacks
-                $this->addEvent(Enemy::audio_attack);
-                //lower player health
-                MainInterface::lowerPlayerHealth($info['playerID']);
-                //if dead
-                if($player->health < 2){
-                    $player->dead();
-                    return;
-                }
-                //if low health
-                else if($player->health < 3){
-                    $player->sprite->addEvent(Sprite::audio_lowHealth);
-                    return;
-                }
-            } 
-        }
-        else if($dist < distances::enemyNotice && !$this->busy){
-            $this->addEvent(Enemy::audio_notice);
-        }*/
     }
     /**
-     *resets the position in the database
+     * resets the position in the database
      */
-    private function dead($zone){
-        //revive elsewhere in zone
-        $y = floor(($zone-1)/constants::numZonesSrt);//zone num
-        $x = ($zone-1)-($y*constants::numZonesSrt);//zone num
-        $y = constants::zoneWidth*$y + rand(constants::zoneBuffer,constants::zoneWidth-constants::zoneBuffer);
-        $x = constants::zoneWidth*$x + rand(constants::zoneBuffer,constants::zoneWidth-constants::zoneBuffer);
+    private function dead(){
+        //revive elsewhere
+        $newZone = $this->zone;
         //check if overlapping with anything
         //set new pos and max health
-        Enemies::resetEnemy($x,$y,Enemy::max_health,$this->id);
+        Enemies::resetEnemy($newZone->zonex,$newZone->zoney,Enemy::max_health,$this->id);
+        $this->addEvent(self::audio_death);
+    }
+
+    /**
+     * moves to an adjacent zone after a battle if still alive
+     */
+    private function runAway(){
+        //find adjacent zone
+        $newZone = null;
+        $dirs = range(0,3);
+        shuffle($dirs);
+        foreach($dirs as $dir){
+            try{
+                $newZone = $this->zone->path($dir);
+                Enemies::reposition($newZone->zonex, $newZone->zoney, $this->id);
+                $this->addEvent(self::audio_attack);
+                return;
+            } catch(outOfBoundsException $e){
+                continue;
+            }
+        }
+        throw new Exception("nowhere for enemy to run");
     }
 
     /**

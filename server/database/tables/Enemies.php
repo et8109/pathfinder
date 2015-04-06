@@ -50,10 +50,20 @@ class Enemies extends Table{
         $zoney = self::prepVar($zoney);
         $enemyId = self::prepVar($enemyId);
         self::$db->querySingle("update enemies set zonex=$zonex, zoney=$zoney ,health=$health where id=$enemyId");
-        return;
     }
 
-    public static function lowerEnemyHealth($eid, $zonex, $zoney) {
+    public static function reposition($zonex, $zoney, $enemyId){
+        $zonex = self::prepVar($zonex);
+        $zoney = self::prepVar($zoney);
+        $enemyId = self::prepVar($enemyId);
+        self::$db->querySingle("update enemies set zonex=$zonex, zoney=$zoney where id=$enemyId");
+
+    }
+
+    /**
+     * returns true if dead
+     */
+    public static function lowerHealth($eid, $zonex, $zoney) {
         $eid = self::prepVar($eid);
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
