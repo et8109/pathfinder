@@ -37,11 +37,14 @@ class Ambients extends Table{
     /**
      * returns the ids of the audio in the given zone
      */
-    public static function getInZone($zonex, $zoney){
+    public static function getInZone($zonex, $zoney, $getUrls){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
-        $r = self::$db->queryMulti("select id from ambients where zonex=$zonex and zoney=$zoney");
-        return $r;
+        if($getUrls){
+            return collapseUrls(self::$db->queryMulti("select A.id, U.url from ambients A, audio U where A.zonex=$zonex and A.zoney=$zoney and U.objid=a+A.id"));
+        } else{
+            return self::$db->queryMulti("select id, from ambients where zonex=$zonex and zoney=$zoney");
+        }
     }
 }
 ?>

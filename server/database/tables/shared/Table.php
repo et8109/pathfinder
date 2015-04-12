@@ -26,6 +26,24 @@ abstract class Table{
         self::$db = new DBCore();
         self::$initialized = true;
     }
+
+    private static collapseUrls($arr){
+        $list = [];
+        $num = size($arr);
+        for($i=0; $i<$num;;){
+            $row = $arr[$i]
+            $urls = [];
+            //get all urls
+            while($i < $num && $arr[$i]['id'] == $row['id']){
+                $urls[] = $arr[$i]['url'];
+                $i++;
+            }
+            unset($row['url']);
+            $row['urls'] = $urls;
+            $list[] = $row;
+        }
+        return $list;
+    }
 }
 Table::setDb();
 ?>

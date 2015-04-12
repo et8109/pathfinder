@@ -56,6 +56,16 @@ class PlayerInfo extends Table{
  
     }
 
+    public static function getInZone($zonex, $zone, $getUrls){
+        $zonex = self::prepVar($zonex);
+        $zoney = self::prepVar($zoney);
+        if($getUrls){
+            return collapseUrls(self::$db->queryMulti("select P.id, P.health, U.url from playerinfo P, Audio U where zonex=$zonex and zoney=$zoney and U.objid = p+P.id"));
+        } else{
+            return self::$db->queryMulti("select id, health from playerinfo where zonex=$zonex and zoney=$zoney");
+        }
+    }
+
     public static function getZonePrep(){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
