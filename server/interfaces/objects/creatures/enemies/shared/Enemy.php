@@ -3,15 +3,20 @@ require_once("../shared/Creature.php");
 
 abstract class Enemy extends Creature{
 
-    private static $urls;
+    protected $loaded = false;
     
-    protected function __construct($id, $zone, $health, $urls){
-        parent::__construct(TYPE_ENEMY, $id, $zone, $health);
-        self::$urls = $urls;
+    protected function __construct($id, $urls, $zone, $health, $urls){
+        parent::__construct(TYPE_ENEMY, $id, $urls, $zone, $health);
     }
 
-    public static function addPrepInfo(){
-        parent::addPrepInfo(self::$urls);
+
+    protected function addUrls(){
+        //only load once per class
+        if($loaded){
+            return;
+        }
+        $loaded = true;
+        parent::adUrls();
     }
 
     /**

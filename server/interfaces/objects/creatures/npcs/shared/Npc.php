@@ -3,21 +3,11 @@ require_once("../shared/Creature.php");
 
 abstract class Npc extends Creature{
 
-    private $urls;
-
-    protected function __construct($id, $zone, $health, $urls){
-        parent::__construct(AudioObj::TYPE_NPC, $id, $zone, $health);
-        $this->urls = $urls;
+    protected function __construct($id, $urls, $zone, $health){
+        parent::__construct(AudioObj::TYPE_NPC, $id, $urls, $zone, $health);
     }
     
     public static function interactPlayer($player);
-
-    /**
-     * Returns the prep info needed when entering a new scene for each npc.
-     */
-    public function addPrepInfo($zone){
-        parent::sendPrepInfo(TYPE_NPC, $this->urls);
-    }
 
     /**
      * Returns the npcs in the given zone

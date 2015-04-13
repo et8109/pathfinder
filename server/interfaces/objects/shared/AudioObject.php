@@ -28,10 +28,13 @@ abstract class AudioObject{
 
     private $keyid;
     private $type;
+    private $urls;
+    private $loading = false;
 
-    protected function __construct($type, $id){
+    protected function __construct($type, $id, $urls){
         $this->keyid = $type . $id;
         $this->type = $type;
+        $this->urls = $urls;
     }
 
     /**
@@ -45,9 +48,25 @@ abstract class AudioObject{
     /**
      * Send audio info to the client
      */
-    protected function addPrepInfo($url){
+    protected function addUrls(){
+        //return if already loaded
+        if($loading){
+            return;
+        }
+        if($this->urls == null){
+            throw new Exception("unable to load urls");
+        }
         global $response;
-        $response->add_prep($this->keyid, $url);
+        $response->add_prep($this->keyid, 
+                            $this->urls, 
+                            $this->type == TYPE_AMBIENT//bool for looping
+        );
+        $this->loading = true;
+
+        //also play if an ambient
+        if($this->type == TYPE_AMBIENT){
+            addAudio(0);
+        }
     }
 
     protected function getTable(){

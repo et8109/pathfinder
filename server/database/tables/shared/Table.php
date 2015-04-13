@@ -7,8 +7,6 @@ require_once(constants::server_root."/database/core/database.php");
 abstract class Table{
     protected static $db;
     private static $initialized = false;
-    abstract static public function create();
-    abstract static public function init();
 
     protected static function prepVar($var){
         self::$db->escapeString($var);
@@ -27,11 +25,17 @@ abstract class Table{
         self::$initialized = true;
     }
 
-    private static collapseUrls($arr){
+    protected static function collapseUrls($arr){
+        //check if only 1 url
+        if(!isset($arr[0])){
+            $arr['urls'] = array($arr['url']);
+            unset($arr['url']);
+            return $arr;
+        }
         $list = [];
-        $num = size($arr);
-        for($i=0; $i<$num;;){
-            $row = $arr[$i]
+        $num = count($arr);
+        for($i=0; $i<$num;){
+            $row = $arr[$i];
             $urls = [];
             //get all urls
             while($i < $num && $arr[$i]['id'] == $row['id']){

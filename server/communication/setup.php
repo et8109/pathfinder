@@ -5,10 +5,12 @@
  **/
 require_once("shared/Header.php");
 require_once("responses/setupResponse.php");
+require_once("../interfaces/Zone.php");
+require_once("../interfaces/objects/creatures/Player.php");
 
 try{
     if(!empty($_POST)){
-        $player = Player::fromDatabase($_SESSION['playerID']);
+        $player = Player::fromDatabase($_SESSION['playerID'], true);
         $info = $player->getSetupInfo();
         $response = new SetupResponse();
         

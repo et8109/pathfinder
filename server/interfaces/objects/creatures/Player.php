@@ -1,5 +1,5 @@
 <?php
-require_once("shared/AudioObj.php");
+require_once("shared/Creature.php");
 
 class Player extends Creature{
     const audio_attack = 0;
@@ -10,9 +10,9 @@ class Player extends Creature{
     /**
      * Should only be initialized from inside the class
      */ 
-    protected function __construct($id, $zone, $health, $urls){
-             parent::__construct(AudioObj::TYPE_PLAYER, 
-                $id, $zone, $health, $urls);
+    protected function __construct($id, $zone, $urls, $health){
+             parent::__construct(TYPE_PLAYER, 
+                $id, $urls, $zone, $health);
         $this->sprite = new Sprite();
     }
 
@@ -24,6 +24,7 @@ class Player extends Creature{
         return new Player(
             $playerID, 
             new Zone($info["zonex"], $info["zoney"]),
+            $info['urls'],
             $info["health"]);
     }
 
@@ -41,22 +42,15 @@ class Player extends Creature{
     public static function getInZone($zone, $getUrls){
         $arr = PlayerInfo::getInZone($zone->zonex, $zone->zoney, $getUrls);
         $players = [];
-        for ($arr as $p){
+        foreach ($arr as $p){
             $players[] = new Player(
                 $p['id'],
                 $zone,
                 $p['health'],
                 $p['urls']
-            )
+            );
         }
         return $players;
-    }
-
-    public function addPrepInfo(){
-        if($this->urls == null){
-            throw new Exception("partial player cannot be prepped");
-        }
-        parent::addPrepInfo(TYPE_PLAYER, $this->urls);
     }
 
     /**
@@ -91,7 +85,7 @@ class Player extends Creature{
     }
 }
 
-class Sprite extends AudioEvent{
+class Sprite extends AudioObject{
     /**
      *must be instanciated by player class
      */
@@ -102,10 +96,6 @@ class Sprite extends AudioEvent{
     const audio_lowHealth = 1; //player is at low health
     const audio_edge = 2;//player walks to the edge of the map
 
-    public function addPrepInfo(){
-        //parent::sendPrepInfo();
-    }
-    
     /**
      * returns the sprite audio for walking to the edge of the map
      */

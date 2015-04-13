@@ -4,6 +4,11 @@
  */
 require_once("shared/Header.php");
 require_once("responses/changeZonesResponse.php");
+require_once("../interfaces/Zone.php");
+require_once("../interfaces/objects/Ambient.php");
+require_once("../interfaces/objects/creatures/Player.php");
+require_once("../interfaces/objects/creatures/enemies/shared/Enemy.php");
+require_once("../interfaces/objects/creatures/npcs/shared/Npc.php");
 
 try{
 //only posts should be accepted. other verbs are ignored.
@@ -20,30 +25,30 @@ try{
             exit();
         }
         //move player
-        $player->reposition($zone);
-        //remove old events
-        Player::removeAllOldEvents($_timeRecieved);
+        $player->changeZone($zone);
+
         //get npcs in zone
-        $npcs = Npc::getInZone($player->zone);
+        $npcs = Npc::getInZone($player->zone, true);
         foreach($npcs as $npc){
+            $npc->addUrls();
             $npc->interactPlayer($player);
         }
+
         //get enemies in zone
-        $enemies = Enemy::getInZone($player->zone);
+        $enemies = Enemy::getInZone($player->zone, true);
         foreach($enemies as $enemy){
-            $enemy->interactPlayer($player);
+            $enemy::addUrls();
+            $enemy->attackPlayer($player);
         }
-       //check player events
-       //$eventsResult = Player::getPlayerEventsInZone($zone,$_SESSION['lastupdateTime']);
-       //update last event time
-       $_SESSION['lastupdateTime'] = $_timeRecieved;
 
-        Npc::getPrepInfo($player->zone);
-        Enemy::getPrepInfo($player->zone);
+        //get ambients in zone
+        $ambeints = Ambient::getInZone($player->zone, true);
+        for($ambients as $amb){
+            $amb->addUrls();
+        }
 
-        Zone::endPrevZone($oldZone);
-        Zone::addPrepInfo($player->zone);
-        Zone::addPlayingAmbients($player->zone);
+        //update last event time
+        $_SESSION['lastupdateTime'] = $_timeRecieved;
 
         echo $response->send();
     } else{

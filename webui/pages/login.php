@@ -6,7 +6,7 @@ $builder->redirectIfLoggedIn();
 $builder->addHeader();
 
 require_once("/home/elliot/projects/pathfinder/server/shared/constants.php");
-require_once("/home/elliot/projects/pathfinder/server/interfaces/objects/Player.php");
+require_once("/home/elliot/projects/pathfinder/server/interfaces/objects/creatures/Player.php");
 
 if(isset($_POST['uname'])){
     //sanitize

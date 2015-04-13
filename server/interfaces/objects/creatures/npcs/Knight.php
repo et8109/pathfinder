@@ -10,8 +10,8 @@ class Knight extends Npc{
     const dist_talk = 5;
     const dist_notice = 10;
 
-    protected function __construct($id, $zone, $health, $urls){
-        parent::__construct(AudioObj::TYPE_NPC, $id, $zone, $health, $urls);
+    protected function __construct($id, $urls, $zone, $health){
+        parent::__construct(AudioObj::TYPE_NPC, $id, $urls, $zone, $health);
     }
     
     public function interactPlayer($player){

@@ -57,25 +57,11 @@ var question = false;
 var answer = null;
 
 var requestArray=[];//used to request audio
-var npcs=[];
-var enemies = [];
-var ambients =[];
-var players=[];
+var nodes=[];//all audio nodes
+nodes.playing = [];
 
 var updater;
 var ticker;
-
-/**
- *repeated in db
- */
-var types = {
-    ambient_noise:0,
-    enemy: 1,
-    walk_audio: 2,
-    person: 3
-}
-
-//load defualt playe rinfo
 
 
 /**
@@ -226,21 +212,13 @@ function moveZone(dir){
                     var prep_data = response.prep;
                     var play_data = response.play;
                     //end last zone's ambients
-                    for(a of prep_data.endAmb){
-                        ambients[a.id].stop();
+                    for(n of nodes.playing){
+                        n.stop();
                     }
                     //load audio urls into nodes
-                    for(amb of prep_data.amb){
-                        ambients[amb.id] = new node(true, amb.audio);
-                        ambients[amb.id].requestBuffer();
-                    }
-                    for(npc of prep_data.npcs){
-                        npcs[npc.id] = new node(false, npc.audioURLs);
-                        npcs[npc.id].requestBuffer();
-                    }
-                    for(enemy of prep_data.enemies){
-                        enemies[enemy.id] = new node(false, enemy.audioURLs);
-                        enemies[enemy.id].requestBuffer();
+                    for(data of prep_data){
+                        nodes[data.key] = new node(data.loop, data.audio);
+                        nodes[data.key].requestBuffer();
                     }
                     //TODO call peeps
                     loadRequestArray(requestArray, play_data);
@@ -342,22 +320,11 @@ function recordedAttack(blob){
 }
 
 /**
- *started when login request is recived
- *sends current position to db
- *reacts to recieved data
+ * reacts to recieved play data
  */
 function update(play_data){
-    for(a of play_data.ambients){
-        ambients[a.id].play(0);
-    }
-    for(n of play_data.npcs){
-        npcs[n.id].play(n.audioType);
-    }
-    for(e of play_data.enemies){
-        enemies[e.id].play(e.audioType);
-    }
-    for(p of play_data.player){
-        players[p.id].play(p.audioType);
+    for(data of play_data){
+        nodes[data.key].play(data.num);
     }
 }
 

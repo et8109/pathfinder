@@ -4,11 +4,8 @@ require_once("shared/AudioObject.php")
 
 class Ambient extends AudioObject{
 
-    private $audioUrls;
-
-    protected function __construct($id, $audioUrls){
-        parent::__construct(TYPE_AMBIENT, $id);
-        $this->audioUrls = $audioUrls;
+    protected function __construct($id, $urls){
+        parent::__construct(TYPE_AMBIENT, $id, $urls);
     }
 
     /**
@@ -28,31 +25,6 @@ class Ambient extends AudioObject{
         }
         return $ambients;
     }
-
-    public function addPrepInfo(){
-        if($this->audioUrls == null){
-            throw new Exception("partial ambient cannot be prepped");
-        }
-
-        for($this->ambientUrls as $u){
-            parent::addPrepInfo($u);
-        }
-    }
-
-    public function addPlaying($zone){//TODO assumes it is always playing
-        addAudio(0);
-    }
-
-    /*public static function endPrevZone($zone){
-        global $response;
-        $ids = Ambients::getInZone($zone->zonex, $zone->zoney);
-        foreach($ids as $id){
-            $a = [];
-            $a['id'] = $id['id'];
-            $response->add_prep_endAmb($a);
-        }
-    }*/
-
 }
 
 ?>
