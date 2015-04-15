@@ -1,6 +1,6 @@
-pathfinder
-By Elliot Essman
+Pathfinder
 ==========
+By Elliot Essman
 
 An audio-only adventure. Walk around, talk, fight, ect.
 
