@@ -43,7 +43,7 @@ try{
 
         //get ambients in zone
         $ambeints = Ambient::getInZone($player->zone, true);
-        for($ambients as $amb){
+        foreach($ambients as $amb){
             $amb->addUrls();
         }
 

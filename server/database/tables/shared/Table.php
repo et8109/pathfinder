@@ -27,7 +27,8 @@ abstract class Table{
 
     protected static function collapseUrls($arr){
         //check if only 1 url
-        if(!isset($arr[0])){
+        if(count($arr) == 1){
+            $arr = $arr[0];
             $arr['urls'] = array($arr['url']);
             unset($arr['url']);
             return $arr;

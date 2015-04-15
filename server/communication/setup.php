@@ -14,11 +14,9 @@ try{
         $info = $player->getSetupInfo();
         $response = new SetupResponse();
         
-        $response->add_playerID($_SESSION['playerID']);
+        $response->add_key($player->keyid);
         $response->add_playeraudioURL(array("Attack.mp3"));
         $response->add_peerID($info['peerid']);
-        $response->add_zoneX($info['zonex']);
-        $response->add_zoneY($info['zoney']);
         $response->add_version(2);
         echo $response->send();
     } else{

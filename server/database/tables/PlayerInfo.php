@@ -46,7 +46,7 @@ class PlayerInfo extends Table{
     public static function getInfoById($pid, $getUrls){
         $pid = self::prepVar($pid);
         if($getUrls){
-            return self::collapseUrls(self::$db->querySingle("select P.zonex, P.zoney, P.peerid, P.health, U.url from playerinfo P, audio U where P.id=$pid and U.objid='p$pid'"));
+            return self::collapseUrls(self::$db->queryMulti("select P.id, P.zonex, P.zoney, P.peerid, P.health, U.url from playerinfo P, audio U where P.id=$pid and U.objid='p$pid'"));
         } else{
             return self::$db->querySingle("select zonex, zoney, peerid, health from playerinfo where id=$pid");
         }
