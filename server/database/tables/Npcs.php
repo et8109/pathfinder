@@ -10,19 +10,17 @@ class Npcs extends Table{
         self::$db->querySingle(
             "CREATE TABLE npcs (".
             "id int(3),".
+            "name char(20),".
             "zonex int(3),".
             "zoney int(3),".
-            "lastAudio int(3),".
-            "finish int(10),".
-            "start int(10),".
             "PRIMARY KEY (id)".
             ")");
     }
 
     public static function init(){
         self::$db->querySingle(
-            "INSERT INTO npcs (id, zonex, zoney, lastAudio, finish, start) 
-                       values ( 0,     1,     2,         0,      0,     0)");
+            "INSERT INTO npcs (id, zonex, zoney) 
+                       values ( 0,     1,     2)");
 
     }
 
@@ -43,20 +41,25 @@ class Npcs extends Table{
     /**
      * Returns the npc info of the npcs in the given zone
      */
-    public static function getInZone($zonex, $zoney) {
+    public static function getInZone($zonex, $zoney, $getUrls) {
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
-        $r = self::$db->queryMulti("select id,zonex,zoney,finish,start,lastAudio from npcs where zonex=$zonex and zoney=$zoney");
+        $r = self::$db->queryMulti("select id,zonex,zoney from npcs where zonex=$zonex and zoney=$zoney");
+        /*if($getUrls){
+            foreach($r as $n){
+                $n['urls'] = Audio::getUrls('n'.$n['id']);
+            }
+        }*/
         return $r;
     }
 
-    public static function addEvent($startTime, $endTime, $audioInt, $npcid) {
+    /*public static function addEvent($startTime, $endTime, $audioInt, $npcid) {
         $startTime = self::prepVar($startTime);
         $endTime = self::prepVar($endTime);
         $audioInt = self::prepVar($audioInt);
         $npcid = self::prepVar($npcid);
         self::$db->querySingle("update npcs set start=$startTime, finish=$endTime, lastAudio=$audioInt where id=$npcid");
-    }
+    }*/
  
 }
 ?>

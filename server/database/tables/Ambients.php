@@ -41,7 +41,7 @@ class Ambients extends Table{
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
         if($getUrls){
-            return collapseUrls(self::$db->queryMulti("select A.id, U.url from ambients A, audio U where A.zonex=$zonex and A.zoney=$zoney and U.objid=a+A.id"));
+            return self::collapseUrls(self::$db->queryMulti("select A.id, U.url from ambients A, audio U where A.zonex=$zonex and A.zoney=$zoney and U.objid='a+A.id'"));
         } else{
             return self::$db->queryMulti("select id, from ambients where zonex=$zonex and zoney=$zoney");
         }

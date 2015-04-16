@@ -11,9 +11,9 @@ class Player extends Creature{
      * Should only be initialized from inside the class
      */ 
     protected function __construct($id, $zone, $urls, $health){
-             parent::__construct(TYPE_PLAYER, 
+             parent::__construct(self::TYPE_PLAYER, 
                 $id, $urls, $zone, $health);
-        $this->sprite = new Sprite();
+        $this->sprite = new Sprite(0, null);
     }
 
     /**
@@ -54,10 +54,17 @@ class Player extends Creature{
     }
 
     /**
+     * Walk to a new zone
+     */
+    public function walk(Zone $zone){
+        $this->changeZone($zone);
+    }
+
+    /**
      * Setup info required only when initializing the game
      */
     public function getSetupInfo(){
-        return PlayerInfo::getInfoById($this->id);
+        return PlayerInfo::getInfoById($this->id, true);
     }
 
     /**
@@ -89,8 +96,8 @@ class Sprite extends AudioObject{
     /**
      *must be instanciated by player class
      */
-    protected function __construct(){
-        parent::__construct(TYPE_SPRITE);
+    public function __construct($id, $urls){
+        parent::__construct(self::TYPE_SPRITE, $id, $urls);
     }
     const audio_dead = 0;//player is dead
     const audio_lowHealth = 1; //player is at low health
@@ -100,7 +107,7 @@ class Sprite extends AudioObject{
      * returns the sprite audio for walking to the edge of the map
      */
     public function outOfBounds(){
-        self::addEvent(self::audio_edge);
+        $this->addAudio(self::audio_edge);
     }
 }
 ?>

@@ -17,8 +17,8 @@ abstract class Creature extends AudioObject{
     }
 
     protected function changeZone($zone){
-        $table = getTable();
-        $table::updateInfo($this->id, $zone->posx, $zone->posy);
+        $table = self::getTable();
+        $table::updateInfo($this->id, $zone->zonex, $zone->zoney);
     }
 
     protected abstract function dead();

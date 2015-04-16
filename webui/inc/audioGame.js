@@ -81,8 +81,8 @@ window.onload = function(){
                     log("starting loading");
                     //load sprite and player audio
                     //spriteObject.requestBuffer(response.spriteaudioURL); TODO load sprite
-                    players[response.playerID] = new node(false, response.playeraudioURL);
-                    players[response.playerID].requestBuffer();
+                    nodes[response.key] = new node(false, response.playeraudioURL);
+                    nodes[response.key].requestBuffer();
                     //loadRequestArray(requestArray);
                     //load current scene
                     moveZone('init');
@@ -417,7 +417,7 @@ request.setRequestHeader("Content-length", params.length);
 request.setRequestHeader("Connection", "close");
     request.onreadystatechange = function(){
         if (this.readyState==4 && this.status==200){
-            log("response: "+this.responseText);
+            log("response: _"+this.responseText+"_");
             if (!this.responseText) {
                 return;
             }

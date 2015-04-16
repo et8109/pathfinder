@@ -20,21 +20,23 @@ abstract class AudioObject{
     const TYPE_SPRITE = 's';
 
     private static $typeToTable = array(
-        TYPE_PLAYER => "PlayerInfo",
-        TYPE_NPC => "Npcs",
-        TYPE_ENEMY => "Enemies",
-        TYPE_AMBIENT => "Ambients"
+        self::TYPE_PLAYER => "PlayerInfo",
+        self::TYPE_NPC => "Npcs",
+        self::TYPE_ENEMY => "Enemies",
+        self::TYPE_AMBIENT => "Ambients"
     );
 
-    private $keyid;
+    public $keyid;
     private $type;
     private $urls;
+    protected $id;
     private $loading = false;
 
     protected function __construct($type, $id, $urls){
         $this->keyid = $type . $id;
         $this->type = $type;
         $this->urls = $urls;
+        $this->id = $id;
     }
 
     /**
@@ -70,7 +72,7 @@ abstract class AudioObject{
     }
 
     protected function getTable(){
-        return $typeToTable[$this->type];
+        return self::$typeToTable[$this->type];
     }
 }
 ?>

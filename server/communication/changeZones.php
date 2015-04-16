@@ -15,7 +15,7 @@ try{
     if(!empty($_POST)){
         $response = new ChangeZoneResponse();
         //get player db info
-        $player = Player::fromDatabase($_SESSION['playerID']);
+        $player = Player::fromDatabase($_SESSION['playerID'], true);
         $oldZone = $player->zone;
         try{
             $zone = getNewZone($player->zone, $_POST['dir']);
@@ -25,7 +25,7 @@ try{
             exit();
         }
         //move player
-        $player->changeZone($zone);
+        $player->walk($zone);
 
         //get npcs in zone
         $npcs = Npc::getInZone($player->zone, true);
@@ -42,8 +42,8 @@ try{
         }
 
         //get ambients in zone
-        $ambeints = Ambient::getInZone($player->zone, true);
-        for($ambients as $amb){
+        $ambients = Ambient::getInZone($player->zone, true);
+        foreach($ambients as $amb){
             $amb->addUrls();
         }
 

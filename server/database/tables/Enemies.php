@@ -13,24 +13,24 @@ class Enemies extends Table{
         "zonex int(3),".
         "zoney int(3),".
         "health int(3),".
-        "lastAudio int(3),".
-        "finish int(10),".
-        "start int(10),".
         "PRIMARY KEY (id)".
         ")");
     }
 
     public static function init(){
         self::$db->querySingle(
-            "INSERT INTO enemies (id, type, zonex, zoney, health, lastAudio, finish, start) 
-                           values (0,    0,     0,    1,       4,         1,      0,     0)");
+            "INSERT INTO enemies (id, type, zonex, zoney, health) 
+                           values (0,    0,     0,    1,       4)");
 
     }
 
-    public static function getInZone($zonex, $zoney){
+    public static function getInZone($zonex, $zoney, $getUrls){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
-        $r = self::$db->queryMulti("select id, type, zonex, zoney, finish, start, lastAudio, health from enemies where zonex=$zonex and zoney=$zoney");
+        if($getUrls){
+            return self::collapseUrls(self::$db->queryMulti("select E.id, E.type, E.zonex, E.zoney, E.health, U.url from enemies E, audio U where zonex=$zonex and zoney=$zoney and U.objid='e+E.id'"));
+        }
+        $r = self::$db->queryMulti("select id, type, zonex, zoney, health from enemies where zonex=$zonex and zoney=$zoney");
         return $r;
     }
 
@@ -71,13 +71,13 @@ class Enemies extends Table{
         return self::$db->lastQueryNumRows() != 1; //returns true if dead
     }
 
-    public static function addEvent($startTime, $endTime, $audioInt, $enemyId) {
+    /*public static function addEvent($startTime, $endTime, $audioInt, $enemyId) {
         $startTime = self::prepVar($startTime);
         $endTime = self::prepVar($endTime);
         $audioInt = self::prepVar($audioInt);
         $enemyId = self::prepVar($enemyId);
         self::$db->querySingle("update enemies set start=$startTime, finish=$endTime, lastAudio=$audioInt where id=$enemyId");
-    }
+    }*/
 
 }
 ?>
