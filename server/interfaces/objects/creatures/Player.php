@@ -54,6 +54,13 @@ class Player extends Creature{
     }
 
     /**
+     * Walk to a new zone
+     */
+    public function walk(Zone $zone){
+        $this->changeZone($zone);
+    }
+
+    /**
      * Setup info required only when initializing the game
      */
     public function getSetupInfo(){
@@ -100,7 +107,7 @@ class Sprite extends AudioObject{
      * returns the sprite audio for walking to the edge of the map
      */
     public function outOfBounds(){
-        self::addEvent(self::audio_edge);
+        $this->addAudio(self::audio_edge);
     }
 }
 ?>

@@ -72,7 +72,7 @@ abstract class AudioObject{
     }
 
     protected function getTable(){
-        return $typeToTable[$this->type];
+        return self::$typeToTable[$this->type];
     }
 }
 ?>

@@ -35,18 +35,18 @@ class Audio extends Table{
             );
     }
 
-    public static function getSpriteAudio(){
+    /*public static function getSpriteAudio(){
         $audioId = self::prepVar("s0");
         $r = self::$db->queryMulti("select url from audio where objid=$audioId");
         return $r;
-    }
+    }*/
 
     /**
      * returns an array of the object's audio urls
      */
-    public static function getUrls($objid){
-        $objid = self::prepVar($objid);
-        $r = self::$db->queryMulti("select url from audio where objid=$objid");
+    public static function getUrls($key){
+        $objid = self::prepVar($key);
+        $r = self::$db->queryMulti("select url from audio where objid=$key");
         $urls = [];
         $i=0;
         $len=count($r);

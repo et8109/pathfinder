@@ -1,6 +1,6 @@
 <?php
 
-require_once("shared/AudioObject.php")
+require_once("shared/AudioObject.php");
 
 class Ambient extends AudioObject{
 
@@ -15,11 +15,11 @@ class Ambient extends AudioObject{
         $arr = Ambients::getInZone($zone->zonex, $zone->zoney, $getUrls);
         $ambients = [];
         if($getUrls){
-           for($arr as $a){
+           foreach($arr as $a){
                 $ambients[] = new Ambient($a['id'], $a['urls']);
             }
         } else {
-            for($arr as $a){
+            foreach($arr as $a){
                 $ambients[] = new Ambient($a['id'], null);
             }
         }

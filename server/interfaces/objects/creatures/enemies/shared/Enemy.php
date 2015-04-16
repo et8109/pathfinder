@@ -1,5 +1,5 @@
 <?php
-require_once("../shared/Creature.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/server/interfaces/objects/creatures/shared/Creature.php");
 
 abstract class Enemy extends Creature{
 
@@ -19,6 +19,19 @@ abstract class Enemy extends Creature{
         parent::adUrls();
     }
 
+    private static function getName($type){
+        $name = null;
+        switch($type){
+            case 0:
+                $name = "Wolf";
+                break;
+            default:
+                throw new Exception("unknown enemy type");
+        }
+        require_once($_SERVER['DOCUMENT_ROOT']."/server/interfaces/objects/creatures/enemies/$name.php");
+        return $name;
+    }
+
     /**
      * Returns the enemies in the given zone
      */
@@ -26,7 +39,8 @@ abstract class Enemy extends Creature{
         $arr = Enemies::getInZone($zone->zonex, $zone->zoney, $getUrls);
         $list = [];
         foreach($arr as $n){
-            $list[] = new Wolf(
+            $name = self::getName($n['type']);
+            $list[] = new $name(
                 $n["id"],
                 new Zone($n["zonex"],
                          $n["zoney"]),
