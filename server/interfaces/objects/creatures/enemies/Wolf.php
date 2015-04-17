@@ -9,7 +9,7 @@ class Wolf extends Enemy{
     const max_health = 4;
     
     protected function __construct($id, $urls, $zone, $health){
-        parent::__construct(TYPE_ENEMY, $id, $urls, $zone, $health);
+        parent::__construct(self::TYPE_ENEMY, $id, $urls, $zone, $health);
     }
     
     public function attackPlayer($player){
@@ -23,7 +23,7 @@ class Wolf extends Enemy{
             $this->dead();
         } else{
             //enemy runs away
-            $this->runAway();
+            $this->retreat();
         }
     }
     /**

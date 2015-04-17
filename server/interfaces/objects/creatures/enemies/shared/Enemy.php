@@ -3,20 +3,20 @@ require_once($_SERVER['DOCUMENT_ROOT']."/server/interfaces/objects/creatures/sha
 
 abstract class Enemy extends Creature{
 
-    protected $loaded = false;
+    protected static $loaded = false;
     
     protected function __construct($id, $urls, $zone, $health, $urls){
-        parent::__construct(TYPE_ENEMY, $id, $urls, $zone, $health);
+        parent::__construct(self::TYPE_ENEMY, $id, $urls, $zone, $health);
     }
 
 
-    protected function addUrls(){
+    public function addUrls(){
         //only load once per class
-        if($loaded){
+        if(self::$loaded){
             return;
         }
-        $loaded = true;
-        parent::adUrls();
+        self::$loaded = true;
+        parent::addUrls();
     }
 
     private static function getName($type){

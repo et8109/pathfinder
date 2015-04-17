@@ -1,7 +1,7 @@
 <?php
 final class constants {
     const zoneWidth = 50;
-    const numZonesSrt = 2;//should be a square
+    const numZonesSrt = 3;//should be a square
     const secBetweenevents = 6;
     const zoneBuffer = 5;
     const npcDuration = 10;

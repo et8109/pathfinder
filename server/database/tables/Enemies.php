@@ -27,20 +27,11 @@ class Enemies extends Table{
     public static function getInZone($zonex, $zoney, $getUrls){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
-        if($getUrls){
-            return self::collapseUrls(self::$db->queryMulti("select E.id, E.type, E.zonex, E.zoney, E.health, U.url from enemies E, audio U where zonex=$zonex and zoney=$zoney and U.objid='e+E.id'"));
-        }
         $r = self::$db->queryMulti("select id, type, zonex, zoney, health from enemies where zonex=$zonex and zoney=$zoney");
-        return $r;
-    }
-
-    public static function getZonePrep($zonex, $zoney){
-        $zonex = self::prepVar($zonex);
-        $zoney = self::prepVar($zoney);
-        $r = self::$db->queryMulti("select id, type from enemies where zonex=$zonex and zoney=$zoney");
-        for($i=0; isset($r[$i]); $i++){
-            $objid = "e".$r[$i]['type'];
-            $r[$i]['audioURLs'] = Audio::getURLs($objid);
+        if($getUrls){
+            foreach($r as &$e){
+                $e['urls'] = Audio::getUrls('e'.$e['id']);
+            }
         }
         return $r;
     }

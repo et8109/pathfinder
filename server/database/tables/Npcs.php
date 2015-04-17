@@ -13,14 +13,15 @@ class Npcs extends Table{
             "name char(20),".
             "zonex int(3),".
             "zoney int(3),".
+            "health int(3),".
             "PRIMARY KEY (id)".
             ")");
     }
 
     public static function init(){
         self::$db->querySingle(
-            "INSERT INTO npcs (id, zonex, zoney) 
-                       values ( 0,     1,     2)");
+            "INSERT INTO npcs (id, zonex, zoney, health) 
+                       values ( 0,     1,     2,      4)");
 
     }
 
@@ -44,12 +45,12 @@ class Npcs extends Table{
     public static function getInZone($zonex, $zoney, $getUrls) {
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
-        $r = self::$db->queryMulti("select id,zonex,zoney from npcs where zonex=$zonex and zoney=$zoney");
-        /*if($getUrls){
-            foreach($r as $n){
+        $r = self::$db->queryMulti("select id,zonex,zoney,health from npcs where zonex=$zonex and zoney=$zoney");
+        if($getUrls){
+            foreach($r as &$n){
                 $n['urls'] = Audio::getUrls('n'.$n['id']);
             }
-        }*/
+        }
         return $r;
     }
 

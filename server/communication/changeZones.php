@@ -37,15 +37,15 @@ try{
         //get enemies in zone
         $enemies = Enemy::getInZone($player->zone, true);
         foreach($enemies as $enemy){
-            $enemy::addUrls();
+            $enemy->addUrls();
             $enemy->attackPlayer($player);
         }
 
-        //get ambients in zone
+        /*//get ambients in zone
         $ambients = Ambient::getInZone($player->zone, true);
         foreach($ambients as $amb){
             $amb->addUrls();
-        }
+        }*/
 
         //update last event time
         $_SESSION['lastupdateTime'] = $_timeRecieved;

@@ -25,7 +25,7 @@ abstract class Table{
         self::$initialized = true;
     }
 
-    protected static function collapseUrls($arr){
+    /*protected static function collapseUrls($arr){
         //check if only 1 url
         if(count($arr) == 1){
             $arr = $arr[0];
@@ -48,7 +48,7 @@ abstract class Table{
             $list[] = $row;
         }
         return $list;
-    }
+    }*/
 }
 Table::setDb();
 ?>

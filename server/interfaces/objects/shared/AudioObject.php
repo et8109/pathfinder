@@ -50,9 +50,9 @@ abstract class AudioObject{
     /**
      * Send audio info to the client
      */
-    protected function addUrls(){
+    public function addUrls(){
         //return if already loaded
-        if($loading){
+        if($this->loading){
             return;
         }
         if($this->urls == null){
@@ -61,12 +61,12 @@ abstract class AudioObject{
         global $response;
         $response->add_prep($this->keyid, 
                             $this->urls, 
-                            $this->type == TYPE_AMBIENT//bool for looping
+                            $this->type == self::TYPE_AMBIENT//bool for looping
         );
         $this->loading = true;
 
         //also play if an ambient
-        if($this->type == TYPE_AMBIENT){
+        if($this->type == self::TYPE_AMBIENT){
             addAudio(0);
         }
     }

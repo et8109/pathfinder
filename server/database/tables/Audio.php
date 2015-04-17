@@ -45,7 +45,7 @@ class Audio extends Table{
      * returns an array of the object's audio urls
      */
     public static function getUrls($key){
-        $objid = self::prepVar($key);
+        $key = self::prepVar($key);
         $r = self::$db->queryMulti("select url from audio where objid=$key");
         $urls = [];
         $i=0;

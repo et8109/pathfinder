@@ -217,7 +217,7 @@ function moveZone(dir){
                     }
                     //load audio urls into nodes
                     for(data of prep_data){
-                        nodes[data.key] = new node(data.loop, data.audio);
+                        nodes[data.key] = new node(data.loop, data.urls);
                         nodes[data.key].requestBuffer();
                     }
                     //TODO call peeps

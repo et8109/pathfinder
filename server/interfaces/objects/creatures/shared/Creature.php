@@ -10,8 +10,8 @@ abstract class Creature extends AudioObject{
     public $zone;//zone that the object is in
     protected $health;//current health of the creature
 
-    protected function __construct($objType, $id, $urls, $zone, $health){
-        parent::__construct($objType, $id, $urls);
+    protected function __construct($type, $id, $urls, $zone, $health){
+        parent::__construct($type, $id, $urls);
         $this->zone = $zone;
         $this->health = $health;
     }
@@ -19,6 +19,7 @@ abstract class Creature extends AudioObject{
     protected function changeZone($zone){
         $table = self::getTable();
         $table::updateInfo($this->id, $zone->zonex, $zone->zoney);
+        $this->zone = $zone;
     }
 
     protected abstract function dead();

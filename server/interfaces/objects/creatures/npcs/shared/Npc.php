@@ -5,7 +5,7 @@ require_once($_SERVER['DOCUMENT_ROOT']."/server/interfaces/objects/creatures/sha
 abstract class Npc extends Creature{
 
     protected function __construct($id, $urls, $zone, $health){
-        parent::__construct(AudioObj::TYPE_NPC, $id, $urls, $zone, $health);
+        parent::__construct(self::TYPE_NPC, $id, $urls, $zone, $health);
     }
 
     public abstract function interactPlayer($player);
@@ -29,16 +29,15 @@ abstract class Npc extends Creature{
      */
     public static function getInZone($zone, $getUrls){
         $arr = Npcs::getInZone($zone->zonex, $zone->zoney, $getUrls);
-        echo var_dump($arr);
         $list = [];
         foreach($arr as $n){
             $name = self::getName($n['id']);
             $list[] = new $name(
-                $n["id"],
+                $n['id'],
+                $n['urls'],
                 new Zone($n["zonex"],
                     $n["zoney"]),
-                $n['health'],
-                $n["urls"]);
+                $n['health']);
         }
         return $list;
     }
