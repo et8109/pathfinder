@@ -19,7 +19,7 @@ class Knight extends Npc{
         //if an event was set after last update
         //parent::checkEvent();
 
-        $this->addAudio(self::audio_greet);
+        $this->addAudio(self::audio_greet, 0);
 
         /*if($dist < Npc::dist_talk && !$this->busy){
             //if answered
@@ -42,8 +42,8 @@ class Knight extends Npc{
         }*/
     }
 
-    public function dead(){
-        $this->addAudio(self::audio_dead);
+    public function dead($startTime){
+        $this->addAudio(self::audio_dead, $startTime);
     }
 }
 ?>

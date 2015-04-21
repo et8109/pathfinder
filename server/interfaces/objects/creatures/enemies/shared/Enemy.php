@@ -5,7 +5,7 @@ abstract class Enemy extends Creature{
 
     protected static $loaded = false;
     
-    protected function __construct($id, $urls, $zone, $health, $urls){
+    protected function __construct($id, $urls, Zone $zone, $health){
         parent::__construct(self::TYPE_ENEMY, $id, $urls, $zone, $health);
     }
 
@@ -42,16 +42,16 @@ abstract class Enemy extends Creature{
             $name = self::getName($n['type']);
             $list[] = new $name(
                 $n["id"],
+                $n["urls"],
                 new Zone($n["zonex"],
                          $n["zoney"]),
-                $n["health"],
-                $n["urls"]);
+                $n["health"]);
         }
         return $list;
     }
 
     public abstract function attackPlayer($player);
-    protected abstract function retreat();
+    protected abstract function retreat($startTime);
 
 }
 ?>

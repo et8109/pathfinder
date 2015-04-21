@@ -70,11 +70,11 @@ class Player extends Creature{
     /**
      *updates player in db and sends json for reposition
      */
-    public function dead(){
+    public function dead($startTime){
         $this->reposition(0,0);
         PlayerInfo::resetPlayer($this->id,self::max_health,0,0);
         //_addPlayerEvent(1, $time, $zone,true);//death sound as event
-        $this->sprite->addAudio(Sprite::audio_dead);
+        $this->sprite->addAudio(Sprite::audio_dead, $startTime);
     }
 
     /**
@@ -87,8 +87,8 @@ class Player extends Creature{
     /**
      * attacks an enemy
      */
-    public function attack($enemy){
-        return $this->addAudio(self::audio_attack);
+    public function attack($enemy, $startTime){
+        return $this->addAudio(self::audio_attack, $startTime);
     }
 }
 
@@ -107,7 +107,7 @@ class Sprite extends AudioObject{
      * returns the sprite audio for walking to the edge of the map
      */
     public function outOfBounds(){
-        $this->addAudio(self::audio_edge);
+        $this->addAudio(self::audio_edge, 0);
     }
 }
 ?>

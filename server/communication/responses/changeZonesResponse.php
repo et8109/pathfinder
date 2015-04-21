@@ -18,10 +18,13 @@ class ChangeZoneResponse extends Response{
         );
     }
 
-    public function add_play($keyid, $num){
+    public function add_play($keyid, $num, $time, $dirx, $diry){
         $this->response['play'][] = array(
             "key" => $keyid,
-            "num" => $num
+            "num" => $num,
+            "time" => $time,
+            "dirx" => $dirx,
+            "diry" => $diry
         );
     }
 }

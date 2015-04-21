@@ -42,9 +42,9 @@ abstract class AudioObject{
     /**
      * Adds the given audio data to the response to the client
      */
-    protected function addAudio($num){
+    protected function addAudio($num, $time, $dirx = 0, $diry = 0){
         global $response;
-        $response->add_play($this->keyid, $num);
+        $response->add_play($this->keyid, $num, $time, $dirx, $diry);
     }
 
     /**

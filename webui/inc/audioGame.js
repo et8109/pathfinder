@@ -60,6 +60,8 @@ var requestArray=[];//used to request audio
 var nodes=[];//all audio nodes
 nodes.playing = [];
 
+var saved_play_data;
+
 var updater;
 var ticker;
 
@@ -141,12 +143,12 @@ function node(loop, audioURLs){
         }
     }
     
-    this.play = function(audioNum){
+    this.play = function(audioNum, dirx, diry){
         log("starting: "+this.audioURLs[audioNum]);
         this.audioSource && this.audioSource.stop();
         log(this.buffers[audioNum]);
-        this.audioSource = createAudioSource(this.buffers[audioNum],false/*no panner*/);
-        //this.audioSource = createAudioSource(this.buffers[audioNum],true/*panner*/,this.posx,this.posy,this.posz);
+        //this.audioSource = createAudioSource(this.buffers[audioNum],false/*no panner*/);
+        this.audioSource = createAudioSource(this.buffers[audioNum],true/*panner*/,/*x*/dirx,/*y*/diry,/*z*/0);
         if (this.loop){
             this.audioSource.loop = true;//for walking
         }
@@ -323,9 +325,20 @@ function recordedAttack(blob){
  * reacts to recieved play data
  */
 function update(play_data){
-    for(data of play_data){
-        nodes[data.key].play(data.num);
+    saved_play_data = play_data;
+    for(var i=0, n=play_data.length; i<n; i++){
+        var data = play_data[i];
+        //nodes[data.key].play(data.num, data.dirx, data.diry);
+        setTimeout(playData, data.time * 1000, i);
     }
+}
+
+/**
+ * executes a single play_data
+ */
+function playData(i){
+    var data = saved_play_data[i];
+    nodes[data.key].play(data.num, data.dirx, data.diry);
 }
 
 /**
