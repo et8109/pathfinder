@@ -43,12 +43,10 @@ class PlayerInfo extends Table{
         return $r;
     }   
 
-    public static function getInfoById($pid, $getUrls){
+    public static function getInfoById($pid){
         $pid = self::prepVar($pid);
         $r = self::$db->querySingle("select id, zonex, zoney, peerid, health from playerinfo where id=$pid");
-        if($getUrls){
-            $r['urls'] = Audio::getUrls('p'.$r['id']);
-        }
+        $r['audios'] = Audio::getUrls('p'.$r['id']);
         return $r;
     }
 
@@ -62,20 +60,9 @@ class PlayerInfo extends Table{
     public static function getInZone($zonex, $zone, $getUrls){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
-        if($getUrls){
-            return collapseUrls(self::$db->queryMulti("select P.id, P.health, U.url from playerinfo P, Audio U where zonex=$zonex and zoney=$zoney and U.objid = p+P.id"));
-        } else{
-            return self::$db->queryMulti("select id, health from playerinfo where zonex=$zonex and zoney=$zoney");
-        }
-    }
-
-    public static function getZonePrep(){
-        $zonex = self::prepVar($zonex);
-        $zoney = self::prepVar($zoney);
-        $r = self::$db->queryMulti("select id from playerinfo where zonex=$zonex and zoney=$zoney");
-        for($i=0; isset($r[$i]); $i++){
-            $objid = "p".$r[$i]['id'];
-            $r[$i]['audioURLs'] = Audio::getURLs($objid);
+        $r = self::$db->queryMulti("select id, zonex, zoney, health from playerinfo where zonex=$zonex and zoney=$zoney");
+        foreach($r as &$n){
+            $n['audios'] = Audio::getUrls('p'.$n['id']);
         }
         return $r; 
     }

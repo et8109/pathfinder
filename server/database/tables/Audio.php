@@ -42,19 +42,18 @@ class Audio extends Table{
     }*/
 
     /**
-     * returns an array of the object's audio urls
+     * returns an array of the object's audio urls and length in seconds
      */
     public static function getUrls($key){
         $key = self::prepVar($key);
-        $r = self::$db->queryMulti("select url from audio where objid=$key");
-        $urls = [];
-        $i=0;
-        $len=count($r);
+        $r = self::$db->queryMulti("select id, url, length from audio where objid=$key");
+        $audios = [];
         foreach($r as $url){
-            $urls[] = $url['url'];
-            $i++;
+            $num = $url['id'];
+            $audios[$num]['url'] = $url['url'];
+            $audios[$num]['length'] = $url['length'];
         }
-        return $urls;
+        return $audios;
     }
 }
 ?>

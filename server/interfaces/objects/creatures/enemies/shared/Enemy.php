@@ -3,10 +3,12 @@ require_once($_SERVER['DOCUMENT_ROOT']."/server/interfaces/objects/creatures/sha
 
 abstract class Enemy extends Creature{
 
+    public static $type = self::TYPE_ENEMY;
+
     protected static $loaded = false;
     
-    protected function __construct($id, $urls, Zone $zone, $health){
-        parent::__construct(self::TYPE_ENEMY, $id, $urls, $zone, $health);
+    protected function __construct($id, $audios, Zone $zone, $health){
+        parent::__construct($id, $audios, $zone, $health);
     }
 
 
@@ -32,22 +34,14 @@ abstract class Enemy extends Creature{
         return $name;
     }
 
-    /**
-     * Returns the enemies in the given zone
-     */
-    public static function getInZone($zone, $getUrls){
-        $arr = Enemies::getInZone($zone->zonex, $zone->zoney, $getUrls);
-        $list = [];
-        foreach($arr as $n){
-            $name = self::getName($n['type']);
-            $list[] = new $name(
-                $n["id"],
-                $n["urls"],
-                new Zone($n["zonex"],
-                         $n["zoney"]),
-                $n["health"]);
-        }
-        return $list;
+
+
+    protected static function fromDbRow($row){
+        $name = self::getName($row['type']);
+        return new $name($row['id'],
+            self::audiosFromDbRow($row),
+            new Zone($row['zonex'], $row['zoney']),
+            $row['health']);
     }
 
     public abstract function attackPlayer($player);

@@ -24,14 +24,12 @@ class Enemies extends Table{
 
     }
 
-    public static function getInZone($zonex, $zoney, $getUrls){
+    public static function getInZone($zonex, $zoney){
         $zonex = self::prepVar($zonex);
         $zoney = self::prepVar($zoney);
         $r = self::$db->queryMulti("select id, type, zonex, zoney, health from enemies where zonex=$zonex and zoney=$zoney");
-        if($getUrls){
-            foreach($r as &$e){
-                $e['urls'] = Audio::getUrls('e'.$e['id']);
-            }
+        foreach($r as &$e){
+            $e['audios'] = Audio::getUrls('e'.$e['id']);
         }
         return $r;
     }

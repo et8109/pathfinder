@@ -5,6 +5,7 @@
 require_once("shared/Header.php");
 require_once("responses/changeZonesResponse.php");
 require_once("../interfaces/Zone.php");
+require_once("../interfaces/AudioInfo.php");
 require_once("../interfaces/objects/Ambient.php");
 require_once("../interfaces/objects/creatures/Player.php");
 require_once("../interfaces/objects/creatures/enemies/shared/Enemy.php");
@@ -15,7 +16,7 @@ try{
     if(!empty($_POST)){
         $response = new ChangeZoneResponse();
         //get player db info
-        $player = Player::fromDatabase($_SESSION['playerID'], true);
+        $player = Player::fromDatabase($_SESSION['playerID']);
         $oldZone = $player->zone;
         try{
             $zone = getNewZone($player->zone, $_POST['dir']);
@@ -28,14 +29,14 @@ try{
         $player->walk($zone);
 
         //get npcs in zone
-        $npcs = Npc::getInZone($player->zone, true);
+        $npcs = Npc::getInZone($player->zone);
         foreach($npcs as $npc){
             $npc->addUrls();
             $npc->interactPlayer($player);
         }
 
         //get enemies in zone
-        $enemies = Enemy::getInZone($player->zone, true);
+        $enemies = Enemy::getInZone($player->zone);
         foreach($enemies as $enemy){
             $enemy->addUrls();
             $enemy->attackPlayer($player);

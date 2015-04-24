@@ -4,27 +4,15 @@ require_once("shared/AudioObject.php");
 
 class Ambient extends AudioObject{
 
-    protected function __construct($id, $urls){
-        parent::__construct(TYPE_AMBIENT, $id, $urls);
+    static $type = TYPE_AMBIENT;
+
+    protected function __construct($id, $audios){
+        parent::__construct($id, $audios);
     }
 
-    /**
-     * Returns ambients in the given zone. With audio urls if set to true
-     */
-    public static function getInZone($zone, $getUrls){
-        $arr = Ambients::getInZone($zone->zonex, $zone->zoney, $getUrls);
-        $ambients = [];
-        if($getUrls){
-           foreach($arr as $a){
-                $ambients[] = new Ambient($a['id'], $a['urls']);
-            }
-        } else {
-            foreach($arr as $a){
-                $ambients[] = new Ambient($a['id'], null);
-            }
-        }
-        return $ambients;
+
+    protected static function fromDbRow($row){
+        return new Ambient($row['id'], self::audiosFromDbRow($row));
     }
 }
-
 ?>

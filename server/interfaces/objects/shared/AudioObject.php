@@ -27,15 +27,15 @@ abstract class AudioObject{
     );
 
     public $keyid;
-    private $type;
-    private $urls;
+    protected $audios;
     protected $id;
     private $loading = false;
 
-    protected function __construct($type, $id, $urls){
-        $this->keyid = $type . $id;
-        $this->type = $type;
-        $this->urls = $urls;
+    //static::$type declared in child classes
+
+    protected function __construct($id, $audios){
+        $this->keyid = static::$type . $id;
+        $this->audios = $audios;
         $this->id = $id;
     }
 
@@ -55,24 +55,49 @@ abstract class AudioObject{
         if($this->loading){
             return;
         }
-        if($this->urls == null){
+        if($this->audios == null){
             throw new Exception("unable to load urls");
+        }
+        $urls = [];
+        foreach($this->audios as $a){
+            $urls[] = $a->url;
         }
         global $response;
         $response->add_prep($this->keyid, 
-                            $this->urls, 
-                            $this->type == self::TYPE_AMBIENT//bool for looping
+                            $urls, 
+                            static::$type == self::TYPE_AMBIENT//bool for looping
         );
         $this->loading = true;
 
         //also play if an ambient
-        if($this->type == self::TYPE_AMBIENT){
+        if(static::$type == self::TYPE_AMBIENT){
             addAudio(0);
         }
     }
 
-    protected function getTable(){
-        return self::$typeToTable[$this->type];
+    /**
+     * returnsa list of this object in the given zone
+     */
+    public static function getInZone(Zone $zone){
+        $table = self::getTable();
+        $result = $table::getInZone($zone->zonex, $zone->zoney);
+        $list = [];
+        foreach($result as $row){
+            $list[] = static::fromDbRow($row);
+        }
+        return $list;
+    }
+
+    protected static function getTable(){
+        return self::$typeToTable[static::$type];
+    }
+
+    protected static function audiosFromDbRow($row){
+        $audios = [];
+        foreach($row['audios'] as $num => $a){
+            $audios[] = new AudioInfo($num, $a['url'], $a['length']);
+        }
+        return $audios;
     }
 }
 ?>

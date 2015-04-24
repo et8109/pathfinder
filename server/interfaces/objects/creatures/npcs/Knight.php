@@ -11,8 +11,8 @@ class Knight extends Npc{
     const dist_talk = 5;
     const dist_notice = 10;
 
-    protected function __construct($id, $urls, $zone, $health){
-        parent::__construct($id, $urls, $zone, $health);
+    protected function __construct($id, $audios, $zone, $health){
+        parent::__construct($id, $audios, $zone, $health);
     }
     
     public function interactPlayer($player){

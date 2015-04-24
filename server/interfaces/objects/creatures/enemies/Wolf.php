@@ -8,8 +8,8 @@ class Wolf extends Enemy{
     
     const max_health = 4;
     
-    protected function __construct($id, $urls, $zone, $health){
-        parent::__construct($id, $urls, $zone, $health);
+    protected function __construct($id, $audios, $zone, $health){
+        parent::__construct($id, $audios, $zone, $health);
     }
     
     public function attackPlayer($player){

@@ -6,26 +6,21 @@ class Player extends Creature{
     const max_health = 4;
 
     public $sprite;
+    public static $type = self::TYPE_PLAYER;
 
     /**
      * Should only be initialized from inside the class
      */ 
-    protected function __construct($id, $zone, $urls, $health){
-             parent::__construct(self::TYPE_PLAYER, 
-                $id, $urls, $zone, $health);
+    protected function __construct($id, $audios, Zone $zone, $health){
+             parent::__construct($id, $audios, $zone, $health);
         $this->sprite = new Sprite(0, null);
     }
 
     /**
      * Returns a player class for the given player ID
      */
-    public static function fromDatabase($playerID, $getUrls){
-        $info = PlayerInfo::getInfoById($playerID, $getUrls);
-        return new Player(
-            $playerID, 
-            new Zone($info["zonex"], $info["zoney"]),
-            $info['urls'],
-            $info["health"]);
+    public static function fromDatabase($playerID){
+        return self::fromDbRow(PlayerInfo::getInfoById($playerID));
     }
 
     public static function IDfromLogin($uname, $pass){
@@ -36,21 +31,12 @@ class Player extends Creature{
         return $r;
     }
 
-    /**
-     * Returns all the players in the given zone
-     */
-    public static function getInZone($zone, $getUrls){
-        $arr = PlayerInfo::getInZone($zone->zonex, $zone->zoney, $getUrls);
-        $players = [];
-        foreach ($arr as $p){
-            $players[] = new Player(
-                $p['id'],
-                $zone,
-                $p['health'],
-                $p['urls']
-            );
-        }
-        return $players;
+
+    protected static function fromDbRow($row){
+        return new Player($row['id'], 
+            self::audiosFromDbRow($row),
+            new Zone($row['zonex'], $row['zoney']),
+            $row['health']);
     }
 
     /**
@@ -93,11 +79,14 @@ class Player extends Creature{
 }
 
 class Sprite extends AudioObject{
+
+    public static $type = self::TYPE_SPRITE;
+
     /**
      *must be instanciated by player class
      */
     public function __construct($id, $urls){
-        parent::__construct(self::TYPE_SPRITE, $id, $urls);
+        parent::__construct($id, $urls);
     }
     const audio_dead = 0;//player is dead
     const audio_lowHealth = 1; //player is at low health
