@@ -81,18 +81,17 @@ window.onload = function(){
                 "setup=true",
                 function(response){
                     log("starting loading");
-                    //load sprite and player audio
-                    //spriteObject.requestBuffer(response.spriteaudioURL); TODO load sprite
-                    nodes[response.key] = new node(false, response.playeraudioURL);
-                    nodes[response.key].requestBuffer();
-                    //loadRequestArray(requestArray);
+                    log("client version 2");
+                    log("server version "+response.version);
+                    //load audio urls into nodes
+                    for(data of response.prep){
+                        nodes[data.key] = new node(data.loop, data.urls);
+                        nodes[data.key].requestBuffer();
+                    }
                     //load current scene
                     moveZone('init');
                     //create peer
                     createPeer(response.peerID);
-                    //start updater
-                    log("client version 2");
-                    log("server version "+response.version);
                     loading = false;
                 }
                );

@@ -16,14 +16,14 @@ class Wolf extends Enemy{
         //attack audio
         //lower health
         //dead audio or run away audio
-        $this->addAudio(self::audio_notice, 0);
-        $player->attack($this, 6);//TODO length of attack audio
+        $t = $this->addAudio(self::audio_notice, 0);
+        $t = $player->attack($this, $t);
         if(Enemies::lowerHealth($this->id, $this->zone->zonex, $this->zone->zoney)){
             //enemy dead
-            $this->dead(/*t:*/10);
+            $this->dead($t);
         } else{
             //enemy runs away
-            $this->retreat(/*t:*/10);
+            $this->retreat($t);
         }
     }
     /**

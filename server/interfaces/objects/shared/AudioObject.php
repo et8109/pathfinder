@@ -27,7 +27,7 @@ abstract class AudioObject{
     );
 
     public $keyid;
-    protected $audios;
+    protected $audios;//num-> url, length
     protected $id;
     private $loading = false;
 
@@ -40,11 +40,13 @@ abstract class AudioObject{
     }
 
     /**
-     * Adds the given audio data to the response to the client
+     * Adds the given audio data to the response to the client.
+     * Returns the end time
      */
     protected function addAudio($num, $time, $dirx = 0, $diry = 0){
         global $response;
         $response->add_play($this->keyid, $num, $time, $dirx, $diry);
+        return $time + $this->audios[$num]->length;
     }
 
     /**

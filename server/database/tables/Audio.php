@@ -30,16 +30,17 @@ class Audio extends Table{
             "('n0', 2, 'Knty.mp3', 6),".
             "('n0', 3, 'Kntn.mp3', 5),".
             "('p1', 0, 'attack.mp3', 3),".//player
-            "('s0', 0, 'Lowlife.mp3', 4),".//sprite
-            "('s0', 1, 'Dead.mp3', 4)"
+            "('s0', 0, 'Lowlfe.mp3', 4),".//sprite
+            "('s0', 1, 'Dead.mp3', 4),".
+            "('s0', 2, 'Lowlfe.mp3', 4)"
             );
     }
 
-    /*public static function getSpriteAudio(){
-        $audioId = self::prepVar("s0");
-        $r = self::$db->queryMulti("select url from audio where objid=$audioId");
-        return $r;
-    }*/
+    public static function getSpriteAudio(){
+        $spriteArr = [];
+        $spriteArr['audios'] = self::getUrls("s0");
+        return $spriteArr;
+    }
 
     /**
      * returns an array of the object's audio urls and length in seconds

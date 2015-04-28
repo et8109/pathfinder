@@ -14,9 +14,8 @@ try{
         $player = Player::fromDatabase($_SESSION['playerID']);
         $info = $player->getSetupInfo();
         $response = new SetupResponse();
-        
-        $response->add_key($player->keyid);
-        $response->add_playeraudioURL(array("Attack.mp3"));
+        $player->addUrls();
+        $player->sprite->addUrls();
         $response->add_peerID($info['peerid']);
         $response->add_version(2);
         echo $response->send();

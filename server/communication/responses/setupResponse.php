@@ -8,12 +8,14 @@ class SetupResponse extends Response{
         );
     } 
 
-    public function add_key($data){
-        $this->response['key'] = $data;
+    public function add_prep($keyid, $urls, $loop){
+        $this->response['prep'][] = array(
+            "key" => $keyid,
+            "urls" => $urls,
+            "loop" => $loop
+        );
     }
-    public function add_playeraudioURL($data){
-        $this->response['playeraudioURL'] = $data;
-    }
+
     public function add_peerID($data){
         $this->response['peerID'] = $data;
     }
