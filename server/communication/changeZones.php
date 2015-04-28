@@ -42,11 +42,18 @@ try{
             $enemy->attackPlayer($player);
         }
 
-        /*//get ambients in zone
-        $ambients = Ambient::getInZone($player->zone, true);
-        foreach($ambients as $amb){
+        //get ambients in old zone (TODO improve)
+        $oldAmbients = Ambient::getInZone($oldZone);
+        $ambients = Ambient::getInZone($player->zone);
+        $toEnd = array_diff($oldAmbients, $ambients);
+        $toStart = array_diff($ambients, $oldAmbients);
+        foreach($toEnd as $amb){
+            $response->end_amb($amb->keyid);
+        }
+        foreach($toStart as $amb){
             $amb->addUrls();
-        }*/
+        }
+
 
         //update last event time
         $_SESSION['lastupdateTime'] = $_timeRecieved;

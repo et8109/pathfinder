@@ -58,7 +58,6 @@ var answer = null;
 
 var requestArray=[];//used to request audio
 var nodes=[];//all audio nodes
-nodes.playing = [];
 
 var saved_play_data;
 
@@ -210,11 +209,12 @@ function moveZone(dir){
     sendRequest("changeZones.php",
                 "dir="+dir,
                 function(response){
+                    var end_amb = response.end;
                     var prep_data = response.prep;
                     var play_data = response.play;
                     //end last zone's ambients
-                    for(n of nodes.playing){
-                        n.stop();
+                    for(data of end_amb){
+                        nodes[data.key].stop();
                     }
                     //load audio urls into nodes
                     for(data of prep_data){

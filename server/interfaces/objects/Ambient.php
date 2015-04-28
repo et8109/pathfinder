@@ -4,7 +4,7 @@ require_once("shared/AudioObject.php");
 
 class Ambient extends AudioObject{
 
-    static $type = TYPE_AMBIENT;
+    static $type = self::TYPE_AMBIENT;
 
     protected function __construct($id, $audios){
         parent::__construct($id, $audios);

@@ -5,10 +5,17 @@ class ChangeZoneResponse extends Response{
 
     public function __construct(){
         $this->response = array(
+            "end" => array(),
             "prep" => array(),
             "play" => array()
         );
     } 
+
+    public function end_amb($keyid){
+        $this->response['end'][] = array(
+            "key" => $keyid
+        );
+    }
 
     public function add_prep($keyid, $urls, $loop){
         $this->response['prep'][] = array(

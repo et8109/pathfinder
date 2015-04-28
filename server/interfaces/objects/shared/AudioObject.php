@@ -73,7 +73,7 @@ abstract class AudioObject{
 
         //also play if an ambient
         if(static::$type == self::TYPE_AMBIENT){
-            addAudio(0);
+            $this->addAudio(0, 0);
         }
     }
 
