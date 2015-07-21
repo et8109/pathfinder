@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              >
+  <TextView
+      android:id="@+id/create_event_status_textview"
+      android:layout_width="match_parent" 
+      android:layout_height="wrap_content" 
+      android:text="@string/create_event_status_textview_text"
+      />
+  <EditText
+      android:id="@+id/create_event_eventname_edittext"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:hint="@string/create_event_eventname_edittext_hint"
+      />
+  <EditText
+      android:id="@+id/create_event_location_edittext"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:hint="@string/create_event_location_edittext_hint"
+      />
+  <CheckBox android:id="@+id/create_event_byob_checkbox"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/create_event_byob_checkbox_text"
+      />
+  <DatePicker
+      android:id="@+id/create_event_date_datepicker"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:endYear="2100"
+      android:startYear="1900" />
+  <TimePicker
+      android:id="@+id/create_event_date_timepicker"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+  <Button
+      android:id="@+id/create_event_submit_button"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/create_event_submit_button_text"
+      android:onClick="onSubmitButtonClicked"
+      />
+</LinearLayout>

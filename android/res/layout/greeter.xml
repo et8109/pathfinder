@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              >
+  <Button
+      android:id="@+id/greeter_create_user_button"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight=".5"
+      android:text="@string/greeter_create_user_button_text"
+      android:background="@color/ui_theme_color_a"
+      android:textColor="@color/ui_button_text_color"
+      android:textSize="@dimen/ui_static_text_big_size"
+      android:onClick="onCreateUserButtonClicked"
+      />
+  <Button
+      android:id="@+id/greeter_create_user_button"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight=".5"
+      android:text="@string/greeter_login_button_text"
+      android:background="@color/ui_theme_color_b"
+      android:textColor="@color/ui_button_text_color"
+      android:textSize="@dimen/ui_static_text_big_size"
+      android:onClick="onLoginButtonClicked"
+      />
+</LinearLayout>

@@ -1,0 +1,68 @@
+// Pinata Android Application Gradle Build File
+// (C) 2015 Christian Gunderman
+
+// TODO: clean up this mess.
+
+// Import Android SDK build functions from Antfile.
+ant.importBuild 'build.xml'
+
+// Allow seamless interoperability with the parent Gradle build file
+// by defining tasks with the same names as the 'java' plugin so we
+// get built at the same time as they do.
+
+// Already defined Android tasks:
+// Use ant help command for more info.
+// - help
+// - clean
+// - debug
+// - release
+// - instrument
+// - test
+// - emma
+// - install
+// - installd
+// - installr
+// - installt
+// - uninstall
+
+// Android ANT build is REALLY bad about deprecating classpath properties
+// so this SHOULD be a long-term, but sloppy solution where we copy shared
+// JAR into the libs dir after building. Jank. Ass.
+task jankAssDependencyBuild << {
+
+    println "**Don't forget to rebuild the shared library if stale**"
+    if (!file('../shared/build/libs/shared.jar').exists()) {
+        ant.fail("STOP! You must first build the shared library.")
+    }
+
+    // Copy Shared library to libs dir
+    copy {
+        from '../shared/build/libs/shared.jar'
+        into 'libs/'
+    }
+}
+
+task jankAssDependencyClean << {
+    delete 'libs/shared.jar'
+    delete 'Pinata.apk'
+    delete 'Pinata.apk.d'
+}
+
+// Build tasks:
+task build << {
+}
+build.dependsOn release
+
+task jar << {
+}
+jar.dependsOn release
+
+build.dependsOn jankAssDependencyBuild
+debug.dependsOn jankAssDependencyBuild
+test.dependsOn jankAssDependencyBuild
+install.dependsOn jankAssDependencyBuild
+installd.dependsOn jankAssDependencyBuild
+installr.dependsOn jankAssDependencyBuild
+installt.dependsOn jankAssDependencyBuild
+release.dependsOn jankAssDependencyBuild
+clean.dependsOn jankAssDependencyClean

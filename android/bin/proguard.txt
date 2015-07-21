@@ -1,0 +1,32 @@
+# view AndroidManifest.xml #generated:21
+-keep class com.pinata.android.CreateEventActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:15
+-keep class com.pinata.android.CreateUserActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:8
+-keep class com.pinata.android.GreeterActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:18
+-keep class com.pinata.android.LoginActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:24
+-keep class com.pinata.android.ProfileActivity { <init>(...); }
+
+# onClick res/layout/profile.xml #generated:29
+-keepclassmembers class * { *** onCreateEventButtonClicked(...); }
+
+# onClick res/layout/greeter.xml #generated:7
+-keepclassmembers class * { *** onCreateUserButtonClicked(...); }
+
+# onClick res/layout/greeter.xml #generated:18
+-keepclassmembers class * { *** onLoginButtonClicked(...); }
+
+# onClick res/layout/profile.xml #generated:18
+-keepclassmembers class * { *** onLogoutButtonClicked(...); }
+
+# onClick res/layout/create_event.xml #generated:40
+# onClick res/layout/create_user.xml #generated:83
+# onClick res/layout/login.xml #generated:45
+-keepclassmembers class * { *** onSubmitButtonClicked(...); }
+
