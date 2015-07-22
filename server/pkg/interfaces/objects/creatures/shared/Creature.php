@@ -1,5 +1,5 @@
 <?php
-require_once( $_SERVER['DOCUMENT_ROOT']."/server/interfaces/objects/shared/AudioObject.php");
+require_once( $_SERVER['DOCUMENT_ROOT']."/server/pkg/interfaces/objects/shared/AudioObject.php");
 
 /**
  * A parent class for all audio objects.

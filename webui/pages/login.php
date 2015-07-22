@@ -5,8 +5,8 @@ $builder = new PageBuilder(PageBuilder::TYPE_NORMAL);
 $builder->redirectIfLoggedIn();
 $builder->addHeader();
 
-require_once("/home/elliot/projects/pathfinder/server/shared/constants.php");
-require_once("/home/elliot/projects/pathfinder/server/interfaces/objects/creatures/Player.php");
+//require_once("/home/elliot/projects/pathfinder/server/pkg/shared/constants.php");
+//require_once("/home/elliot/projects/pathfinder/server/pkg/interfaces/objects/creatures/Player.php");
 
 if(isset($_POST['uname'])){
     //sanitize
@@ -20,7 +20,8 @@ if(isset($_POST['uname'])){
     }
     $id = false;
     try{
-        $id = Player::IDfromLogin($uname, $pass);
+        //$id = Player::IDfromLogin($uname, $pass);TODO logs in everyone
+        $id = 1;
         $_SESSION['playerID'] = $id;
         $_SESSION['lastupdateTime'] = 0;
         header("Location: index.php");

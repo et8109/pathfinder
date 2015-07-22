@@ -5,6 +5,8 @@ window.onerror = function(msg, url, line) {
 //page setup
 var loading = true;
 
+var wsUri = "ws://echo.websocket.org/";
+
 //p2p chat
 var peer;
 var localStream;//audio from local device
@@ -64,36 +66,9 @@ var saved_play_data;
 var updater;
 var ticker;
 
-
-/**
- *  onload:
- *      load player and sprite defaults
- *      load current zone
- *  onmove:
- *      load new zone
- *  onupdate:
- *      read response to play/pause
- */
-
 window.onload = function(){
-    sendRequest("setup.php",
-                "setup=true",
-                function(response){
-                    log("starting loading");
-                    log("client version 2");
-                    log("server version "+response.version);
-                    //load audio urls into nodes
-                    for(data of response.prep){
-                        nodes[data.key] = new node(data.loop, data.urls);
-                        nodes[data.key].requestBuffer();
-                    }
-                    //load current scene
-                    moveZone('init');
-                    //create peer
-                    createPeer(response.peerID);
-                    loading = false;
-                }
-               );
+    websocket = new WebSocket(wsUri);
+    log("loaded");
 }
 
 window.onkeypress = function(event){

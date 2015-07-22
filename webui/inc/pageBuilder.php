@@ -55,7 +55,7 @@ class PageBuilder {
     }
 
     public function sendRequest($endpoint, $data){
-        $url = "http://localhost/server/communication/$endpoint.php";
+        $url = "http://localhost/server/pkg/communication/$endpoint.php";
         //$data = array('' => 'value1', 'key2' => 'value2');
 
         // use key 'http' even if you send the request to https://...
