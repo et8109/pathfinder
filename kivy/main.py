@@ -50,16 +50,22 @@ class MainScreen(Screen):
     def on_touch_up(self, touch):
         xdiff = self.fromx-touch.x
         ydiff = self.fromy-touch.y
-        if(-5 < xdiff < 5):
-            if(ydiff > 10):
-                self.print_message("down")
-            elif(ydiff < -10):
-                self.print_message("up")
-        elif(-5 < ydiff < 5):
-            if(xdiff > 10):
-                self.print_message("left")
-            elif(xdiff < -10):
-                self.print_message("right")
+        walkdir = None
+        maxVar = 15
+        minDist = 30
+        if(-maxVar < xdiff < maxVar):
+            if(ydiff > minDist):
+                walkdir ="down"
+            elif(ydiff < -minDist):
+                walkdir ="up"
+        elif(-maxVar < ydiff < maxVar):
+            if(xdiff > minDist):
+                walkdir = "left"
+            elif(xdiff < -minDist):
+                walkdir = "right"
+        if walkdir:
+            self.print_message(walkdir)
+            self.send_message(walkdir)
  
 class EchoClient(protocol.Protocol):
     def connectionMade(self):
