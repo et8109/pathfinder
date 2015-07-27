@@ -3,6 +3,8 @@ from kivy.support import install_twisted_reactor
 install_twisted_reactor()
 
 from kivy.app import App
+from kivy.lang import Builder
+from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
@@ -10,6 +12,75 @@ from kivy.uix.button import Button
 
 from twisted.internet import reactor, protocol
 
+Builder.load_string("""
+<LoginScreen>:
+    BoxLayout:
+        Label:
+            id: message
+            text: '...'
+        TextInput: 
+            id: username
+            text: 'username'
+        TextInput:
+            id: password
+            text: 'password'
+        Button:
+            text: 'Login'
+            on_press: root.manager.current = 'Main'
+
+<MainScreen>:
+    BoxLayout:
+        Button:
+            text: 'logout'
+        Label:
+            id: message
+            text: 'welcome'
+""")
+
+class LoginScreen(Screen):
+    pass
+
+class MainScreen(Screen):
+    connection = None
+    fromx = None
+    fromy = None
+
+    def on_enter(self):
+        self.connect_to_server()
+        
+    def connect_to_server(self):
+        reactor.connectTCP('localhost', 10000, EchoFactory(self))
+
+    def on_connection(self, connection):
+        self.print_message("connected succesfully!")
+        self.connection = connection
+
+    def send_message(self, msg):
+        if msg and self.connection:
+            self.connection.write(str(msg))
+
+    def print_message(self, msg):
+        self.ids.message.text += msg + "\n"
+
+    def on_touch_down(self, touch):
+        self.fromx = touch.x
+        self.fromy = touch.y
+        self.print_message("touched")
+
+    def on_touch_up(self, touch):
+        xdiff = self.fromx-touch.x
+        ydiff = self.fromy-touch.y
+        if(-5 < xdiff < 5):
+            if(ydiff > 10):
+                self.print_message("down")
+            elif(ydiff < -10):
+                self.print_message("up")
+        elif(-5 < ydiff < 5):
+            if(xdiff > 10):
+                self.print_message("left")
+            elif(xdiff < -10):
+                self.print_message("right")
+ 
 class EchoClient(protocol.Protocol):
     def connectionMade(self):
         self.factory.app.on_connection(self.transport)
@@ -29,52 +100,14 @@ class EchoFactory(protocol.ClientFactory):
         self.app.print_message("connection failed")
 
 
-
-
-
-class LoginScreen(GridLayout):
-    connection = None
-
-    def Login(self, instance):
-        self.message.text = "logging in"
-        self.send_message("loginuserpass")
-
-    def __init__(self, **kwargs):
-        super(LoginScreen, self).__init__(**kwargs)
-        self.cols = 2
-        self.add_widget(Label(text='User Name'))
-        self.username = TextInput(multiline=False)
-        self.add_widget(self.username)
-        self.add_widget(Label(text='password'))
-        self.password = TextInput(password=True, multiline=False)
-        self.add_widget(self.password)
-        self.submit = Button(text='Login', font_size=14)
-        self.submit.bind(on_press=self.Login)
-        self.add_widget(self.submit)
-        self.message = Label(text='...')
-        self.add_widget(self.message)
-        #make connection
-        self.connect_to_server()
-        
-    def connect_to_server(self):
-        reactor.connectTCP('localhost', 10000, EchoFactory(self))
-
-    def on_connection(self, connection):
-        self.print_message("connected succesfully!")
-        self.connection = connection
-
-    def send_message(self, msg):
-        if msg and self.connection:
-            self.connection.write(str(msg))
-
-    def print_message(self, msg):
-        self.message.text += msg + "\n"
+sm = ScreenManager()
+sm.add_widget(LoginScreen(name='Login'))
+sm.add_widget(MainScreen(name='Main'))
 
 class MyApp(App):
 
     def build(self):
-        return LoginScreen()
-        #return Label(text='Welcome')
+        return sm
 
 if __name__ == '__main__':
     MyApp().run()
