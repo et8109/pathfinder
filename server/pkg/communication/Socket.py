@@ -4,13 +4,47 @@
  
 import socket
 import sys
+import hashlib
+import struct
+import base64
 from _thread import *
+
+GUID = b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+handshake_shell = (
+  '''HTTP/1.1 101 Switching Protocols
+     Upgrade: websocket
+     Connection: Upgrade
+     WebSocket-Origin: http://localhost:10000
+     Sec-WebSocket-Accept: %(acceptstring)s
+     '''
+    )
+
+#sends handshake response to client to verify identity
+def handshake(conn):
+    print('Handshaking...')
+    data = conn.recv(1024)
+    #headers = parse_headers(data)
+    for line in data.splitlines():
+        if b'Sec-WebSocket-Key:' in line:
+            key = line.split(b': ')[1]
+            
+            # Append the standard GUID and get digest
+            combined = key + GUID
+            response = ((base64.b64encode(hashlib.sha1(combined).digest())).decode('utf8')).strip()
+                
+            # Replace the placeholder in the handshake response
+            shake = handshake_shell % { 'acceptstring' : response }
+
+    conn.send(shake.encode())
+    return True 
 
 #Function for handling connections. This will be used to create threads
 def clientthread(conn):
+    #handshake(conn)
     #Sending message to connected client
     msg = ("welcome to the server.")
     conn.send(msg.encode())
+    print("sent welcome message")
 
     #infinite loop so that function do not terminate and thread do not end.
     while True:
@@ -22,8 +56,10 @@ def clientthread(conn):
             break
 
         conn.sendall(reply)
-
+    
     #came out of loop
+    conn.sendall(("Goodbye").encode());
+    print("closing");
     conn.close()
 
 def startListening(): 
@@ -54,5 +90,6 @@ def startListening():
      
         #start new thread takes 1st argument as a function name to be run, second is the tuple of arguments to the function.
         start_new_thread(clientthread ,(conn,))
- 
+
+    print("done")
     s.close()

@@ -1,0 +1,8 @@
+uses kivy and buildozer
+
+deploy to phone: buildozer android debug deploy run
+    -runs main.py
+
+if phone not showing up:
+    adb kill-server
+    sudo adb start-server

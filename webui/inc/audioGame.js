@@ -5,7 +5,7 @@ window.onerror = function(msg, url, line) {
 //page setup
 var loading = true;
 
-var wsUri = "ws://echo.websocket.org/";
+var wsUri = "ws://localhost:10000/";
 
 //p2p chat
 var peer;
@@ -66,16 +66,28 @@ var saved_play_data;
 var updater;
 var ticker;
 
+var websocket;
+
 window.onload = function(){
+    log("yolo");
     websocket = new WebSocket(wsUri);
+    log("state: "+websocket.readyState);
+    websocket.onopen = function(evt) { log("socket conn opened");
+                                        websocket.send("sehhlo"); };
+    websocket.onclose = function(evt) { log("socket closed: "+evt.data); };
+    websocket.onmessage = function(evt) { log("msg: "+evt);
+                                          websocket.close(); };
+    websocket.onerror = function(evt) { log("socket error: "+evt.data); };
     log("loaded");
 }
 
 window.onkeypress = function(event){
     //a, left
     if(event.keyCode == 97 || event.keyCode == 65){
-        moveZone('W');
-        log("left");
+        //moveZone('W');
+        log("a");
+        log(websocket.readyState)
+        websocket.send("pressedA");
         return;
     }
     //d, right
