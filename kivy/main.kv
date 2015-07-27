@@ -1,0 +1,22 @@
+<LoginScreen>:
+    BoxLayout:
+        Label:
+            id: message
+            text: '...'
+        TextInput: 
+            id: username
+            text: 'realusername'
+        TextInput:
+            id: password
+            text: 'password'
+        Button:
+            text: 'Login'
+            on_press: root.manager.current = 'Main'; root.manager.get_screen('Main').username = username.text
+
+<MainScreen>:
+    BoxLayout:
+        Button:
+            text: 'logout'
+        Label:
+            id: message
+            text: '...'

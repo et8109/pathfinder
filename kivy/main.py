@@ -12,41 +12,21 @@ from kivy.uix.button import Button
 
 from twisted.internet import reactor, protocol
 
-Builder.load_string("""
-<LoginScreen>:
-    BoxLayout:
-        Label:
-            id: message
-            text: '...'
-        TextInput: 
-            id: username
-            text: 'username'
-        TextInput:
-            id: password
-            text: 'password'
-        Button:
-            text: 'Login'
-            on_press: root.manager.current = 'Main'
-
-<MainScreen>:
-    BoxLayout:
-        Button:
-            text: 'logout'
-        Label:
-            id: message
-            text: 'welcome'
-""")
+Builder.load_file('./main.kv')
 
 class LoginScreen(Screen):
+    username = None
     pass
 
 class MainScreen(Screen):
+    username = 'originaluname'
     connection = None
     fromx = None
     fromy = None
 
     def on_enter(self):
         self.connect_to_server()
+        self.print_message("Welcome, "+self.username)
         
     def connect_to_server(self):
         reactor.connectTCP('localhost', 10000, EchoFactory(self))
