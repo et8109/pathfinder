@@ -1,95 +1,64 @@
-'''
-    Simple socket server using threads
-'''
- 
-import socket
+import select 
+import socket 
 import sys
-import hashlib
-import struct
-import base64
-from _thread import *
+import Queue
 
-GUID = b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-handshake_shell = (
-  '''HTTP/1.1 101 Switching Protocols
-     Upgrade: websocket
-     Connection: Upgrade
-     WebSocket-Origin: http://localhost:10000
-     Sec-WebSocket-Accept: %(acceptstring)s
-     '''
-    )
+import Overseer
 
-#sends handshake response to client to verify identity
-def handshake(conn):
-    print('Handshaking...')
-    data = conn.recv(1024)
-    #headers = parse_headers(data)
-    for line in data.splitlines():
-        if b'Sec-WebSocket-Key:' in line:
-            key = line.split(b': ')[1]
-            
-            # Append the standard GUID and get digest
-            combined = key + GUID
-            response = ((base64.b64encode(hashlib.sha1(combined).digest())).decode('utf8')).strip()
-                
-            # Replace the placeholder in the handshake response
-            shake = handshake_shell % { 'acceptstring' : response }
+host = 'localhost' 
+port = 10000 
+backlog = 5 
+size = 1024 
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+server.bind((host,port)) 
+server.listen(backlog) 
+inputs = [server,sys.stdin]
+outputs = []
+outgoing = {}
+running = 1 
+while running: 
+    readable,writeable,exceptional = select.select(input,[],[]) 
 
-    conn.send(shake.encode())
-    return True 
+    for s in readable: 
+        if s is server: 
+            # handle the server socket 
+            conn, address = server.accept() 
+            inputs.append(conn) 
+            outgoing[conn] = Queue.Queue()
 
-#Function for handling connections. This will be used to create threads
-def clientthread(conn):
-    #handshake(conn)
-    #Sending message to connected client
-    msg = ("welcome to the server.")
-    conn.send(msg.encode())
-    print("sent welcome message")
+        elif s is sys.stdin: 
+            # handle standard input 
+            junk = sys.stdin.readline() 
+            running = 0 
 
-    #infinite loop so that function do not terminate and thread do not end.
-    while True:
+        else: 
+            # handle all other sockets 
+            data = s.recv(size) 
+            if data: 
+                outgoing[s].put(data)
+            if s not in outputs:
+                outputs.append(s)#only if data is being sent
+            else: 
+                s.close() 
+                inputs.remove(s) 
+                if s in outputs:
+                    outputs.remove(s)
+                del outgoing[s]
 
-        #Receiving from client
-        data = conn.recv(1024)
-        reply = ('OK...').encode() + data
-        if not data:
-            break
+    for s in writeable:
+        try:
+            next_msg = outgoing[s].get_nowait()
+        except Queue.Empty:
+            outputs.remove(s)
+        else:
+            s.send(next_msg)
 
-        conn.sendall(reply)
-    
-    #came out of loop
-    conn.sendall(("Goodbye").encode());
-    print("closing");
-    conn.close()
+    for s in exceptional:
+        print("Handling exeption")
+        inputs.remove(s)
+        if s in outputs:
+            outputs.remove(s)
+        s.close()
+        del outgoing[s]
 
-def startListening(): 
-    HOST = ''   # Symbolic name meaning all available interfaces
-    PORT = 10000 # Arbitrary non-privileged port
- 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print('Socket created')
- 
-    #Bind socket to local host and port
-    try:
-        s.bind((HOST, PORT))
-    except socket.error as msg:
-        print ('Bind failed. Error Code: '+str(msg[0])+' Message: '+msg[1])
-        sys.exit()
-     
-    print ('Socket bind complete')
- 
-    #Start listening on socket
-    s.listen(10)
-    print ('Socket now listening')
- 
-    #now keep talking with the client
-    while 1:
-        #wait to accept a connection - blocking call
-        conn, addr = s.accept()
-        print ('Connected with '+addr[0]+':'+str(addr[1]))
-     
-        #start new thread takes 1st argument as a function name to be run, second is the tuple of arguments to the function.
-        start_new_thread(clientthread ,(conn,))
-
-    print("done")
-    s.close()
+server.close()

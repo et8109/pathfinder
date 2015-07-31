@@ -34,6 +34,9 @@ class Player(Base):
     zone_id = Column(Integer(3), ForeignKey("Zone.id"))
     health = Column(Integer(3))
 
+    def moveUp(self):
+        self.zone_id = self.zone.up
+
     def login(self, name, password):
         return session.query(Player.id).filter(Player.name=name, Player.password=password).one()
 
