@@ -1,4 +1,6 @@
-class Player(database.Player_table):
+from pkg.database.database import *
+
+class Player(Player_table):
 
     def __init__(self, id):
         pass

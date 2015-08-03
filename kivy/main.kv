@@ -17,6 +17,7 @@
     BoxLayout:
         Button:
             text: 'logout'
+            on_press: root.disconnect(); root.manager.current = 'Login';
         Label:
             id: message
             text: '...'

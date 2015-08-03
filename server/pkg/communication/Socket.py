@@ -5,6 +5,7 @@ import queue
 
 from .Overseer import Overseer
 
+overseer = Overseer()
 host = 'localhost' 
 port = 10000 
 backlog = 5 
@@ -36,8 +37,9 @@ while running:
         else: 
             # handle all other sockets 
             data = s.recv(size) 
-            if data: 
-                Overseer.dataRecieved(data, s)
+            if data:
+                print("recieved: "+str(data))
+                overseer.dataRecieved(data, s)
             if s not in outputs:
                 outputs.append(s)#only if data is being sent
             else: 
@@ -62,5 +64,4 @@ while running:
             outputs.remove(s)
         s.close()
         del outgoing[s]
-
 server.close()

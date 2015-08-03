@@ -14,45 +14,59 @@ from twisted.internet import reactor, protocol
 
 Builder.load_file('./main.kv')
 
+#connection = None
+
 class LoginScreen(Screen):
     username = None
-    pass
-
+    
 class MainScreen(Screen):
     username = 'originaluname'
     connection = None
+    disconnect_pointer = None
     fromx = None
     fromy = None
 
+    def disconnect(self):
+        if self.disconnect_pointer:
+            self.disconnect_pointer.disconnect()
+
     def on_enter(self):
+        self.reset_message()
         self.connect_to_server()
         self.print_message("Welcome, "+self.username)
         
     def connect_to_server(self):
-        reactor.connectTCP('localhost', 10000, EchoFactory(self))
+        disconnect_pointer = reactor.connectTCP('localhost', 10000, EchoFactory(self))
 
     def on_connection(self, connection):
         self.print_message("connected succesfully!")
         self.connection = connection
 
     def send_message(self, msg):
-        if msg and self.connection:
-            self.connection.write(str(msg))
+        #if msg and self.connection:
+        self.connection.write(str(msg))
+        self.print_message("sent: "+msg)
+
+    def reset_message(self):
+        self.ids.message.text =""
 
     def print_message(self, msg):
         self.ids.message.text += msg + "\n"
 
     def on_touch_down(self, touch):
-        self.fromx = touch.x
-        self.fromy = touch.y
-        self.print_message("touched")
+        if touch.x < 20 and touch.y < 20:
+            self.disconnect()
+            sm.current = "Login"
+        else:
+            self.fromx = touch.x
+            self.fromy = touch.y
 
     def on_touch_up(self, touch):
         xdiff = self.fromx-touch.x
         ydiff = self.fromy-touch.y
         walkdir = None
-        maxVar = 15
-        minDist = 30
+        maxVar = 30
+        minDist = 50
         if(-maxVar < xdiff < maxVar):
             if(ydiff > minDist):
                 walkdir ="down"
@@ -64,7 +78,6 @@ class MainScreen(Screen):
             elif(xdiff < -minDist):
                 walkdir = "right"
         if walkdir:
-            self.print_message(walkdir)
             self.send_message(walkdir)
  
 class EchoClient(protocol.Protocol):
