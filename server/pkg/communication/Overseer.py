@@ -1,12 +1,19 @@
-from ./pkg/database/database import database
+from pkg.database.database import *
+from pkg.interfaces import *
 
 class Overseer():
+    sourceToId = {}
 
     def __init__(self):
+        pass
         #db connection?
 
-    def dataRevieved(self, data):
+    def dataRevieved(self, data, source):
+        if sourceToId[source] is None:
+            sourceToId[source] = data
+            print("got data")
         #get player
+        player = Player(sourceToId[source])
         if data is b'up':
             player.up()
         elif data is b'down':
@@ -17,5 +24,7 @@ class Overseer():
             player.right()
         else:
             pass
+        commitDatabase()
 
-
+    def sendData(self, data):
+        outgoing[s].put(data)

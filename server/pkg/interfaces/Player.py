@@ -1,14 +1,17 @@
-class Player(database.Player):
+class Player(database.Player_table):
 
     def __init__(self, id):
         pass
 
     def up(self):
-        self.moveUp
-        pass
+        zoneid = self.moveUp()
+        Zone(zoneid).onEnter(self)
+        
     def down(self):
-        pass
+        self.moveDown()
+        
     def left(self):
-        pass
+        self.moveLeft()
+        
     def right(self):
-        pass
+        self.moveRight()
