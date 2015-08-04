@@ -1,19 +1,29 @@
 from pkg.database import database
-from pkg.interfaces import Player
+from pkg.interfaces.Player import Player
+from pkg.communication.Socket import SocketServer
+
+import json
 
 class Overseer():
 
     def __init__(self):
         self.sourceToId = {}
-        pass
+        self.server = SocketServer(self)
+        self.server.start()
         #db connection?
 
     def dataRecieved(self, data, source):
         if source not in self.sourceToId:
-            self.sourceToId[source] = data
-            print("got data")
+            parsed = json.loads(data.decode("utf-8"))
+            pid = Player.login(parsed["u"], parsed["p"])
+            if pid:
+                self.sourceToId[source] = pid
+                print("pid "+str(pid)+" logged in")
+            else:
+                self.sendData("wrong login credentials", source)
+                return;
         #get player
-        player = Player.Player(self.sourceToId[source])
+        player = Player(self.sourceToId[source])
         if data is b'up':
             player.up()
         elif data is b'down':
@@ -26,5 +36,7 @@ class Overseer():
             pass
         database.commitDatabase()
 
-    def sendData(self, data):
-        outgoing[s].put(data)
+    def sendData(self, data, dest):
+        print("-->>  sending from overseer: "+data)
+        self.server.send_data(data.encode(), dest)
+

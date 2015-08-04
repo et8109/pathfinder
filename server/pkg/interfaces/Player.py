@@ -5,6 +5,11 @@ class Player(Player_table):
     def __init__(self, id):
         pass
 
+    @classmethod
+    def login(klass, name, password):
+        pid = klass.check_login(name, password)
+        return pid
+
     def up(self):
         zoneid = self.moveUp()
         Zone(zoneid).onEnter(self)

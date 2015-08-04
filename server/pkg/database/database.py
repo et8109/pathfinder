@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Column, Integer, String, Sequence, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship, backref
+from sqlalchemy.orm import sessionmaker, relationship, backref, exc
 
 requires = ["mysql-python"]
 
@@ -56,8 +56,12 @@ class Player_table(Base):
         self.zone_id = self.zone.right
         return self.zone_id
 
-    def login(self, _name, _password):
-        return session.query(Player.player_id).filter_by(name=_name).filter_by(password=_password).one()
+    @classmethod
+    def check_login(klass, _name, _password):
+        try:
+            return session.query(Player_table.player_id).filter_by(name=_name).filter_by(password=_password).one()
+        except exc.NoResultFound:
+            return None
 
     @classmethod
     def getAll(klass):

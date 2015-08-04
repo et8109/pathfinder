@@ -3,65 +3,77 @@ import socket
 import sys
 import queue
 
-from .Overseer import Overseer
+size = 1024
 
-overseer = Overseer()
-host = 'localhost' 
-port = 10000 
-backlog = 5 
-size = 1024 
-print("binding socket")
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-server.bind((host,port)) 
-server.listen(backlog) 
-inputs = [server,sys.stdin]
-outputs = []
-outgoing = {}
-running = 1
-print("server now listening")
-while running: 
-    readable,writeable,exceptional = select.select(inputs,[],[]) 
+class SocketServer():
 
-    for s in readable: 
-        if s is server: 
-            # handle the server socket 
-            conn, address = server.accept() 
-            inputs.append(conn) 
-            outgoing[conn] = queue.Queue()
+    host = 'localhost' 
 
-        elif s is sys.stdin: 
-            # handle standard input 
-            junk = sys.stdin.readline() 
-            running = 0 
+    def __init__(self, overseer):
+        self.overseer = overseer
+        self.port = 10000
+        self.backlog = 5
+        self.outputs = []
+        self.outgoing = {}
+        self.running = 1
+        print("binding socket")
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind((self.host,self.port))
+        self.server.listen(self.backlog)
+        self.inputs = [self.server]
 
-        else: 
-            # handle all other sockets 
-            data = s.recv(size) 
-            if data:
-                print("recieved: "+str(data))
-                overseer.dataRecieved(data, s)
-            if s not in outputs:
-                outputs.append(s)#only if data is being sent
-            else: 
-                s.close() 
-                inputs.remove(s) 
-                if s in outputs:
-                    outputs.remove(s)
-                del outgoing[s]
+    def send_data(self, data, conn):
+        print("-->> prepping send")
+        self.outgoing[conn].put(data)
+        if conn not in self.outputs:
+            self.outputs.append(conn)
 
-    for s in writeable:
-        try:
-            next_msg = outgoing[s].get_nowait()
-        except Queue.Empty:
-            outputs.remove(s)
-        else:
-            s.send(next_msg)
+    def start(self):
+        print("server now listening")
+        while self.running: 
+            readable,writeable,exceptional = select.select(self.inputs,self.outputs,self.inputs) 
 
-    for s in exceptional:
-        print("Handling exeption")
-        inputs.remove(s)
-        if s in outputs:
-            outputs.remove(s)
-        s.close()
-        del outgoing[s]
-server.close()
+            for s in readable: 
+                if s is self.server: 
+                    # handle the server socket 
+                    conn, address = self.server.accept() 
+                    self.inputs.append(conn) 
+                    #print("-->> #inputs: "+str(count(self.inputs)))
+                    self.outgoing[conn] = queue.Queue()
+                    print("new conn: "+str(s))
+
+                else: 
+                    # handle all other sockets 
+                    data = s.recv(size) 
+                    if data:
+                        print("recieved: "+str(data))
+                        self.overseer.dataRecieved(data, s)
+                    else: 
+                        print("-->> removeing input")
+                        s.close() 
+                        self.inputs.remove(s) 
+                        if s in self.outputs:
+                            self.outputs.remove(s)
+                        del self.outgoing[s]
+
+            for s in writeable:
+                try:
+                    print("-->> writeable: "+str(s))
+                    next_msg = self.outgoing[s].get_nowait()
+                    print("-->> sending!!!!")
+                    s.send(next_msg)
+                except Queue.Empty:
+                    self.outputs.remove(s)
+                else:
+                    print("-->> sending!!!!v2")
+                    s.send(next_msg)
+
+            for s in exceptional:
+                print("Handling exeption")
+                self.inputs.remove(s)
+                if s in self.outputs:
+                    self.outputs.remove(s)
+                s.close()
+                del self.outgoing[s]
+            print("-->> done loop")
+        self.server.close()

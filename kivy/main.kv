@@ -11,7 +11,7 @@
             text: 'password'
         Button:
             text: 'Login'
-            on_press: root.manager.current = 'Main'; root.manager.get_screen('Main').username = username.text
+            on_press: root.login(username.text, password.text);
 
 <MainScreen>:
     BoxLayout:

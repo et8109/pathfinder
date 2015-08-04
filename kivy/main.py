@@ -12,43 +12,64 @@ from kivy.uix.button import Button
 
 from twisted.internet import reactor, protocol
 
+import json
+
 Builder.load_file('./main.kv')
 
-#connection = None
+connection = None
+disconnect_pointer = None
+
+def send_message(msg):
+     if msg and connection:
+        connection.write(str(msg))
 
 class LoginScreen(Screen):
-    username = None
+
+    def on_enter(self):
+        global connection
+        if connection is None:
+            print("no connection, establishing")
+            self.connect()
+
+    def connect(self):
+        self.print_message("connecting to server")
+        disconnect_pointer = reactor.connectTCP('localhost', 10000, EchoFactory(self))
+
+    def on_connection(self, _connection):
+        global connection
+        self.print_message("connected succesfully!")
+        connection = _connection
+        print(connection)
+
+    def login(self, uname, password):
+        msg = {"u":uname,
+               "p":password}
+        send_message(json.dumps(msg))
+
+    def get_message(self, msg):
+        self.print_message(msg)
+
+    def print_message(self, msg):
+        self.ids.message.text += msg + "\n"
+        
     
 class MainScreen(Screen):
-    username = 'originaluname'
-    connection = None
-    disconnect_pointer = None
     fromx = None
     fromy = None
 
     def disconnect(self):
-        if self.disconnect_pointer:
-            self.disconnect_pointer.disconnect()
+        if disconnect_pointer:
+            disconnect_pointer.disconnect()
 
     def on_enter(self):
         self.reset_message()
-        self.connect_to_server()
-        self.print_message("Welcome, "+self.username)
-        
-    def connect_to_server(self):
-        disconnect_pointer = reactor.connectTCP('localhost', 10000, EchoFactory(self))
-
-    def on_connection(self, connection):
-        self.print_message("connected succesfully!")
-        self.connection = connection
-
-    def send_message(self, msg):
-        #if msg and self.connection:
-        self.connection.write(str(msg))
-        self.print_message("sent: "+msg)
+        self.print_message("Welcome, "+username)
 
     def reset_message(self):
         self.ids.message.text =""
+
+    def get_message(self, msg):
+        self.print_message(msg)
 
     def print_message(self, msg):
         self.ids.message.text += msg + "\n"
@@ -85,7 +106,7 @@ class EchoClient(protocol.Protocol):
         self.factory.app.on_connection(self.transport)
 
     def dataReceived(self, data):
-        self.factory.app.print_message(data)
+        self.factory.app.get_message(data)
 
 class EchoFactory(protocol.ClientFactory):
     protocol = EchoClient
