@@ -7,34 +7,39 @@ class DBCore:
     PASSWD = None
     DATABASE = "ignatymc_pathfinder2"
 
-    def __init__(self):
-        self.con = pymysql.connect(
+    def get_conn():
+        conn = pymysql.connect(
                 self.HOST,
                 self.USER,
                 self.PASSWD,
                 self.DATABASE
                 )
-        self.cursor = self.con.cursor()
+        return conn.cursor()
 
-    def escapeString(self, string):
+    @staticmethod
+    def escapeString():
         return string.encode('string-escape')
 
-    def _query(self, sql):
-        return self.cursor.execute(sql)
+    @staticmethod
+    def _query(sql, conn):
+        return conn.execute(sql)
 
-    def query(self, sql):
-        self._query(sql)
-        return self.cursor.fetchall()
+    @staticmethod
+    def query(sql, conn):
+        DBCore._query(sql)
+        return conn.fetchall()
 
-    def lastQueryNumRows(self):
-        return cursor.rowcount
+    @staticmethod
+    def lastQueryNumRows(conn):
+        return conn.rowcount
 
-    def resetdb(self):
+    @staticmethod
+    def resetdb():
         print("clearing db")
-        db = DBCore()
-        db.query("DROP DATABASE IF EXISTS "+self.DATABASE)
-        db.query("CREATE DATABASE "+self.DATABASE)
-        db.query("USE "+self.DATABASE)
+        conn = DBCore.get_conn()
+        DBCore.query("DROP DATABASE IF EXISTS "+self.DATABASE, conn)
+        DBCore.query("CREATE DATABASE "+self.DATABASE, conn)
+        DBCore.query("USE "+self.DATABASE, conn)
 
 class dbException(Exception):
     CODE_COULD_NOT_CONNECT = 0
