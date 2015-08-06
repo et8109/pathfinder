@@ -18,12 +18,3 @@ class Ambients(Table):
                 """INSERT INTO ambients (id, zonex, zoney) 
                 values (0 ,     1,     1)"""
                 )
-
-    @staticmethod
-    def getInZone(zonex, zoney):
-        zonex = prepVar(zonex)
-        zoney = prepVar(zoney)
-        rows = query("select id from ambients where zonex="+zonex+" and zoney="+zoney)
-        for r in rows:
-            r['audios'] = Audio.getUrls('a'+r['id'])
-        return rows
