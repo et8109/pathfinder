@@ -1,7 +1,10 @@
 uses kivy and buildozer
 
-deploy to phone: buildozer android debug deploy run
-    -runs main.py
+to test locally without device:
+    -python main.py
+
+deploy to phone: 
+    -buildozer android debug deploy run (runs main.py)
 
 if phone not showing up:
     adb kill-server
