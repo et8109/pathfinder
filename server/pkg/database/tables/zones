@@ -1,0 +1,28 @@
+from .Table import Table, Table.prepVar as prepVar, Table.query as query
+
+class Zones(Table):
+
+    @staticmethod
+    def create():
+        query("""CREATE TABLE zones (
+            id int(3),
+            x int(3),
+            y int(3),
+            z int(3),
+            up int(3),
+            down int(3),
+            left int(3),
+            right int(3),
+            PRIMARY KEY (id),
+            FOREIGN KEY (id) REFERENCES zones(id)
+            )"""
+            )
+
+    @staticmethod
+    def init():
+        query(
+                """INSERT INTO zones (id,x,y,z,up, down, left, right) 
+                values (1, 1,1,1, 2,2,2,2),
+                values (2, 2,2,2, 1,1,1,1)
+                """
+                )
