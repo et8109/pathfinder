@@ -18,24 +18,22 @@ class Player():
     @staticmethod
     def login(uname, password):
         return Player_table.check_login(uname, password)
+        
+    def save():
+        Player_table.save(self.pid, self.health, self.zone)
 
     def up(self):
-        print("-->> in player up")
-        zoneid = Player_table.moveUp(self.pid)
-        self.zone = Zone.from_id(zoneid)
+        self.zone = Zone.from_id(self.zone.up)
         self.zone.onEnter(self)
         
     def down(self):
-        zoneid = Player_table.moveDown(self.pid)
-        self.zone = Zone.from_id(zoneid)
+        self.zone = Zone.from_id(self.zone.down)
         self.zone.onEnter(self)
         
     def left(self):
-        zoneid = Player_table.moveLeft(self.pid)
-        self.zone = Zone.from_id(zoneid)
+        self.zone = Zone.from_id(self.zone.left)
         self.zone.onEnter(self)
         
     def right(self):
-        zoneid = Player_table.moveRight(self.pid)
-        self.zone = Zone.from_id(zoneid)
+        self.zone = Zone.from_id(self.zone.right)
         self.zone.onEnter(self)
