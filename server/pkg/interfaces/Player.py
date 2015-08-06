@@ -1,4 +1,4 @@
-from pkg.database.database import Player_table
+from pkg.database.tables import Players as Player_table
 from pkg.interfaces.Zone import Zone
 
 class Player():
@@ -13,7 +13,7 @@ class Player():
         player = Player_table.from_id(pid)
         return Player(pid, 
             health = player.health, 
-            zone = Zone.from_id(player.zone_id))
+            zone = Zone.from_id(player.zoneid))
 
     @staticmethod
     def login(uname, password):
