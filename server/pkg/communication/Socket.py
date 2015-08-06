@@ -60,12 +60,10 @@ class SocketServer():
                 try:
                     print("-->> writeable: "+str(s))
                     next_msg = self.outgoing[s].get_nowait()
-                    print("-->> sending!!!!")
-                    s.send(next_msg)
-                except Queue.Empty:
+                except queue.Empty:
                     self.outputs.remove(s)
                 else:
-                    print("-->> sending!!!!v2")
+                    print("-->> sending!!!!")
                     s.send(next_msg)
 
             for s in exceptional:

@@ -19,6 +19,12 @@ Builder.load_file('./main.kv')
 connection = None
 disconnect_pointer = None
 
+username = None
+
+def disconnect():
+    if disconnect_pointer:
+        disconnect_pointer.disconnect()
+
 def send_message(msg):
      if msg and connection:
         connection.write(str(msg))
@@ -28,7 +34,6 @@ class LoginScreen(Screen):
     def on_enter(self):
         global connection
         if connection is None:
-            print("no connection, establishing")
             self.connect()
 
     def connect(self):
@@ -39,15 +44,19 @@ class LoginScreen(Screen):
         global connection
         self.print_message("connected succesfully!")
         connection = _connection
-        print(connection)
 
     def login(self, uname, password):
+        global username
+        username = uname
         msg = {"u":uname,
                "p":password}
         send_message(json.dumps(msg))
 
     def get_message(self, msg):
-        self.print_message(msg)
+        if msg == "OK":
+            sm.current = "Main"
+        else:
+            self.print_message(msg)
 
     def print_message(self, msg):
         self.ids.message.text += msg + "\n"
@@ -57,11 +66,8 @@ class MainScreen(Screen):
     fromx = None
     fromy = None
 
-    def disconnect(self):
-        if disconnect_pointer:
-            disconnect_pointer.disconnect()
-
     def on_enter(self):
+        global username
         self.reset_message()
         self.print_message("Welcome, "+username)
 
@@ -76,7 +82,7 @@ class MainScreen(Screen):
 
     def on_touch_down(self, touch):
         if touch.x < 20 and touch.y < 20:
-            self.disconnect()
+            disconnect()
             sm.current = "Login"
         else:
             self.fromx = touch.x
@@ -99,7 +105,7 @@ class MainScreen(Screen):
             elif(xdiff < -minDist):
                 walkdir = "right"
         if walkdir:
-            self.send_message(walkdir)
+            send_message(walkdir)
  
 class EchoClient(protocol.Protocol):
     def connectionMade(self):

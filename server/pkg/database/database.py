@@ -19,7 +19,7 @@ session = Session()
 
 class Zone_table(Base):
     __tablename__ = 'zones'
-    zone_id = Column(Integer(3), Sequence('zone_id_seq'), primary_key=True)
+    zone_id = Column(Integer(3), primary_key=True)
     #position in the world
     x = Column(Integer(3))
     y = Column(Integer(3))
@@ -40,9 +40,10 @@ class Player_table(Base):
     health = Column(Integer(3))
     location = relationship("Zone_table", backref="Player_table") #one to many
 
-    def moveUp(self):
-        self.zone_id = self.zone.up
-        return self.zone_id
+    @staticmethod
+    def moveUp(pid):
+        session.execute(update(players).where(players.player_id==pid).values(zone_id=players.location.up).returning(players.zone_id)
+        return zid
 
     def moveDown(self):
         self.zone_id = self.zone.down
@@ -56,16 +57,23 @@ class Player_table(Base):
         self.zone_id = self.zone.right
         return self.zone_id
 
-    @classmethod
-    def check_login(klass, _name, _password):
+    @staticmethod
+    def from_id(pid):
         try:
-            return session.query(Player_table.player_id).filter_by(name=_name).filter_by(password=_password).one()
+            return session.query(Player_table).filter_by(player_id=pid).one()
         except exc.NoResultFound:
             return None
 
-    @classmethod
-    def getAll(klass):
-        return session.query(User.player_id, User.name).all()
+    @staticmethod
+    def check_login(_name, _password):
+        try:
+            return session.query(Player_table).filter_by(name=_name).filter_by(password=_password).one()
+        except exc.NoResultFound:
+            return None
+
+    @staticmethod
+    def getAll():
+        return session.query(Player_table).all()
 
 class Npc_table(Base):
     __tablename__ = 'npcs'
@@ -103,10 +111,12 @@ def createTables():
     Base.metadata.create_all(engine) #create tables
     session = Session() #create new session
     #add rows
+
     session.add_all([
-        Player_table(name='guest', password='guest'),
-        Player_table(name='guest1', password='guest1'),
-        Player_table(name='guest2', password='guest2')])
+        #Zone_table(zone_id=1,x=1,y=1,z=1,up=1,down=1,left=1,right=1),
+        #Zone_table(zone_id=2,x=2,y=1,z=1,up=1,down=1,left=1,right=1),
+        Player_table(name='guest', password='guest', zone_id=1)
+        ])
     session.commit()
 
 def commitDatabase():

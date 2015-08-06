@@ -1,24 +1,41 @@
-from pkg.database.database import *
+from pkg.database.database import Player_table
+from pkg.interfaces.Zone import Zone
 
-class Player(Player_table):
+class Player():
 
-    def __init__(self, id):
-        pass
+    def __init__(self, pid, health, zone):
+        self.pid = pid
+        self.health = health
+        self.zone = zone
 
-    @classmethod
-    def login(klass, name, password):
-        pid = klass.check_login(name, password)
-        return pid
+    @staticmethod
+    def from_id(pid):
+        player = Player_table.from_id(pid)
+        return Player(pid, 
+            health = player.health, 
+            zone = Zone.from_id(player.zone_id))
+
+    @staticmethod
+    def login(uname, password):
+        return Player_table.check_login(uname, password)
 
     def up(self):
-        zoneid = self.moveUp()
-        Zone(zoneid).onEnter(self)
+        print("-->> in player up")
+        zoneid = Player_table.moveUp(self.pid)
+        self.zone = Zone.from_id(zoneid)
+        self.zone.onEnter(self)
         
     def down(self):
-        self.moveDown()
+        zoneid = Player_table.moveDown(self.pid)
+        self.zone = Zone.from_id(zoneid)
+        self.zone.onEnter(self)
         
     def left(self):
-        self.moveLeft()
+        zoneid = Player_table.moveLeft(self.pid)
+        self.zone = Zone.from_id(zoneid)
+        self.zone.onEnter(self)
         
     def right(self):
-        self.moveRight()
+        zoneid = Player_table.moveRight(self.pid)
+        self.zone = Zone.from_id(zoneid)
+        self.zone.onEnter(self)
