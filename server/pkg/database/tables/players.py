@@ -19,6 +19,7 @@ class Players(Table):
     def init():
         query(
                 """INSERT INTO players (id, username, password, zoneid, health) 
-                values (1, 'guest', 'guest', 1, 5)
-                """
+                values (%s, %s, %s, %s, %s)
+                """,
+                (1, 'guest', 'guest', 1, 5)
                 )
