@@ -1,0 +1,8 @@
+communication:
+  endpoint for socket connections
+  
+interfaces:
+  object and environment model
+  
+database:
+  database and tables
