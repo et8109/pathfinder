@@ -5,8 +5,8 @@ class Table:
     conn = None
 
     @staticmethod 
-    def query(stmt, data):
-        return Table.conn.query(stmt, data, conn)
+    def query(stmt, data=None, single=False):
+        return Table.conn.query(stmt, data, conn, single)
 
     '''@staticmethod
     def prepVar(cls, var):
