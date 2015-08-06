@@ -23,3 +23,11 @@ class Players(Table):
                 """,
                 (1, 'guest', 'guest', 1, 5)
                 )
+                
+    @staticmethod
+    def from_id(pid):
+        return query("select id, zoneid, health from players where id=%s",pid, single=True)
+        
+    @staticmethod
+    def save(pid, zoneid, health):
+        query("update players set zoneid=%s,health=% where id=%s",zoneid, health, pid)
