@@ -16,18 +16,16 @@ class DBCore:
                 )
         return conn.cursor()
 
-    @staticmethod
+   '''@staticmethod
     def escapeString():
-        return string.encode('string-escape')
+        return string.encode('string-escape')'''
 
     @staticmethod
-    def _query(sql, conn):
-        return conn.execute(sql)
-
-    @staticmethod
-    def query(sql, conn):
-        DBCore._query(sql)
-        return conn.fetchall()
+    def query(stmt, data, conn, single=False):
+        results = conn.execute(stmt, data).fetchall()
+        if single and len(results) > 1:
+            raise dbException("More than 1 row returned")
+        return results
 
     @staticmethod
     def lastQueryNumRows(conn):
