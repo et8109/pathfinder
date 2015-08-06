@@ -53,6 +53,6 @@ class Overseer():
             player.right()
         else:
             pass
-        database.commitDatabase()
+        player.save()#save to db
 
 
