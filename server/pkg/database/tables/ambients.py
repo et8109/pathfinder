@@ -1,4 +1,5 @@
-from .Table import Table, Table.prepVar as prepVar, Table.query as query
+from .Table import Table
+query = Table.query
 
 class Ambients(Table):
 

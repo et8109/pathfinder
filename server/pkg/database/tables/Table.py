@@ -1,4 +1,4 @@
-from ..core.dbcore import DBCore
+from pkg.database.core.dbcore import DBCore
 
 class Table:
     initialized = False
@@ -6,11 +6,7 @@ class Table:
 
     @staticmethod 
     def query(stmt, data=None, single=False):
-        return Table.conn.query(stmt, data, conn, single)
-
-    '''@staticmethod
-    def prepVar(cls, var):
-        return cls.conn.escapeString(var)'''
+        return DBCore.query(stmt, data, Table.conn, single)
 
     @staticmethod
     def setDb():

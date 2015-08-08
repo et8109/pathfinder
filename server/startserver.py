@@ -1,5 +1,5 @@
-from pkg.communication import Overseer
+from pkg.Overseer import Overseer
 
 if __name__ == "__main__":
-    overseer = Overseer.Overseer()
+    overseer = Overseer()
     #Socket.startListening()

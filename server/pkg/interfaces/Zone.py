@@ -1,10 +1,12 @@
-from pkg.communication.Overseer import *
-from pkg.database.tables import zones as Zone_table
+from pkg.database.tables.zones import Zones as Zone_table
 
 class Zone():
 
-    def __init__(self, zid, up, down, left, right):
+    def __init__(self, zid, x,y,z, up, down, left, right):
         self.zid = zid
+        self.x = x
+        self.y = y
+        self.z = z
         self.up = up
         self.down = down
         self.left = left
@@ -13,8 +15,9 @@ class Zone():
     @staticmethod
     def from_id(zid):
         zone = Zone_table.from_id(zid)
-        return Zone(zid, zone.up, zone.down, zone.left, zone.right)
+        return Zone(zone[0], zone[1], zone[2], zone[3], zone[4], zone[5], zone[6], zone[7])
 
     #called when a player enters the scene
     def onEnter(self, player):
-        Overseer.Overseer.sendData("entered zone", player.pid) 
+        from pkg.Overseer import Overseer
+        Overseer.send_data("entered zone", player.pid) 

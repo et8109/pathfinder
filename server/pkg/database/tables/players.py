@@ -1,4 +1,5 @@
-from .Table import Table, Table.prepVar as prepVar, Table.query as query
+from .Table import Table
+query = Table.query
 
 class Players(Table):
 
@@ -11,7 +12,6 @@ class Players(Table):
             zoneid int(3),
             health int(3),
             PRIMARY KEY (id)
-            FOREIGN KEY (zoneid) REFERENCES zones(id)
             )"""
             )
 
@@ -19,15 +19,23 @@ class Players(Table):
     def init():
         query(
                 """INSERT INTO players (id, username, password, zoneid, health) 
-                values (%s, %s, %s, %s, %s)
+                values (1, "guest", "guest", 1, 5)
                 """,
-                (1, 'guest', 'guest', 1, 5)
+                None
                 )
                 
     @staticmethod
     def from_id(pid):
-        return query("select id, zoneid, health from players where id=%s",pid, single=True)
+        return query("select id, health, zoneid from players where id=%s",(pid,), single=True)
         
     @staticmethod
-    def save(pid, zoneid, health):
-        query("update players set zoneid=%s,health=% where id=%s",zoneid, health, pid)
+    def save(pid, health, zoneid):
+        print("saving: "+str(zoneid)+", "+str(health)+", "+str(pid))
+        query("update players set zoneid=%s, health=%s where id=%s",(zoneid, health, pid))
+
+    @staticmethod
+    def login(username, password):
+        result = query("select id from players where username=%s and password=%s", (username, password), single=True)
+        if result:
+            return result[0]
+        return None

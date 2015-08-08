@@ -1,4 +1,5 @@
-from .Table import Table, Table.query as query
+from .Table import Table
+query = Table.query
 
 class Enemy(Table):
 

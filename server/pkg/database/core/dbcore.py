@@ -9,23 +9,28 @@ class DBCore:
 
     def get_conn():
         conn = pymysql.connect(
-                self.HOST,
-                self.USER,
-                self.PASSWD,
-                self.DATABASE
+                DBCore.HOST,
+                DBCore.USER,
+                DBCore.PASSWD,
+                DBCore.DATABASE
                 )
         return conn.cursor()
 
-   '''@staticmethod
-    def escapeString():
-        return string.encode('string-escape')'''
-
     @staticmethod
     def query(stmt, data, conn, single=False):
-        results = conn.execute(stmt, data).fetchall()
-        if single and len(results) > 1:
-            raise dbException("More than 1 row returned")
-        return results
+        #print(stmt+" >> "+str(data))
+        numrows = conn.execute(stmt, data)
+        #print("numrows: "+str(numrows))
+        if single and numrows > 1:
+            raise dbException("Too many rows for sql single query: "+numrows)
+        conn.connection.commit()
+        try:
+            if single: 
+                return conn.fetchone() 
+            else: 
+                return conn.fetchall()
+        except Exception:
+            return None
 
     @staticmethod
     def lastQueryNumRows(conn):
@@ -35,9 +40,9 @@ class DBCore:
     def resetdb():
         print("clearing db")
         conn = DBCore.get_conn()
-        DBCore.query("DROP DATABASE IF EXISTS "+self.DATABASE, conn)
-        DBCore.query("CREATE DATABASE "+self.DATABASE, conn)
-        DBCore.query("USE "+self.DATABASE, conn)
+        #DBCore.query("DROP DATABASE IF EXISTS "+DBCore.DATABASE,None, conn)
+        #DBCore.query("CREATE DATABASE "+DBCore.DATABASE,None, conn)
+        #DBCore.query("USE "+DBCore.DATABASE,None, conn)
 
 class dbException(Exception):
     CODE_COULD_NOT_CONNECT = 0
