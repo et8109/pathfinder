@@ -1,11 +1,14 @@
 uses kivy and buildozer
 
 to test locally without device:
-    -python main.py
+    python main.py
 
 deploy to phone: 
-    -buildozer android debug deploy run (runs main.py)
+    buildozer android debug deploy run (runs main.py)
 
 if phone not showing up:
     adb kill-server
     sudo adb start-server
+
+gstreamer missing plugin:
+    sudo apt-get install gstreamer0.10-plugins-ugly

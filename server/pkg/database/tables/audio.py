@@ -9,6 +9,7 @@ class Audio(Table):
             objid int(3) NOT NULL,
             table varchar(20) NOT NULL,
             audioid int(3) NOT NULL,
+            name varchar(20) NOT NULL,
             PRIMARY KEY (objid, table, audioid)
             )"""
             )
@@ -16,8 +17,8 @@ class Audio(Table):
     @staticmethod
     def init():
         query(
-                """INSERT INTO audio (objid, table, audioid) 
-                values (%s, %s, %s)
+                """INSERT INTO audio (objid, table, audioid, name) 
+                values (%s, %s, %s, %s)
                 """,
-                (1, 1, 1)
+                (1, 'a', 0, "Chomp.mp3")
                 )

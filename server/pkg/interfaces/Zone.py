@@ -1,4 +1,5 @@
 from pkg.database.tables.zones import Zones as Zone_table
+from pkg.database.tables.ambients import Ambients as Ambients_table
 
 class Zone():
 
@@ -20,4 +21,7 @@ class Zone():
     #called when a player enters the scene
     def onEnter(self, player):
         from pkg.Overseer import Overseer
-        Overseer.send_data("entered zone", player.pid) 
+        for aud in Ambients_table.get_in_zone(self.zid):
+            Overseer.send_data(
+                aud["name"], 
+                player.pid) 

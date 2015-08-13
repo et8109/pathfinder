@@ -9,6 +9,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
+from kivy.core.audio import SoundLoader
 
 from twisted.internet import reactor, protocol
 
@@ -18,7 +19,7 @@ Builder.load_file('./main.kv')
 
 connection = None
 disconnect_pointer = None
-
+current_screen = None
 username = None
 
 def disconnect():
@@ -29,9 +30,16 @@ def send_message(msg):
      if msg and connection:
         connection.write(str(msg))
 
+def get_message(msg):
+    if msg:
+        current_screen.get_message(msg)
+
 class LoginScreen(Screen):
 
     def on_enter(self):
+        self.ids.message.text = ""
+        global current_screen
+        current_screen = self
         global connection
         if connection is None:
             self.connect()
@@ -67,15 +75,19 @@ class MainScreen(Screen):
     fromy = None
 
     def on_enter(self):
+        self.ids.message.text = ""
+        global current_screen
+        current_screen = self
         global username
-        self.reset_message()
         self.print_message("Welcome, "+username)
 
-    def reset_message(self):
-        self.ids.message.text =""
-
     def get_message(self, msg):
-        self.print_message(msg)
+        self.print_message("playing: "+msg)
+        sound = SoundLoader.load("audio/Chomp.mp3")
+        if sound:
+            #print("Sound found at %s" % sound.source)
+            #print("Sound is %.3f seconds" % sound.length)
+            sound.play()
 
     def print_message(self, msg):
         self.ids.message.text += msg + "\n"
@@ -112,7 +124,7 @@ class EchoClient(protocol.Protocol):
         self.factory.app.on_connection(self.transport)
 
     def dataReceived(self, data):
-        self.factory.app.get_message(data)
+        get_message(data)
 
 class EchoFactory(protocol.ClientFactory):
     protocol = EchoClient
