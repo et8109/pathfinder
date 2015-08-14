@@ -1,27 +1,52 @@
-from pkg.database.tables.zones import Zones as Zone_table
-from pkg.database.tables.ambients import Ambients as Ambients_table
+import xml.etree.ElementTree as ET
+from .Path import Path
 
 class Zone():
+    XMLdir = "pkg/database/zoneXML/"
 
-    def __init__(self, zid, x,y,z, up, down, left, right):
-        self.zid = zid
-        self.x = x
-        self.y = y
-        self.z = z
-        self.up = up
-        self.down = down
-        self.left = left
-        self.right = right
+    def __init__(self, XMLtree):
+        #xml
+        self.tree = XMLtree
+        self.root = self.tree.getroot()
+        #data
+        self.zid = self.root.get("zid")
+        #children
+        self.enemies = {}
+        self.paths = []
+        for child in self.root:
+            if child.tag == 'path':
+                self.paths.append(Path(child))
+            '''if child.tag == 'enemy':
+                self.enemies[child.eid] = Enemy(child)'''
 
     @staticmethod
     def from_id(zid):
-        zone = Zone_table.from_id(zid)
-        return Zone(zone[0], zone[1], zone[2], zone[3], zone[4], zone[5], zone[6], zone[7])
+        return Zone(ET.parse(Zone.XMLdir+str(zid)+".xml"))
+
+    @staticmethod
+    def reset(zid, up, down, left, right):
+        root = ET.Element('zone', {
+            'zid': str(zid)
+            })
+        if up != None:
+            root.append(Path.create('up',up))
+        if down != None:
+            root.append(Path.create('down',down))
+        if right != None:
+            root.append(Path.create('right',right)) 
+        if left != None:
+            root.append(Path.create('left',left))
+        tree = ET.ElementTree(root)
+        #print(ET.tostring(tree))
+        tree.write(Zone.XMLdir+str(zid)+".xml")
 
     #called when a player enters the scene
     def onEnter(self, player):
-        from pkg.Overseer import Overseer
+        Overseer.send_data(
+                "Chomp.mp3", 
+                player.pid)
+        '''from pkg.Overseer import Overseer
         for aud in Ambients_table.get_in_zone(self.zid):
             Overseer.send_data(
                 aud["name"], 
-                player.pid) 
+                player.pid)'''
