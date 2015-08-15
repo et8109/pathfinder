@@ -7,7 +7,9 @@ class Path:
         self.dest = self.root.find("dest")
 
     def toXML(self):
-        return self.root
+        root = ET.Element('path')
+        root.append()
+        return root
 
     @staticmethod
     def create(direction, dest):

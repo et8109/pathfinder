@@ -11,8 +11,8 @@ if __name__ == "__main__":
             ans = input()
             if ans == 'Y':
                 print("resetting")
-                Zone.reset(1, 2,None,None,None)
-                Zone.reset(2, None,1,None,None)
+                z = Zone(zid=1)
+                z.save()
                 print("done")
             else:
                 print("aborting")

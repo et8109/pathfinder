@@ -1,4 +1,3 @@
-from pkg.database.tables.players import Players as Player_table
 from pkg.interfaces.Zone import Zone
 
 class Player():

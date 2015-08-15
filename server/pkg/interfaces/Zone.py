@@ -1,44 +1,20 @@
-import xml.etree.ElementTree as ET
+import dexml
+from dexml import fields
+from pkg.database.database import Database
 from .Path import Path
 
-class Zone():
+class Zone(dexml.Model):
     XMLdir = "pkg/database/zoneXML/"
 
-    def __init__(self, XMLtree):
-        #xml
-        self.tree = XMLtree
-        self.root = self.tree.getroot()
-        #data
-        self.zid = self.root.get("zid")
-        #children
-        self.enemies = {}
-        self.paths = []
-        for child in self.root:
-            if child.tag == 'path':
-                self.paths.append(Path(child))
-            '''if child.tag == 'enemy':
-                self.enemies[child.eid] = Enemy(child)'''
+    zid = fields.Integer()
+    paths = fields.List(Path)
 
     @staticmethod
-    def from_id(zid):
-        return Zone(ET.parse(Zone.XMLdir+str(zid)+".xml"))
+    def fromID(zid):
+        return Zone.parse(Database.getZoneXML(zid))
 
-    @staticmethod
-    def reset(zid, up, down, left, right):
-        root = ET.Element('zone', {
-            'zid': str(zid)
-            })
-        if up != None:
-            root.append(Path.create('up',up))
-        if down != None:
-            root.append(Path.create('down',down))
-        if right != None:
-            root.append(Path.create('right',right)) 
-        if left != None:
-            root.append(Path.create('left',left))
-        tree = ET.ElementTree(root)
-        #print(ET.tostring(tree))
-        tree.write(Zone.XMLdir+str(zid)+".xml")
+    def save(self):
+        Database.saveZone(self.zid, self.render())
 
     #called when a player enters the scene
     def onEnter(self, player):
