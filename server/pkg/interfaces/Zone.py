@@ -2,12 +2,14 @@ import dexml
 from dexml import fields
 from pkg.database.database import Database
 from .Path import Path
+from .Enemy import *
 
 class Zone(dexml.Model):
     XMLdir = "pkg/database/zoneXML/"
 
     zid = fields.Integer()
     paths = fields.List(Path)
+    enemies = fields.List(Enemy)
 
     @staticmethod
     def fromID(zid):
@@ -21,8 +23,3 @@ class Zone(dexml.Model):
         Overseer.send_data(
                 "Chomp.mp3", 
                 player.pid)
-        '''from pkg.Overseer import Overseer
-        for aud in Ambients_table.get_in_zone(self.zid):
-            Overseer.send_data(
-                aud["name"], 
-                player.pid)'''

@@ -1,19 +1,11 @@
-import xml.etree.ElementTree as ET
+import dexml
+from dexml import fields
 
-class Path:
-    def __init__(self, XMLroot):
-        self.root = XMLroot
-        self.direction = self.root.find("dir")
-        self.dest = self.root.find("dest")
-
-    def toXML(self):
-        root = ET.Element('path')
-        root.append()
-        return root
-
-    @staticmethod
-    def create(direction, dest):
-        root = ET.Element('path')
-        ET.SubElement(root,'dir').text = str(direction)
-        ET.SubElement(root,'dest').text = str(dest)
-        return root
+class Path(dexml.Model):
+    up = 0
+    down = 1
+    left = 2
+    right = 3
+    #need to get fields.Choice() working
+    dirt = fields.Integer()
+    dest = fields.Integer()
