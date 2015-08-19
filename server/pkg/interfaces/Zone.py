@@ -1,15 +1,18 @@
 import dexml
 from dexml import fields
 from pkg.database.database import Database
-from .Path import Path
-from .Enemy import *
+
+import pkg.interfaces.Path as Path
+import pkg.interfaces.Enemy as Enemy
+import pkg.interfaces.Npc as Npc
 
 class Zone(dexml.Model):
     XMLdir = "pkg/database/zoneXML/"
 
     zid = fields.Integer()
-    paths = fields.List(Path)
-    enemies = fields.List(Enemy)
+    paths = fields.List(Path.Path)
+    enemies = fields.List(Enemy.Enemy)
+    npcs = fields.List(Npc.Npc)
 
     @staticmethod
     def fromID(zid):
@@ -20,6 +23,12 @@ class Zone(dexml.Model):
 
     #called when a player enters the scene
     def onEnter(self, player):
-        Overseer.send_data(
-                "Chomp.mp3", 
+        for e in self.enemies:
+            Overseer.send_data(
+                e.audio, 
                 player.pid)
+        for n in self.npcs:
+           Overseer.send_data(
+                n.audio,
+                player.pid)
+ 

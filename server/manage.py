@@ -1,5 +1,6 @@
 import sys
 from pkg.Overseer import Overseer
+from pkg.interfaces.Player import Player
 from pkg.interfaces.Zone import Zone
 from pkg.interfaces.Path import Path
 from pkg.interfaces.Enemy import *
@@ -19,6 +20,8 @@ if __name__ == "__main__":
                 z = Zone(zid=2)
                 z.paths.append(Path(dirt=Path.down,dest=1))
                 z.save()
+                p = Player(pid=1, health=5, zid=1, uname="guest",password="guest")
+                p.save()
                 print("done")
             else:
                 print("aborting")

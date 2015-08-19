@@ -1,26 +1,27 @@
+import dexml
+from dexml import fields
 from pkg.interfaces.Zone import Zone
+from pkg.database.database import Database
 
-class Player():
+class Player(dexml.Model):
 
-    def __init__(self, pid, health, zone):
-        self.pid = pid
-        self.health = health
-        self.zone = zone
+    pid = fields.Integer()
+    health = fields.Integer()
+    zid = fields.Integer()
+    uname = fields.String()
+    password = fields.String()
 
     @staticmethod
     def from_id(pid):
-        player = Player_table.from_id(pid)
-        return Player(pid = player[0], 
-            health = player[1], 
-            zone = Zone.from_id(player[2]))
+        return Player.parse(Database.getPlayerXML(pid))
+
+    def save(self):
+        Database.savePlayer(self.pid, self.render())
 
     @staticmethod
     def login(uname, password):
-        return Player_table.login(uname, password)
+        return Database.login(uname, password)
         
-    def save(self):
-        Player_table.save(self.pid, self.health, self.zone.zid)
-
     def up(self):
         self.zone = Zone.from_id(self.zone.up)
         self.zone.onEnter(self)
@@ -36,3 +37,6 @@ class Player():
     def right(self):
         self.zone = Zone.from_id(self.zone.right)
         self.zone.onEnter(self)
+
+    def damage(self, amount):
+        self.health -= amount
