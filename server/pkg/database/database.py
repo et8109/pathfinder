@@ -12,7 +12,7 @@ class Database:
 
     @staticmethod
     def saveZone(zid, xml):
-        f = open(Database.zone_dir+str(zid)+".xml", 'w') 
+        f = open(Database.zone_dir+str(zid)+".xml", "w") 
         f.write(xml)
         f.close()
 
@@ -25,6 +25,6 @@ class Database:
 
     @staticmethod
     def savePlayer(pid, xml):
-        f = open(Database.player_dir+str(pid)+".xml", 'w')
+        f = open(Database.player_dir+str(pid)+".xml", "w")
         f.write(xml)
         f.close()
