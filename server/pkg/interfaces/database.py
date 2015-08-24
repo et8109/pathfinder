@@ -10,7 +10,7 @@ class Database:
         newPid = DB.numPlayers()
         p = Player(pid=newPid, health=5, zid=1, uname=newUname,password=newPword)
         p.save()
-        DB.addPlayerToTable(newUname, newPid)
+        DB.addPlayerToTable(newUname, newPword, newPid)
 
     @staticmethod
     def reset():
@@ -22,4 +22,8 @@ class Database:
         z2 = Zone(zid=2)
         z2.paths.append(Path(dirt=Path.down,dest=1))
         z2.enemies.append(Wolf())
-        z2.save()  
+        z2.save()
+
+    @staticmethod
+    def playerLogin(uname, pword):
+        return DB.login(uname, pword)

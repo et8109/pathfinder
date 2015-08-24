@@ -3,6 +3,7 @@ import tables
 
 class PlayerInfo(tables.IsDescription):
     uname = tables.StringCol(20)
+    pword = tables.StringCol(20)
     pid = tables.Int32Col()
 
 class Database:
@@ -43,7 +44,14 @@ class Database:
 
     @staticmethod
     def login(uname, pword):
-        pass
+        DIR = "./pkg/database/"
+        tableFile = tables.open_file(DIR+Database.tableName, mode = "a")
+        table = tableFile.root.info.playerIds
+        pid = [ x['pid'] for x in table.where("""(uname == {}) & (pword == {})""".format(uname, pword)) ]
+        if pid:
+            return pid
+        else:
+            return False
  
     @staticmethod
     def clearAll():
@@ -63,13 +71,14 @@ class Database:
         tableFile.close()
 
     @staticmethod
-    def addPlayerToTable(uname, pid):
+    def addPlayerToTable(uname,pword, pid):
         #add to id table
         DIR = "./pkg/database/"
         tableFile = tables.open_file(DIR+Database.tableName, mode = "a")
         table = tableFile.root.info.playerIds
         pinfo = table.row
         pinfo['uname'] = uname
+        pinfo['pword'] = pword
         pinfo['pid'] = 1
         pinfo.append()
         table.flush()

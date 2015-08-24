@@ -1,5 +1,6 @@
 from pkg.communication.Socket import SocketServer
 from pkg.interfaces.common import Player
+from pkg.interfaces.database import Database
 
 import json
 
@@ -30,7 +31,7 @@ class Overseer():
 
     def login(self, data, source):
         parsed = json.loads(data.decode("utf-8"))
-        pid = Player.login(parsed["u"], parsed["p"])
+        pid = Database.playerLogin(parsed["u"], parsed["p"])
         if pid:
             Overseer.add_conn_hash(source, pid)
             self.sendData("OK", source)
