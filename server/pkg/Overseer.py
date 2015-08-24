@@ -1,5 +1,5 @@
 from pkg.communication.Socket import SocketServer
-from pkg.interfaces.Player import Player
+from pkg.interfaces.common import Player
 
 import json
 
