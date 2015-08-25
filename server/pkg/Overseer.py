@@ -1,5 +1,5 @@
 from pkg.communication.Socket import SocketServer
-from pkg.interfaces.common import Player
+from pkg.interfaces.common import Player, Dirt
 from pkg.interfaces.database import Database
 
 import json
@@ -32,7 +32,7 @@ class Overseer():
     def login(self, data, source):
         parsed = json.loads(data.decode("utf-8"))
         pid = Database.playerLogin(parsed["u"], parsed["p"])
-        if pid:
+        if pid != None:
             Overseer.add_conn_hash(source, pid)
             self.sendData("OK", source)
         else:
@@ -44,15 +44,15 @@ class Overseer():
             self.login(data, source)
             return
         #get player
-        player = Player.from_id(Overseer.sourceToId[source])
+        player = Player.fromID(Overseer.sourceToId[source])
         if data == b'up':
-            player.up()
+            player.swipe(Dirt.up)
         elif data == b'down':
-            player.down()
+            player.swipe(Dirt.down)
         elif data == b'left':
-            player.left()
+            player.swipe(Dirt.left)
         elif data == b'right':
-            player.right()
+            player.swipe(Dirt.right)
         else:
             pass
         player.save()#save to db

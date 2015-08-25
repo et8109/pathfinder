@@ -47,11 +47,13 @@ class Database:
         DIR = "./pkg/database/"
         tableFile = tables.open_file(DIR+Database.tableName, mode = "a")
         table = tableFile.root.info.playerIds
-        pid = [ x['pid'] for x in table.where("""(uname == {}) & (pword == {})""".format(uname, pword)) ]
-        if pid:
-            return pid
+        qry = "(uname == b'{}') & (pword == b'{}')".format(uname, pword)
+        pid = [ x['pid'] for x in table.where(qry) ]
+        tableFile.close()
+        if len(pid) == 1:
+            return pid[0]
         else:
-            return False
+            return None
  
     @staticmethod
     def clearAll():
@@ -71,7 +73,7 @@ class Database:
         tableFile.close()
 
     @staticmethod
-    def addPlayerToTable(uname,pword, pid):
+    def addPlayerToTable(uname, pword, pid):
         #add to id table
         DIR = "./pkg/database/"
         tableFile = tables.open_file(DIR+Database.tableName, mode = "a")
@@ -79,7 +81,7 @@ class Database:
         pinfo = table.row
         pinfo['uname'] = uname
         pinfo['pword'] = pword
-        pinfo['pid'] = 1
+        pinfo['pid'] = pid
         pinfo.append()
         table.flush()
         tableFile.close()

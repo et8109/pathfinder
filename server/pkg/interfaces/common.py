@@ -1,3 +1,4 @@
+from enum import Enum
 import abc
 import dexml
 from dexml import fields
@@ -8,11 +9,23 @@ import pkg.Overseer
 def sendAudio(audio, player):
     Overseer.Overseer.send_data(audio, player.pid)
 
-class Placeable:
+class Dirt(Enum):
+    up = 0
+    down = 1
+    left = 2
+    right = 3
+
+class Placeable(dexml.Model):
     '''anything that has a specific location'''
     __metaclass__ = abc.ABCMeta
-    
+
     zid = fields.Integer()
+    zone = None
+
+    def getZone(self):
+        if self.zone == None:
+            self.zone = Zone.fromID(self.zid)
+        return self.zone
 
 class Loadable:
     '''anything loaded and saved from the database'''
@@ -32,7 +45,7 @@ class Fightable(Placeable):
 
     health = fields.Integer()
     power = fields.Integer()
-    attackAudio = fields.Integer()
+    attackAudio = fields.String()
 
     def _calcDamage(self):
         return self.power
@@ -66,6 +79,13 @@ class Zone(dexml.Model, Loadable):
     def save(self):
         Database.saveZone(self.zid, self.render())
 
+    def getDest(self, dirt):
+        for p in self.paths:
+            print(str(dirt.value) + " -- " + str(p.dirt))
+            if p.dirt == dirt.value:
+                return p.dest
+        return None
+
     def playAudio(self, audio):
         for p in self.players:
             self.sendAudio(audio, p)
@@ -75,7 +95,7 @@ class Zone(dexml.Model, Loadable):
         for e in self.enemies:
             player.attack(e)
 
-class Player(dexml.Model, Fightable, Loadable):
+class Player(Fightable, Loadable):
 
     pid = fields.Integer()
     uname = fields.String()
@@ -92,23 +112,19 @@ class Player(dexml.Model, Fightable, Loadable):
     def login(uname, password):
         return Database.login(uname, password)
 
-    def up(self):
-        self.zone = Zone.from_id(self.zone.up)
+    def swipe(self, dirt):
+        print("swiping")
+        print(dirt)
+        destID = self.getZone().getDest(dirt)
+        print(destID)
+        if destID == None:
+            return
+        print("moving zone")
+        self.zid = destID
+        self.zone = Zone.fromID(destID)
         self.zone.onEnter(self)
 
-    def down(self):
-        self.zone = Zone.from_id(self.zone.down)
-        self.zone.onEnter(self)
-
-    def left(self):
-        self.zone = Zone.from_id(self.zone.left)
-        self.zone.onEnter(self)
-
-    def right(self):
-        self.zone = Zone.from_id(self.zone.right)
-        self.zone.onEnter(self)
-
-class Enemy(dexml.Model, Fightable):
+class Enemy(Fightable):
     attackAudio = fields.String()
     health = fields.Integer()
     maxHealth = None
@@ -117,10 +133,5 @@ class Npc(dexml.Model):
     audio = fields.String()
 
 class Path(dexml.Model):
-    up = 0
-    down = 1
-    left = 2
-    right = 3
-    #need to get fields.Choice() working
     dirt = fields.Integer()
     dest = fields.Integer()
