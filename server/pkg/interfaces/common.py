@@ -5,6 +5,7 @@ from dexml import fields
 
 from pkg.database.database import Database
 import pkg.Overseer
+from pkg.cache.cache import Cache
 
 def sendAudio(audio, player):
     Overseer.Overseer.send_data(audio, player.pid)
@@ -20,12 +21,16 @@ class Placeable(dexml.Model):
     __metaclass__ = abc.ABCMeta
 
     zid = fields.Integer()
-    zone = None
+    _zone = None
 
     def getZone(self):
-        if self.zone == None:
-            self.zone = Zone.fromID(self.zid)
-        return self.zone
+        if self._zone == None:
+            self._zone = Zone.fromID(self.zid)
+        return self._zone
+
+    def changeZone(self, zid):
+        self._zone = None
+        self.zid = zid
 
 class Loadable:
     '''anything loaded and saved from the database'''
@@ -62,7 +67,7 @@ class Fightable(Placeable):
     def attack(self, target):
        self._takeDamage(target._calcDamage())
        target._takeDamage(self._calcDamage())
-       Zone.fromID(self.zid).playAudio(self.attackAudio)
+       self.getZone().playAudio(self.attackAudio)
 
 class Zone(dexml.Model, Loadable):
 
@@ -73,11 +78,23 @@ class Zone(dexml.Model, Loadable):
     players = fields.List('Player')
 
     @staticmethod
+    def _getKey(zid):
+        return "z"+str(zid)
+
+    @staticmethod
     def fromID(zid):
-        return Zone.parse(Database.getZoneXML(zid))
+        key = Zone._getKey(zid)
+        z = None
+        try:
+            z = Cache.get(key)
+        except KeyError:
+            z = Zone.parse(Database.getZoneXML(zid))
+        Cache.set(key, z)
+        return z
 
     def save(self):
         Database.saveZone(self.zid, self.render())
+        Cache.set(Zone._getKey(self.zid), self)
 
     def getDest(self, dirt):
         for p in self.paths:
@@ -90,10 +107,18 @@ class Zone(dexml.Model, Loadable):
         for p in self.players:
             self.sendAudio(audio, p)
 
+    def onLeave(self, player):
+        '''when a player leaves the zone'''
+        self.players.remove(player)
+
     #called when a player enters the scene
     def onEnter(self, player):
-        for e in self.enemies:
-            player.attack(e)
+        if player in self.players:
+            pass #TODO throw exception, but it messes something up
+        else:
+            self.players.append(player)
+        '''for e in self.enemies:
+            player.attack(e)'''
 
 class Player(Fightable, Loadable):
 
@@ -102,27 +127,45 @@ class Player(Fightable, Loadable):
     password = fields.String()
 
     @staticmethod
+    def _getKey(pid):
+        return "p"+str(pid)
+
+    @staticmethod
     def fromID(pid):
-        return Player.parse(Database.getPlayerXML(pid))
+        key = Player._getKey(pid)
+        p = None
+        try:
+            p = Cache.get(key)
+        except KeyError:
+            p = Player.parse(Database.getPlayerXML(pid))
+        Cache.set(key, p)
+        return p
 
     def save(self):
         Database.savePlayer(self.pid, self.render())
+        Cache.set(Player._getKey(self.pid), self)
 
     @staticmethod
     def login(uname, password):
-        return Database.login(uname, password)
+        pid = Database.login(uname, password)
+        player = Player.fromID(pid)
+        player.getZone().onEnter(player)
+        print("--->>> "+str(len(player.getZone().players)))
+        return pid
+
+    def logout(self):
+        self.getZone().onLeave(self)
 
     def swipe(self, dirt):
-        print("swiping")
-        print(dirt)
         destID = self.getZone().getDest(dirt)
-        print(destID)
         if destID == None:
             return
-        print("moving zone")
-        self.zid = destID
-        self.zone = Zone.fromID(destID)
-        self.zone.onEnter(self)
+        self.moveZone(destID)
+
+    def moveZone(self, destID):
+        self.getZone().onLeave(self)
+        self.changeZone(destID)
+        self.getZone().onEnter(self)
 
 class Enemy(Fightable):
     attackAudio = fields.String()

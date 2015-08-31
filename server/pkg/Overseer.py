@@ -1,6 +1,5 @@
 from pkg.communication.Socket import SocketServer
 from pkg.interfaces.common import Player, Dirt
-from pkg.interfaces.database import Database
 
 import json
 
@@ -30,12 +29,13 @@ class Overseer():
         self.server.send_data(data.encode(), dest)
 
     def login(self, data, source):
+        from pkg.database.database import PlayerNotFoundException
         parsed = json.loads(data.decode("utf-8"))
-        pid = Database.playerLogin(parsed["u"], parsed["p"])
-        if pid != None:
+        try:
+            pid = Player.login(parsed["u"], parsed["p"])
             Overseer.add_conn_hash(source, pid)
             self.sendData("OK", source)
-        else:
+        except PlayerNotFoundException:
             self.sendData("wrong login credentials", source)
 
     def dataRecieved(self, data, source):

@@ -53,7 +53,7 @@ class Database:
         if len(pid) == 1:
             return pid[0]
         else:
-            return None
+            raise PlayerNotFoundException()
  
     @staticmethod
     def clearAll():
@@ -85,3 +85,9 @@ class Database:
         pinfo.append()
         table.flush()
         tableFile.close()
+
+class DbException(Exception):
+    pass
+
+class PlayerNotFoundException(DbException):
+    pass
