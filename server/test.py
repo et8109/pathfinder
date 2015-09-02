@@ -7,9 +7,6 @@ from pkg.interfaces.database import Database
 
 class testGeneral(unittest.TestCase):
 
-    def yolo(self):
-        pass
-
     def testLogin(self):
         pid = Player.login("guest", "guest")
         p = Player.fromID(pid)
@@ -26,6 +23,10 @@ class testGeneral(unittest.TestCase):
     def testZoneSaving(self):
         z = Zone.fromID(1)
         z.save()
+
+    def testEnemy(self):
+        z = Zone.fromID(2)
+        assert len(z.enemies) == 1
 
 if __name__ == "__main__":
     unittest.main()

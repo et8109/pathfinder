@@ -6,7 +6,7 @@ from pkg.interfaces.database import Database
 if __name__ == "__main__":
     for line in sys.argv:
         if line == 'startserver':
-            overseer = Overseer()
+            Overseer.startServer()
         if line == 'resetdatabase':
             print("Reset database?")
             ans = input()

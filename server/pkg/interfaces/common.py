@@ -4,11 +4,12 @@ import dexml
 from dexml import fields
 
 from pkg.database.database import Database
-import pkg.Overseer
+#from pkg.Overseer import Overseer
 from pkg.cache.cache import Cache
 
-def sendAudio(audio, player):
-    Overseer.Overseer.send_data(audio, player.pid)
+def sendToPlayer(audio, player):
+    from pkg.Overseer import Overseer
+    Overseer.sendToPlayer(audio, player.pid)
 
 class Dirt(Enum):
     up = 0
@@ -62,9 +63,11 @@ class Fightable(Placeable):
 
     @abc.abstractmethod
     def _die(self):
+        print("dead")
         return
 
     def attack(self, target):
+       print("attacking")
        self._takeDamage(target._calcDamage())
        target._takeDamage(self._calcDamage())
        self.getZone().playAudio(self.attackAudio)
@@ -98,14 +101,13 @@ class Zone(dexml.Model, Loadable):
 
     def getDest(self, dirt):
         for p in self.paths:
-            print(str(dirt.value) + " -- " + str(p.dirt))
             if p.dirt == dirt.value:
                 return p.dest
         return None
 
     def playAudio(self, audio):
         for p in self.players:
-            self.sendAudio(audio, p)
+            sendToPlayer(audio, p)
 
     def onLeave(self, player):
         '''when a player leaves the zone'''
@@ -113,12 +115,14 @@ class Zone(dexml.Model, Loadable):
 
     #called when a player enters the scene
     def onEnter(self, player):
+        print("zone "+str(self.zid))
+        print("eneimes: "+str(self.enemies))
         if player in self.players:
             pass #TODO throw exception, but it messes something up
         else:
             self.players.append(player)
-        '''for e in self.enemies:
-            player.attack(e)'''
+        for e in self.enemies:
+            player.attack(e)
 
 class Player(Fightable, Loadable):
 
@@ -168,8 +172,6 @@ class Player(Fightable, Loadable):
         self.getZone().onEnter(self)
 
 class Enemy(Fightable):
-    attackAudio = fields.String()
-    health = fields.Integer()
     maxHealth = None
 
 class Npc(dexml.Model):
