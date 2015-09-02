@@ -2,6 +2,7 @@ import select
 import socket 
 import sys
 import queue
+import json
 
 size = 1024
 
@@ -53,7 +54,7 @@ class SocketServer():
 
             for s in writeable:
                 try:
-                    next_msg = self.outgoing[s].get_nowait()
+                    next_msg = self.outgoing[s].get_nowait()+b","
                 except queue.Empty:
                     self.outputs.remove(s)
                 else:

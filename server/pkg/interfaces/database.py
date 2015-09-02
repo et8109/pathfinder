@@ -9,7 +9,7 @@ class Database:
         #check player does not exist TODO
         newPid = DB.numPlayers()
         p = Player(health=5, zid=1, power=1, attackAudio="attack.mp3",
-                pid=newPid, uname=newUname,password=newPword)
+                deathAudio="Dead.mp3", pid=newPid, uname=newUname,password=newPword)
         p.save()
         DB.addPlayerToTable(newUname, newPword, newPid)
 

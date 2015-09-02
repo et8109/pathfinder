@@ -30,9 +30,15 @@ def send_message(msg):
      if msg and connection:
         connection.write(str(msg))
 
-def get_message(msg):
-    if msg:
-        current_screen.get_message(msg)
+def get_message(data):
+    if data:
+        #current_screen.get_message(data)
+        msgs = data.split(",")
+        for msg in msgs:
+            if msg == "":
+                continue
+            msg=json.loads(msg)
+            current_screen.get_message(msg["data"])
 
 class LoginScreen(Screen):
 
@@ -67,6 +73,9 @@ class LoginScreen(Screen):
             self.print_message(msg)
 
     def print_message(self, msg):
+        if msg == None:
+            self.ids.message.text +="msg is none \n"
+            return
         self.ids.message.text += msg + "\n"
         
     
@@ -83,7 +92,7 @@ class MainScreen(Screen):
 
     def get_message(self, msg):
         self.print_message("playing: "+msg)
-        sound = SoundLoader.load("audio/Chomp.mp3")
+        sound = SoundLoader.load("audio/"+msg)
         if sound:
             #print("Sound found at %s" % sound.source)
             #print("Sound is %.3f seconds" % sound.length)

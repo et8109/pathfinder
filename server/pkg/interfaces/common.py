@@ -52,6 +52,7 @@ class Fightable(Placeable):
     health = fields.Integer()
     power = fields.Integer()
     attackAudio = fields.String()
+    deathAudio = fields.String()
 
     def _calcDamage(self):
         return self.power
@@ -63,7 +64,6 @@ class Fightable(Placeable):
 
     @abc.abstractmethod
     def _die(self):
-        print("dead")
         return
 
     def attack(self, target):
@@ -151,11 +151,12 @@ class Player(Fightable, Loadable):
 
     @staticmethod
     def login(uname, password):
-        pid = Database.login(uname, password)
+        return Database.login(uname, password)
+
+    @staticmethod
+    def startPlayer(pid):
         player = Player.fromID(pid)
         player.getZone().onEnter(player)
-        print("--->>> "+str(len(player.getZone().players)))
-        return pid
 
     def logout(self):
         self.getZone().onLeave(self)
@@ -171,8 +172,14 @@ class Player(Fightable, Loadable):
         self.changeZone(destID)
         self.getZone().onEnter(self)
 
+    def _die(self):
+        sendToPlayer("Dead.mp3", self)
+
 class Enemy(Fightable):
     maxHealth = None
+
+    def _die(self):
+        self.getZone().playAudio(self.deathAudio)
 
 class Npc(dexml.Model):
     audio = fields.String()

@@ -9,6 +9,7 @@ class Overseer():
     sourceToId = {}
     idToSource = {}
     server = None
+    testing = False
 
     #@staticmethod
     def startServer(self):
@@ -22,11 +23,17 @@ class Overseer():
 
     @staticmethod
     def sendToPlayer(data, pid):
-        Overseer._sendData(data, Overseer.idToSource[pid])
+        print("sending: "+str(data))
+        try:
+            Overseer._sendData(data, Overseer.idToSource[pid])
+        except KeyError:
+            if not Overseer.testing:
+                raise KeyError("Player id not found in id->source")
 
     @staticmethod
     def _sendData(data, source):
         if Overseer.server:
+            data = json.dumps({"data": data})
             Overseer.server.send_data(data.encode(), source)
 
     @staticmethod
@@ -37,6 +44,7 @@ class Overseer():
             pid = Player.login(parsed["u"], parsed["p"])
             Overseer.add_conn_hash(source, pid)
             Overseer._sendData("OK", source)
+            Player.startPlayer(pid)
         except PlayerNotFoundException:
             Overseer._sendData("wrong login credentials", source)
 

@@ -7,8 +7,9 @@ from pkg.interfaces.database import Database
 
 class testGeneral(unittest.TestCase):
 
-    def testLogin(self):
+    def testPlayerStart(self):
         pid = Player.login("guest", "guest")
+        Player.startPlayer(pid)
         p = Player.fromID(pid)
         print(len(p.getZone().players))
         assert len(p.getZone().players) == 1
@@ -16,6 +17,7 @@ class testGeneral(unittest.TestCase):
 
     def testWalking(self):
         pid = Player.login("guest", "guest")
+        Player.startPlayer(pid)
         p = Player.fromID(pid)
         p.swipe(Dirt.up)
         p.logout()
@@ -29,4 +31,5 @@ class testGeneral(unittest.TestCase):
         assert len(z.enemies) == 1
 
 if __name__ == "__main__":
+    Overseer.testing = True
     unittest.main()

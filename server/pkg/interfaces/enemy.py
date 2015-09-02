@@ -8,6 +8,7 @@ class Wolf(Enemy):
         tagname = "Enemy"
 
     attackAudio = "Chomp.mp3"
+    deathAudio = "ed.mp3"
     maxHealth = 3
     power = 1
     health = maxHealth
