@@ -112,6 +112,7 @@ class Zone(dexml.Model, Loadable):
     def onLeave(self, player):
         '''when a player leaves the zone'''
         self.players.remove(player)
+        self.save()
 
     #called when a player enters the scene
     def onEnter(self, player):
@@ -123,6 +124,10 @@ class Zone(dexml.Model, Loadable):
             self.players.append(player)
         for e in self.enemies:
             player.attack(e)
+        self.save()
+
+    def removeEnemy(self, enemy):
+        self.enemies.remove(enemy)
 
 class Player(Fightable, Loadable):
 
@@ -166,6 +171,7 @@ class Player(Fightable, Loadable):
         if destID == None:
             return
         self.moveZone(destID)
+        self.save()
 
     def moveZone(self, destID):
         self.getZone().onLeave(self)
@@ -180,6 +186,7 @@ class Enemy(Fightable):
 
     def _die(self):
         self.getZone().playAudio(self.deathAudio)
+        self.getZone().removeEnemy(self)
 
 class Npc(dexml.Model):
     audio = fields.String()

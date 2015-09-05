@@ -66,4 +66,3 @@ class Overseer():
             player.swipe(Dirt.right)
         else:
             pass
-        player.save()#save to db
