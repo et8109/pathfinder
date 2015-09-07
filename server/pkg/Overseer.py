@@ -41,10 +41,10 @@ class Overseer():
         from pkg.database.database import PlayerNotFoundException
         parsed = json.loads(data.decode("utf-8"))
         try:
-            pid = Player.login(parsed["u"], parsed["p"])
+            pid = Player.getPid(parsed["u"], parsed["p"])
             Overseer.add_conn_hash(source, pid)
             Overseer._sendData("OK", source)
-            Player.startPlayer(pid)
+            Player.login(pid)
         except PlayerNotFoundException:
             Overseer._sendData("wrong login credentials", source)
 

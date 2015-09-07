@@ -12,11 +12,19 @@ class Database:
                 deathAudio="Dead.mp3", pid=newPid, uname=newUname,password=newPword)
         p.save()
         DB.addPlayerToTable(newUname, newPword, newPid)
+        return p
+
+    @staticmethod
+    def resetPlayer(_uname, _pword):
+        _pid = DB.getPid(_uname, _pword)
+        p = Player(health=5, zid=1, power=1, attackAudio="attack.mp3", deathAudio="Dead.mp3", pid=_pid, uname=_uname,password=_pword)
+        p.save()
 
     @staticmethod
     def reset():
         DB.clearAll()
         Database.registerPlayer("guest", "guest")
+        Database.registerPlayer("test", "test")
 
         z1 = Zone(zid=1)
         z1.paths.append(Path(dirt=Dirt.up.value,dest=2))

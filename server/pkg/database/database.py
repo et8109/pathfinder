@@ -1,6 +1,8 @@
 import os
 import tables
 
+#TODO get filename func
+
 class PlayerInfo(tables.IsDescription):
     uname = tables.StringCol(20)
     pword = tables.StringCol(20)
@@ -43,7 +45,7 @@ class Database:
         return len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))])
 
     @staticmethod
-    def login(uname, pword):
+    def getPid(uname, pword):
         DIR = "./pkg/database/"
         tableFile = tables.open_file(DIR+Database.tableName, mode = "a")
         table = tableFile.root.info.playerIds

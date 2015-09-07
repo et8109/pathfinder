@@ -67,10 +67,10 @@ class Fightable(Placeable):
         return
 
     def attack(self, target):
-       print("attacking")
-       self._takeDamage(target._calcDamage())
-       target._takeDamage(self._calcDamage())
-       self.getZone().playAudio(self.attackAudio)
+        print("---- attacking")
+        self._takeDamage(target._calcDamage())
+        target._takeDamage(self._calcDamage())
+        self.getZone().playAudio(self.attackAudio)
 
 class Zone(dexml.Model, Loadable):
 
@@ -109,17 +109,23 @@ class Zone(dexml.Model, Loadable):
         for p in self.players:
             sendToPlayer(audio, p)
 
-    def onLeave(self, player):
+    def onPlayerDead(self, player):
+        self.players.remove(player)
+        self.save()
+
+    def onPlayerLeave(self, player):
         '''when a player leaves the zone'''
         self.players.remove(player)
         self.save()
 
     #called when a player enters the scene
-    def onEnter(self, player):
+    def onPlayerEnter(self, player):
         print("zone "+str(self.zid))
         print("eneimes: "+str(self.enemies))
+        print("players: "+str(self.players))
         if player in self.players:
-            pass #TODO throw exception, but it messes something up
+            raise Exception("player already in zone") #TODO throw exception, but it messes something up
+            return
         else:
             self.players.append(player)
         for e in self.enemies:
@@ -129,11 +135,17 @@ class Zone(dexml.Model, Loadable):
     def removeEnemy(self, enemy):
         self.enemies.remove(enemy)
 
+    def addEnemy(self, enemy):
+        self.enemies.append(enemy)
+        return enemy
+
 class Player(Fightable, Loadable):
 
     pid = fields.Integer()
     uname = fields.String()
     password = fields.String()
+    maxHealth = 3
+    loggedIn = False
 
     @staticmethod
     def _getKey(pid):
@@ -155,31 +167,40 @@ class Player(Fightable, Loadable):
         Cache.set(Player._getKey(self.pid), self)
 
     @staticmethod
-    def login(uname, password):
-        return Database.login(uname, password)
+    def getPid(uname, password):
+        return Database.getPid(uname, password)
 
-    @staticmethod
-    def startPlayer(pid):
-        player = Player.fromID(pid)
-        player.getZone().onEnter(player)
+    def login(self):
+        self.getZone().onPlayerEnter(self)
+        self.loggedIn = True
 
     def logout(self):
-        self.getZone().onLeave(self)
+        self.getZone().onPlayerLeave(self)
+        self.loggedIn = False
 
     def swipe(self, dirt):
+        if not self.loggedIn:
+            raise PlayerNotLoggedInException
+        print("swipe! current zone: "+str(self.getZone().zid))
         destID = self.getZone().getDest(dirt)
         if destID == None:
+            print("no dest")
             return
+        print("moving to: "+str(destID))
         self.moveZone(destID)
         self.save()
 
     def moveZone(self, destID):
-        self.getZone().onLeave(self)
+        self.getZone().onPlayerLeave(self)
         self.changeZone(destID)
-        self.getZone().onEnter(self)
+        self.getZone().onPlayerEnter(self)
 
     def _die(self):
         sendToPlayer("Dead.mp3", self)
+        self.getZone().onPlayerDead(self)
+        self.changeZone(1)
+        self.health = Player.maxHealth
+        self.getZone().onPlayerEnter(self)
 
 class Enemy(Fightable):
     maxHealth = None
@@ -187,6 +208,7 @@ class Enemy(Fightable):
     def _die(self):
         self.getZone().playAudio(self.deathAudio)
         self.getZone().removeEnemy(self)
+        #Zone.fromID(2).addEnemy(self.__class__(zid=2))
 
 class Npc(dexml.Model):
     audio = fields.String()
@@ -194,3 +216,13 @@ class Npc(dexml.Model):
 class Path(dexml.Model):
     dirt = fields.Integer()
     dest = fields.Integer()
+
+
+##############################################
+#exceptions
+##############################################
+class InterfaceException(Exception):
+    pass
+
+class PlayerNotLoggedInException(InterfaceException):
+    pass
