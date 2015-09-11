@@ -41,6 +41,7 @@ class testGeneral(unittest.TestCase):
         p.swipe(Dirt.up)
         assert p not in z.players
         newz = p.getZone()
+        print(newz.zid)
         assert p in newz.players
         p.logout()
         assert p not in newz.players

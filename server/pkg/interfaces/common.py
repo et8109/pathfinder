@@ -29,9 +29,19 @@ class Placeable(dexml.Model):
             self._zone = Zone.fromID(self.zid)
         return self._zone
 
-    def changeZone(self, zid):
+    def _changeZone(self, zid):
         self._zone = None
         self.zid = zid
+
+    def walk(self, dirt):
+        oldzone = self.getZone()
+        try:
+            newzone = Zone.fromID(oldzone.getDestID(dirt))
+            oldzone.onLeave(self, self.__class__)
+            self._changeZone(newzone.zid)
+            newzone.onEnter(self, self.__class__)
+        except Exception:
+            return
 
 class Loadable:
     '''anything loaded and saved from the database'''
@@ -65,12 +75,15 @@ class Fightable(Placeable):
     @abc.abstractmethod
     def _die(self):
         return
-
+    
     def attack(self, target):
-        print("---- attacking")
         self._takeDamage(target._calcDamage())
         target._takeDamage(self._calcDamage())
         self.getZone().playAudio(self.attackAudio)
+        if self.__class__ is Enemy:
+            self.retreat()
+        elif target.__class__ is Enemy:
+            target.retreat()
 
 class Zone(dexml.Model, Loadable):
 
@@ -99,11 +112,11 @@ class Zone(dexml.Model, Loadable):
         Database.saveZone(self.zid, self.render())
         Cache.set(Zone._getKey(self.zid), self)
 
-    def getDest(self, dirt):
+    def getDestID(self, dirt):
         for p in self.paths:
             if p.dirt == dirt.value:
                 return p.dest
-        return None
+        raise Exception("no path available")
 
     def playAudio(self, audio):
         for p in self.players:
@@ -113,23 +126,28 @@ class Zone(dexml.Model, Loadable):
         self.players.remove(player)
         self.save()
 
-    def onPlayerLeave(self, player):
-        '''when a player leaves the zone'''
-        self.players.remove(player)
+    def onLeave(self, thing, klass):
+        '''when a something leaves the zone'''
+        if klass == Player:
+            self.players.remove(thing)
+        elif klass == Enemy:
+            self.enemies.remove(thing)
+        else:
+            raise Exception("unkonwn thing leaving zone")
         self.save()
 
-    #called when a player enters the scene
-    def onPlayerEnter(self, player):
-        print("zone "+str(self.zid))
-        print("eneimes: "+str(self.enemies))
-        print("players: "+str(self.players))
-        if player in self.players:
-            raise Exception("player already in zone") #TODO throw exception, but it messes something up
-            return
-        else:
-            self.players.append(player)
-        for e in self.enemies:
-            player.attack(e)
+    def onEnter(self, thing, klass):
+        if klass == Player:
+            player = thing
+            if player in self.players:
+                raise Exception("player already in zone") #TODO throw exception, but it messes something up
+                return
+            else:
+                self.players.append(player)
+            for e in self.enemies:
+                player.attack(e)
+        elif klass == Enemy:
+            self.enemies.append(thing)
         self.save()
 
     def removeEnemy(self, enemy):
@@ -171,36 +189,28 @@ class Player(Fightable, Loadable):
         return Database.getPid(uname, password)
 
     def login(self):
-        self.getZone().onPlayerEnter(self)
+        self.getZone().onEnter(self, self.__class__)
         self.loggedIn = True
 
     def logout(self):
-        self.getZone().onPlayerLeave(self)
+        self.getZone().onLeave(self, self.__class__)
         self.loggedIn = False
 
     def swipe(self, dirt):
         if not self.loggedIn:
             raise PlayerNotLoggedInException
-        print("swipe! current zone: "+str(self.getZone().zid))
-        destID = self.getZone().getDest(dirt)
-        if destID == None:
-            print("no dest")
+        try:
+            self.walk(dirt)
+            self.save()
+        except Exception:
             return
-        print("moving to: "+str(destID))
-        self.moveZone(destID)
-        self.save()
-
-    def moveZone(self, destID):
-        self.getZone().onPlayerLeave(self)
-        self.changeZone(destID)
-        self.getZone().onPlayerEnter(self)
 
     def _die(self):
         sendToPlayer("Dead.mp3", self)
         self.getZone().onPlayerDead(self)
-        self.changeZone(1)
+        self._changeZone(1)
         self.health = Player.maxHealth
-        self.getZone().onPlayerEnter(self)
+        self.getZone().onEnter(self, self.__class__)
 
 class Enemy(Fightable):
     maxHealth = None
@@ -208,7 +218,15 @@ class Enemy(Fightable):
     def _die(self):
         self.getZone().playAudio(self.deathAudio)
         self.getZone().removeEnemy(self)
+        #respawn
         #Zone.fromID(2).addEnemy(self.__class__(zid=2))
+
+    def retreat(self):
+        '''retreat after a round of combat'''
+        for path in self.getZone().paths:
+            z = Zone.fromID()
+            if not z.enemies and not z.players:
+                self.walk(path.dirt)
 
 class Npc(dexml.Model):
     audio = fields.String()
