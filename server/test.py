@@ -54,7 +54,8 @@ class testGeneral(unittest.TestCase):
         z99 = Zone(zid=99)
         z99.save()
         z99 = Zone.fromID(99)
-        e = z99.addEnemy(Wolf(zid=99))
+        e = Wolf(zid=99)
+        z99.enemies.append(e)
         z99.save()
         assert len(z99.enemies) == 1
         e._die()
