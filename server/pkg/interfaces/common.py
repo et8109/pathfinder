@@ -58,8 +58,6 @@ class Fightable(Placeable):
 
     health = fields.Integer()
     power = fields.Integer()
-    attackAudio = fields.String()
-    deathAudio = fields.String()
 
     def _calcDamage(self):
         return self.power
@@ -99,6 +97,9 @@ class Zone(dexml.Model, Loadable):
         except KeyError:
             z = Zone.parse(Database.getZoneXML(zid))
         Cache.set(key, z)
+        #update enemy types
+        for e in z.enemies:
+            e.setClass()
         return z
 
     def save(self):
@@ -158,6 +159,8 @@ class Player(Fightable, Loadable):
     maxHealth = 3
     loggedIn = False
     deathAudio = "Dead.mp3"
+    attackAudio = fields.String()
+    deathAudio = fields.String()
 
     @staticmethod
     def _getKey(pid):
@@ -211,7 +214,11 @@ class Player(Fightable, Loadable):
 class Enemy(Fightable):
     __metaclass__ = abc.ABCMeta
     maxHealth = None
-    #retreatAudio = "toOverwrite"
+    #etype = None # used to know which enemy to transform into
+
+    def setClass(self):
+        '''called after a zone is loaded from the xml'''
+        self.__class__ = eval(self.etype)#TODO change
 
     def _die(self):
         Fightable._die(self)
@@ -225,9 +232,12 @@ class Enemy(Fightable):
         for path in self.getZone().paths:
             z = Zone.fromID(path.dest)
             if not z.enemies and not z.players:
-                self.getZone()._playAudio(getattr(self.__class__, "retreatAudio"))
+                print("retreating to: "+str(z.zid))
+                self.getZone()._playAudio(self.__class__.retreatAudio)
                 self.walk(path.dirt)
                 z._playAudio(self.__class__.retreatAudio) 
+                print("retreated to: "+str(z.zid))
+                return
 
 class Npc(dexml.Model):
     __metaclass__ = abc.ABCMeta
@@ -252,3 +262,5 @@ class PlayerNotLoggedInException(InterfaceException):
 
 class DeadCannotPerformActionException(InterfaceException):
     pass
+
+from pkg.interfaces.enemy import Wolf #need to import enemy classes for trasnformation after loading from xml

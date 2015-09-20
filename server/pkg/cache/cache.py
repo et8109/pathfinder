@@ -10,3 +10,7 @@ class Cache:
     @staticmethod
     def get(key):
         return Cache.table[key]
+
+    @staticmethod
+    def clear():
+        Cache.table.clear()

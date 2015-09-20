@@ -5,6 +5,7 @@ import pkg.interfaces.common as common
 from pkg.interfaces.common import Player, Zone, Path, Dirt
 from pkg.interfaces.enemy import Wolf
 from pkg.interfaces.database import Database
+from pkg.cache.cache import Cache
 
 def getTestPlayerReset():
     Database.resetPlayer("test", "test")
@@ -60,13 +61,19 @@ class testGeneral(unittest.TestCase):
         w._die()
         assert len(z1.enemies) == 0
 
-
     def testRetreat(self):
         SimpleMap.setup()
         w = Wolf(zid=1)
-        Zone.fromID(1).onEnter(w)
+        z1 = Zone.fromID(1)
+        z1.onEnter(w)
+        z1.save()
+        Cache.clear()
+        z = Zone.fromID(1)
+        w = z.enemies[0]
         w._retreat()
         assert w.getZone().zid == 2
+        assert not z.enemies
+        z.save()
 
 class Map():
     pass

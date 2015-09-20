@@ -7,9 +7,11 @@ class Wolf(Enemy):
     class meta:
         tagname = "Enemy"
 
+    etype="Wolf"
     attackAudio = "Chomp.mp3"
     deathAudio = "ed.mp3"
     retreatAudio = "Birds.mp3"
     maxHealth = 3
     power = 1
     health = maxHealth
+    size = 4
