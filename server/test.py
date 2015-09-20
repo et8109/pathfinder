@@ -14,6 +14,7 @@ def getTestPlayerReset():
 class testGeneral(unittest.TestCase):
 
     def testLoginLogout(self):
+        SimpleMap.setup()
         Database.resetPlayer("test", "test")
         pid = Player.getPid("test", "test")
         p = Player.fromID(pid)
@@ -30,6 +31,7 @@ class testGeneral(unittest.TestCase):
             pass
 
     def testWalking(self):
+        SimpleMap.setup()#??
         p = getTestPlayerReset()
         p.login()
         z = p.getZone()
@@ -41,7 +43,6 @@ class testGeneral(unittest.TestCase):
         p.swipe(Dirt.up)
         assert p not in z.players
         newz = p.getZone()
-        print(newz.zid)
         assert p in newz.players
         p.logout()
         assert p not in newz.players
@@ -51,16 +52,34 @@ class testGeneral(unittest.TestCase):
         z.save()
 
     def testEnemy(self):
-        z99 = Zone(zid=99)
-        z99.save()
-        z99 = Zone.fromID(99)
-        e = Wolf(zid=99)
-        z99.enemies.append(e)
-        z99.save()
-        assert len(z99.enemies) == 1
-        e._die()
-        assert len(z99.enemies) == 0
-        z99.save()
+        SimpleMap.setup()
+        w = Wolf(zid=1)
+        z1 = Zone.fromID(1)
+        z1.onEnter(w)
+        assert len(z1.enemies) == 1
+        w._die()
+        assert len(z1.enemies) == 0
+
+
+    def testRetreat(self):
+        SimpleMap.setup()
+        w = Wolf(zid=1)
+        Zone.fromID(1).onEnter(w)
+        w._retreat()
+        assert w.getZone().zid == 2
+
+class Map():
+    pass
+
+class SimpleMap(Map):
+
+    @staticmethod
+    def setup():
+        z1 = Zone(zid=1)
+        z2 = Zone(zid=2)
+        z1.paths.append(Path(dirt=Dirt.up.value,dest=2))
+        z1.save()
+        z2.save()
 
 if __name__ == "__main__":
     Overseer.testing = True

@@ -44,7 +44,7 @@ class Overseer():
             pid = Player.getPid(parsed["u"], parsed["p"])
             Overseer.add_conn_hash(source, pid)
             Overseer._sendData("OK", source)
-            Player.login(pid)
+            Player.fromID(pid).login()
         except PlayerNotFoundException:
             Overseer._sendData("wrong login credentials", source)
 

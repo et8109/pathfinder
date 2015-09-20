@@ -35,13 +35,10 @@ class Placeable(dexml.Model):
 
     def walk(self, dirt):
         oldzone = self.getZone()
-        try:
-            newzone = Zone.fromID(oldzone._getDestID(dirt))
-            oldzone.onLeave(self)
-            self._changeZone(newzone.zid)
-            newzone.onEnter(self)
-        except Exception:
-            return
+        newzone = Zone.fromID(oldzone._getDestID(dirt))
+        oldzone.onLeave(self)
+        self._changeZone(newzone.zid)
+        newzone.onEnter(self)
 
 class Loadable:
     '''anything loaded and saved from the database'''
@@ -110,9 +107,9 @@ class Zone(dexml.Model, Loadable):
 
     def _getDestID(self, dirt):
         for p in self.paths:
-            if p.dirt == dirt.value:
+            if p.dirt == dirt:
                 return p.dest
-        raise Exception("no path available")
+        raise NoPathException("no path available: zone {}, dirt {}".format(str(self.zid), str(dirt)))
 
     def _playAudio(self, audio):
         for p in self.players:
@@ -186,8 +183,8 @@ class Player(Fightable, Loadable):
         return Database.getPid(uname, password)
 
     def login(self):
-        self.getZone().onEnter(self)
         self.loggedIn = True
+        self.getZone().onEnter(self)
 
     def logout(self):
         self.getZone().onLeave(self)
@@ -197,10 +194,10 @@ class Player(Fightable, Loadable):
         if not self.loggedIn:
             raise PlayerNotLoggedInException
         try:
-            self.walk(dirt)
-            self.save()
-        except Exception:
-            return
+            self.walk(dirt.value)
+        except NoPathException as e:
+            print(e)
+        self.save()
 
     def _die(self):
         Fightable._die(self)
@@ -212,7 +209,9 @@ class Player(Fightable, Loadable):
         self.getZone().onEnter(self)
 
 class Enemy(Fightable):
+    __metaclass__ = abc.ABCMeta
     maxHealth = None
+    #retreatAudio = "toOverwrite"
 
     def _die(self):
         Fightable._die(self)
@@ -221,14 +220,17 @@ class Enemy(Fightable):
 
     def _retreat(self):
         '''retreat after a round of combat'''
-        if self.health > 0:
+        if self.health <= 0:
             raise DeadCannotPerformActionException
         for path in self.getZone().paths:
-            z = Zone.fromID()
+            z = Zone.fromID(path.dest)
             if not z.enemies and not z.players:
+                self.getZone()._playAudio(getattr(self.__class__, "retreatAudio"))
                 self.walk(path.dirt)
+                z._playAudio(self.__class__.retreatAudio) 
 
 class Npc(dexml.Model):
+    __metaclass__ = abc.ABCMeta
     audio = fields.String()
 
 class Path(dexml.Model):
@@ -240,6 +242,9 @@ class Path(dexml.Model):
 #exceptions
 ##############################################
 class InterfaceException(Exception):
+    pass
+
+class NoPathException(InterfaceException):
     pass
 
 class PlayerNotLoggedInException(InterfaceException):
