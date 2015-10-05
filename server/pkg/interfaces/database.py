@@ -1,6 +1,7 @@
 from pkg.database.database import Database as DB
 from pkg.interfaces.common import Player, Zone, Path, Dirt
 from pkg.interfaces.enemy import Wolf
+from pkg.interfaces.npc import Man
 
 class Database:
     
@@ -39,9 +40,16 @@ class Database:
         z2.save()
 
         #up 2
-        z1 = Zone(zid=3)
-        z1.paths.append(Path(dirt=Dirt.down.value,dest=2))
-        z1.save()
+        z3 = Zone(zid=3)
+        z3.paths.append(Path(dirt=Dirt.down.value,dest=2))
+        z3.paths.append(Path(dirt=Dirt.right.value,dest=4))
+        z3.save()
+
+        #up2 r1
+        z4 = Zone(zid=4)
+        z4.npcs.append(Man(zid=4))
+        z4.paths.append(Path(dirt=Dirt.left.value,dest=3))
+        z4.save()
 
     @staticmethod
     def playerLogin(uname, pword):

@@ -147,6 +147,8 @@ class Zone(dexml.Model, Loadable):
                 player.attack(e)
                 if e.health > 0:
                     e._retreat()
+            for n in self.npcs:
+                n.talk()
         elif isinstance(thing, Enemy):
             self.enemies.append(thing)
         self.save()
@@ -239,9 +241,15 @@ class Enemy(Fightable):
                 print("retreated to: "+str(z.zid))
                 return
 
-class Npc(dexml.Model):
+class Npc(Placeable):
     __metaclass__ = abc.ABCMeta
     audio = fields.String()
+
+    def setClass(self):
+        self.__class__ = eval(self.etype)#TODO change
+
+    def talk(self):
+        self.getZone()._playAudio(self.audio)
 
 class Path(dexml.Model):
     dirt = fields.Integer()
