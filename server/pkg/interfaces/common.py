@@ -39,6 +39,7 @@ class Placeable(dexml.Model):
         oldzone.onLeave(self)
         self._changeZone(newzone.zid)
         newzone.onEnter(self)
+        self.getZone()._playAudio("carpetStep.wav")
 
 class Loadable:
     '''anything loaded and saved from the database'''
