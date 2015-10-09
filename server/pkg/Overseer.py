@@ -64,5 +64,7 @@ class Overseer():
             player.swipe(Dirt.left)
         elif data == b'right':
             player.swipe(Dirt.right)
+        elif data == b'logout':
+            player.logout()
         else:
             pass

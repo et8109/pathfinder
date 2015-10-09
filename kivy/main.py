@@ -23,8 +23,11 @@ current_screen = None
 username = None
 
 def disconnect():
-    if disconnect_pointer:
+    global connection
+    global disconnect_pointer
+    if disconnect_pointer is not None:
         disconnect_pointer.disconnect()
+        connection = None
 
 def send_message(msg):
      if msg and connection:
@@ -51,6 +54,7 @@ class LoginScreen(Screen):
             self.connect()
 
     def connect(self):
+        global disconnect_pointer
         self.print_message("connecting to server")
         disconnect_pointer = reactor.connectTCP('localhost', 10000, EchoFactory(self))
 
@@ -103,6 +107,7 @@ class MainScreen(Screen):
 
     def on_touch_down(self, touch):
         if touch.x < 20 and touch.y < 20:
+            send_message("logout")
             disconnect()
             sm.current = "Login"
         else:

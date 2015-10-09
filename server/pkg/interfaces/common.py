@@ -36,10 +36,11 @@ class Placeable(dexml.Model):
     def walk(self, dirt):
         oldzone = self.getZone()
         newzone = Zone.fromID(oldzone._getDestID(dirt))
-        oldzone.onLeave(self)
-        self._changeZone(newzone.zid)
-        newzone.onEnter(self)
-        self.getZone()._playAudio("carpetStep.wav")
+        if newzone:
+            oldzone.onLeave(self)
+            self._changeZone(newzone.zid)
+            newzone.onEnter(self)
+            self.getZone()._playAudio("Chomp.mp3")
 
 class Loadable:
     '''anything loaded and saved from the database'''
