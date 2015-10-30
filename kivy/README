@@ -12,3 +12,8 @@ if phone not showing up:
 
 gstreamer missing plugin:
     sudo apt-get install gstreamer0.10-plugins-ugly
+
+phone doesn't have twisted:
+    copy /usr/lib/python2.7/dist-packages/twisted to app directory
+    (same with required zope)
+    delete *.so and *.a files
