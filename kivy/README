@@ -17,3 +17,6 @@ phone doesn't have twisted:
     copy /usr/lib/python2.7/dist-packages/twisted to app directory
     (same with required zope)
     delete *.so and *.a files
+
+Your GStreamer installation is missing a plug-in
+    sudo apt-get install ubuntu-restricted-extras

@@ -35,12 +35,15 @@ class Placeable(dexml.Model):
 
     def walk(self, dirt):
         oldzone = self.getZone()
-        newzone = Zone.fromID(oldzone._getDestID(dirt))
+        path = oldzone.getPath(dirt)
+        newzone = Zone.fromID(path.dest)
         if newzone:
             oldzone.onLeave(self)
             self._changeZone(newzone.zid)
             newzone.onEnter(self)
-            self.getZone()._playAudio("Chomp.mp3")
+            if path.audio:
+                oldzone._playAudio(path.audio)
+                newzone._playAudio(path.audio)
 
 class Loadable:
     '''anything loaded and saved from the database'''
@@ -108,13 +111,15 @@ class Zone(dexml.Model, Loadable):
         Database.saveZone(self.zid, self.render())
         Cache.set(Zone._getKey(self.zid), self)
 
-    def _getDestID(self, dirt):
+    def getPath(self, dirt):
         for p in self.paths:
             if p.dirt == dirt:
-                return p.dest
+                return p
         raise NoPathException("no path available: zone {}, dirt {}".format(str(self.zid), str(dirt)))
 
     def _playAudio(self, audio):
+        if audio == "":
+            return
         for p in self.players:
             sendToPlayer(audio, p)
 
@@ -256,6 +261,7 @@ class Npc(Placeable):
 class Path(dexml.Model):
     dirt = fields.Integer()
     dest = fields.Integer()
+    audio = fields.String()
 
 
 ##############################################
