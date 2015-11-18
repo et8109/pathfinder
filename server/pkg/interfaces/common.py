@@ -146,7 +146,7 @@ class Zone(dexml.Model, Loadable):
         if isinstance(thing, Player):
             player = thing
             if player in self.players:
-                raise Exception("player already in zone") #TODO throw exception, but it messes something up
+                raise Exception("player already in zone")
                 return
             else:
                 self.players.append(player)

@@ -10,7 +10,7 @@ class Database:
         #check player does not exist TODO
         newPid = DB.numPlayers()
         p = Player(health=5, zid=1, power=1, attackAudio="attack.mp3",
-                deathAudio="Dead.mp3", pid=newPid, uname=newUname,password=newPword)
+                deathAudio="Dead.mp3", pid=newPid, uname=newUname,password=                newPword)
         p.save()
         DB.addPlayerToTable(newUname, newPword, newPid)
         return p
@@ -29,13 +29,13 @@ class Database:
 
         #start zone
         z1 = Zone(zid=1)
-        z1.paths.append(Path(dirt=Dirt.up.value,dest=2,audio=""))
+        z1.paths.append(Path(dirt=Dirt.up.value,dest=2,audio="Walking.mp3"))
         z1.save()
 
         #up 1
         z2 = Zone(zid=2)
-        z2.paths.append(Path(dirt=Dirt.down.value,dest=1,audio=""))
-        z2.paths.append(Path(dirt=Dirt.up.value,dest=3,audio=""))
+        z2.paths.append(Path(dirt=Dirt.down.value,dest=1,audio="Walking.mp3"))
+        z2.paths.append(Path(dirt=Dirt.up.value,dest=3,audio="Walking.mp3"))
         z2.enemies.append(Wolf(zid=2))
         z2.save()
 
