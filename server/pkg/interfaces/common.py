@@ -17,6 +17,10 @@ class Dirt(Enum):
     left = 2
     right = 3
 
+class Audio(dexml.Model):
+    name = fields.String()
+    length = fields.Integer()
+
 class Placeable(dexml.Model):
     '''anything that has a specific location'''
     __metaclass__ = abc.ABCMeta
@@ -118,10 +122,10 @@ class Zone(dexml.Model, Loadable):
         raise NoPathException("no path available: zone {}, dirt {}".format(str(self.zid), str(dirt)))
 
     def _playAudio(self, audio):
-        if audio == "":
+        if audio is None:
             return
         for p in self.players:
-            sendToPlayer(audio, p)
+            sendToPlayer(audio.name, p)
 
     def onDead(self, thing):
         if isinstance(thing, Player):
@@ -167,9 +171,8 @@ class Player(Fightable, Loadable):
     password = fields.String()
     maxHealth = 3
     loggedIn = False
-    deathAudio = "Dead.mp3"
-    attackAudio = fields.String()
-    deathAudio = fields.String()
+    attackAudio = fields.Model("Audio")
+    deathAudio = fields.Model("Audio")
 
     @staticmethod
     def _getKey(pid):
@@ -250,7 +253,7 @@ class Enemy(Fightable):
 
 class Npc(Placeable):
     __metaclass__ = abc.ABCMeta
-    audio = fields.String()
+    audio = fields.Model("Audio")
 
     def setClass(self):
         self.__class__ = eval(self.etype)#TODO change
@@ -261,8 +264,7 @@ class Npc(Placeable):
 class Path(dexml.Model):
     dirt = fields.Integer()
     dest = fields.Integer()
-    audio = fields.String()
-
+    audio = fields.Model("Audio")
 
 ##############################################
 #exceptions
