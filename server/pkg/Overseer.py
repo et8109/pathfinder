@@ -23,7 +23,6 @@ class Overseer():
 
     @staticmethod
     def sendToPlayer(data, pid):
-        print("sending: "+str(data))
         try:
             Overseer._sendData(data, Overseer.idToSource[pid])
         except KeyError:

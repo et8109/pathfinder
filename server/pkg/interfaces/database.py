@@ -12,7 +12,7 @@ class Database:
         p = Player(health=5, zid=1, power=1, 
                 attackAudio=Audio(name="attack.mp3", length=3),
                 deathAudio=Audio(name="Dead.mp3", length=3), 
-                pid=newPid,uname=newUname,password=newPword)
+                pid=newPid,uname=newUname,password=newPword, gold=0)
         p.save()
         DB.addPlayerToTable(newUname, newPword, newPid)
         return p

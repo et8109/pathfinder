@@ -15,3 +15,4 @@ class Wolf(Enemy):
     power = 1
     health = maxHealth
     size = 4
+    respawnZone = 3

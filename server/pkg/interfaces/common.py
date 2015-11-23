@@ -8,21 +8,27 @@ from pkg.database.database import Database
 from pkg.cache.cache import Cache
 
 def sendToPlayer(audio, player):
+    '''sends audio title to given player'''
+    print("sending to player: "+audio)
+    if audio is None:
+        raise TypeError
     from pkg.Overseer import Overseer
     Overseer.sendToPlayer(audio, player.pid)
 
 class Dirt(Enum):
+    '''Enum to represent the 4 different directions'''
     up = 0
     down = 1
     left = 2
     right = 3
 
 class Audio(dexml.Model):
+    '''Audio information'''
     name = fields.String()
     length = fields.Integer()
 
 class Placeable(dexml.Model):
-    '''anything that has a specific location'''
+    '''Anything that has a specific zone it is in'''
     __metaclass__ = abc.ABCMeta
 
     zid = fields.Integer()
@@ -33,21 +39,29 @@ class Placeable(dexml.Model):
             self._zone = Zone.fromID(self.zid)
         return self._zone
 
-    def _changeZone(self, zid):
+    def setZone(self, zid):
         self._zone = None
         self.zid = zid
+
+    @abc.abstractmethod
+    def enter(self):
+        '''enters a zone'''
+        return
+
+    @abc.abstractmethod
+    def leave(self):
+        '''leaves a zone'''
+        return
 
     def walk(self, dirt):
         oldzone = self.getZone()
         path = oldzone.getPath(dirt)
         newzone = Zone.fromID(path.dest)
         if newzone:
-            oldzone.onLeave(self)
-            self._changeZone(newzone.zid)
-            newzone.onEnter(self)
-            if path.audio:
-                oldzone._playAudio(path.audio)
-                newzone._playAudio(path.audio)
+            self.leave()
+            self.enter(newzone)
+            oldzone.playAudio(path.audio)
+            newzone.playAudio(path.audio)
 
 class Loadable:
     '''anything loaded and saved from the database'''
@@ -68,22 +82,26 @@ class Fightable(Placeable):
     health = fields.Integer()
     power = fields.Integer()
 
-    def _calcDamage(self):
+    def calcDamage(self):
         return self.power
 
-    def _takeDamage(self, dmg):
+    def die(self):
+        self.getZone().playAudio(self.deathAudio)
+
+    def takeDamage(self, dmg):
         self.health -= dmg
         if self.health <= 0:
-            self._die()
+            self.die()
+            return
+        try:
+            self.retreat()
+        except AttributeError:
+            pass
 
-    def _die(self):
-        self.getZone().onDead(self)
-        self.getZone()._playAudio(self.deathAudio)
-    
     def attack(self, target):
-        self._takeDamage(target._calcDamage())
-        target._takeDamage(self._calcDamage())
-        self.getZone()._playAudio(self.attackAudio)
+        self.takeDamage(target.calcDamage())
+        target.takeDamage(self.calcDamage())
+        self.getZone().playAudio(self.attackAudio)
 
 class Zone(dexml.Model, Loadable):
 
@@ -94,26 +112,28 @@ class Zone(dexml.Model, Loadable):
     players = fields.List('Player')
 
     @staticmethod
-    def _getKey(zid):
+    def getKey(zid):
         return "z"+str(zid)
 
     @staticmethod
     def fromID(zid):
-        key = Zone._getKey(zid)
+        key = Zone.getKey(zid)
         z = None
         try:
             z = Cache.get(key)
         except KeyError:
             z = Zone.parse(Database.getZoneXML(zid))
         Cache.set(key, z)
-        #update enemy types
+        #update types
         for e in z.enemies:
             e.setClass()
+        '''for n in z.npcs:
+            n.setClass() not needed?'''
         return z
 
     def save(self):
         Database.saveZone(self.zid, self.render())
-        Cache.set(Zone._getKey(self.zid), self)
+        Cache.set(Zone.getKey(self.zid), self)
 
     def getPath(self, dirt):
         for p in self.paths:
@@ -121,48 +141,11 @@ class Zone(dexml.Model, Loadable):
                 return p
         raise NoPathException("no path available: zone {}, dirt {}".format(str(self.zid), str(dirt)))
 
-    def _playAudio(self, audio):
-        if audio is None:
-            return
+    def playAudio(self, audio):
+        '''Sends audio to all players in zone'''
+        print("num: "+str(len(self.players)))
         for p in self.players:
             sendToPlayer(audio.name, p)
-
-    def onDead(self, thing):
-        if isinstance(thing, Player):
-            self.players.remove(thing)
-        elif isinstance(thing, Enemy):
-            self.enemies.remove(thing)
-        else:
-            raise Exception("unkown type of dead thing: "+str(klass))
-        self.save()
-
-    def onLeave(self, thing):
-        '''when a something leaves the zone'''
-        if isinstance(thing, Player):
-            self.players.remove(thing)
-        elif isinstance(thing, Enemy):
-            self.enemies.remove(thing)
-        else:
-            raise Exception("unkonwn thing leaving zone")
-        self.save()
-
-    def onEnter(self, thing):
-        if isinstance(thing, Player):
-            player = thing
-            if player in self.players:
-                raise Exception("player already in zone")
-                return
-            else:
-                self.players.append(player)
-            for e in self.enemies:
-                player.attack(e)
-                if e.health > 0:
-                    e._retreat()
-            for n in self.npcs:
-                n.talk()
-        elif isinstance(thing, Enemy):
-            self.enemies.append(thing)
-        self.save()
 
 class Player(Fightable, Loadable):
 
@@ -173,14 +156,15 @@ class Player(Fightable, Loadable):
     loggedIn = False
     attackAudio = fields.Model("Audio")
     deathAudio = fields.Model("Audio")
+    gold = fields.Integer()
 
     @staticmethod
-    def _getKey(pid):
+    def getKey(pid):
         return "p"+str(pid)
 
     @staticmethod
     def fromID(pid):
-        key = Player._getKey(pid)
+        key = Player.getKey(pid)
         p = None
         try:
             p = Cache.get(key)
@@ -191,7 +175,7 @@ class Player(Fightable, Loadable):
 
     def save(self):
         Database.savePlayer(self.pid, self.render())
-        Cache.set(Player._getKey(self.pid), self)
+        Cache.set(Player.getKey(self.pid), self)
 
     @staticmethod
     def getPid(uname, password):
@@ -199,10 +183,10 @@ class Player(Fightable, Loadable):
 
     def login(self):
         self.loggedIn = True
-        self.getZone().onEnter(self)
+        self.enter(self.getZone())
 
     def logout(self):
-        self.getZone().onLeave(self)
+        self.leave(self.getZone())
         self.loggedIn = False
 
     def swipe(self, dirt):
@@ -214,42 +198,76 @@ class Player(Fightable, Loadable):
             print(e)
         self.save()
 
-    def _die(self):
-        Fightable._die(self)
-        self._respawn()
-
-    def _respawn(self):
-        self._changeZone(1)
+    def respawn(self):
+        self.setZone(1)
         self.health = Player.maxHealth
-        self.getZone().onEnter(self)
+        self.enter(self.getZone()) 
+
+    def die(self):
+        Fightable.die(self)
+        self.getZone().players.remove(self)
+        self.getZone().save()
+        self.respawn()
+
+    def enter(self, zone):
+        if self in zone.players:
+            raise Exception("player already in zone")
+            return
+        self.setZone(zone.zid)
+        zone.players.append(self)
+        for e in zone.enemies:
+            self.attack(e)
+        for n in zone.npcs:
+            n.talk()
+        zone.save()
+
+    def leave(self):
+        z = self.getZone()
+        z.players.remove(self)
+        z.save()
+
 
 class Enemy(Fightable):
     __metaclass__ = abc.ABCMeta
     maxHealth = None
-    #etype = None # used to know which enemy to transform into
 
     def setClass(self):
         '''called after a zone is loaded from the xml'''
         self.__class__ = eval(self.etype)#TODO change
 
-    def _die(self):
-        Fightable._die(self)
-        #respawn
-        #Zone.fromID(2).addEnemy(self.__class__(zid=2))
+    def respawn(self):
+        pass
+        #self.enter(Zone.fromID(self.respawnZone))
 
-    def _retreat(self):
+    def die(self):
+        Fightable.die(self)
+        self.getZone().enemies.remove(self)
+        self.getZone().save()
+        self.respawn()
+
+    def retreat(self):
         '''retreat after a round of combat'''
         if self.health <= 0:
             raise DeadCannotPerformActionException
         for path in self.getZone().paths:
             z = Zone.fromID(path.dest)
             if not z.enemies and not z.players:
-                print("retreating to: "+str(z.zid))
-                self.getZone()._playAudio(self.__class__.retreatAudio)
+                self.getZone().playAudio(self.__class__.retreatAudio)
                 self.walk(path.dirt)
-                z._playAudio(self.__class__.retreatAudio) 
-                print("retreated to: "+str(z.zid))
+                z.playAudio(self.__class__.retreatAudio) 
                 return
+
+    def enter(self, zone):
+        if self in zone.enemies:
+            raise Exception("Enemy already in zone")
+        zone.enemies.append(self)
+        self.setZone(zone.zid)
+        zone.save()
+
+    def leave(self):
+        z = self.getZone()
+        z.enemies.remove(self)
+        z.save()
 
 class Npc(Placeable):
     __metaclass__ = abc.ABCMeta
@@ -259,7 +277,20 @@ class Npc(Placeable):
         self.__class__ = eval(self.etype)#TODO change
 
     def talk(self):
-        self.getZone()._playAudio(self.audio)
+        self.getZone().playAudio(self.audio)
+
+    def enter(self, zone):
+        if self in zone.enemies:
+            raise Exception("Npc already in zone")
+        zone.enemies.append(self)
+        self.setZone(zone.zid)
+        zone.save()
+
+    def leave(self):
+        z = self.getZone()
+        z.enemies.remove()
+        z.save()
+
 
 class Path(dexml.Model):
     dirt = fields.Integer()
